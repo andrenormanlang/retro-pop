@@ -1,1 +1,5 @@
-# retro_comics_webshop
+# :thought_balloon: Retro Comics Webshop  :speech_balloon:
+
+This is a used comics webshop linked to a REST API for lovers and collectors of classic comic book oldies.
+
+Hopefully should be online by the first semester of 2023.
