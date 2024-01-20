@@ -1,6 +1,6 @@
 # :thought_balloon: Retro Pop Comics  :speech_balloon:
 
-## Classic Comic Book Search and Community
+## Classic Comic Book Search, Collectors Store and Community
 
 Welcome to our project dedicated to lovers and collectors of classic comic book oldies! This platform is a comprehensive comics search tool connected to the Superhero API, enriched with an interactive webshop and a vibrant forum!
 
