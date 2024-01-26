@@ -19,6 +19,7 @@ import { HamburgerIcon, CloseIcon, MoonIcon, SunIcon } from "@chakra-ui/icons";
 import { motion } from "framer-motion";
 import RetroPopLogo from "./logo"; // Changed this line
 
+
 const Navbar = () => {
 	const { isOpen, onToggle } = useDisclosure();
 	const { colorMode, toggleColorMode } = useColorMode();
@@ -64,6 +65,7 @@ const Navbar = () => {
 	};
 
 	const menuItems = [
+
 		{
 			name: "Search",
 			submenu: [
@@ -87,7 +89,11 @@ const Navbar = () => {
 				// or any value that makes it on top of other elements
 			>
 				<Flex align="center" mr={5}>
-					<RetroPopLogo />
+				<Link href="/">
+
+    <RetroPopLogo />
+
+</Link>
 				</Flex>
 
 				<Flex align="center">
