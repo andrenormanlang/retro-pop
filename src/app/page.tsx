@@ -48,7 +48,7 @@ const HomePage: React.FC = () => {
     <Container maxW="container.xl" centerContent p={4}>
       {cover && (
         <motion.div
-          whileHover={{ scale: 1.05 }}
+          whileHover={{ scale: 1.50 }}
           style={{ textDecoration: 'none', cursor: 'pointer' }}
         >
           <Flex
@@ -59,13 +59,16 @@ const HomePage: React.FC = () => {
             align="center"
             justify="center"
           >
-            <Text fontWeight="bold" fontSize="lg" mt={2}>
+            <Text fontWeight="bold" fontSize="2rem" mt={2} fontFamily="Bangers" letterSpacing="0.2rem" color="red">
+              RANDOM COVER!
+            </Text>
+            <Text fontWeight="bold" fontSize="1.5rem" mt={2} fontFamily="Bangers" letterSpacing="0.2rem" color="white">
               {cover.title}
             </Text>
             <Image
               src={cover.coverPage}
               alt={`Random Comic Book Cover: ${cover.title}`}
-              boxSize="700px"
+              boxSize="400px"
               objectFit="contain"
             />
             {/* <Badge colorScheme="green" mt={1}>
