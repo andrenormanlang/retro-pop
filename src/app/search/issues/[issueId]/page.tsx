@@ -32,15 +32,14 @@ const IssuePage: NextPage = () => {
 	const borderColor = useColorModeValue("gray.200", "gray.700");
 
 	useEffect(() => {
-
 		// Function to extract issue ID from URL
-        const getIssueIdFromURL = () => {
-            if (typeof window !== "undefined") {
-                const url = new URL(window.location.href);
-                return url.pathname.split("/").pop();
-            }
-            return null;
-        };
+		const getIssueIdFromURL = () => {
+			if (typeof window !== "undefined") {
+				const url = new URL(window.location.href);
+				return url.pathname.split("/").pop();
+			}
+			return null;
+		};
 
 		async function fetchData(issueId: string) {
 			try {
@@ -56,9 +55,9 @@ const IssuePage: NextPage = () => {
 		}
 
 		const issueId = getIssueIdFromURL();
-        if (issueId) {
-            fetchData(issueId);
-        }
+		if (issueId) {
+			fetchData(issueId);
+		}
 	}, []);
 
 	const handleBack = () => {
@@ -104,9 +103,9 @@ const IssuePage: NextPage = () => {
 						borderWidth="1px"
 						borderColor={borderColor}
 						direction={{ base: "column", md: "row" }}
-						align=""
-						justify=""
-						width="1180px"
+						align="center" // Center align items for better responsiveness
+						justify="center"
+						width={{ base: "100%", md: "90%", lg: "1180px" }} // Responsive width
 					>
 						{/* Image */}
 						<Image
@@ -115,7 +114,7 @@ const IssuePage: NextPage = () => {
 							objectFit="contain"
 							src={comic.image.original_url}
 							alt={`Cover of ${comic.name}`}
-							mr={{ md: 8 }}
+							mr={{ md: 1 }}
 						/>
 
 						<VStack spacing={4} align="">
@@ -187,20 +186,19 @@ const IssuePage: NextPage = () => {
 							Character Credits:
 						</Heading>
 						<SimpleGrid columns={{ base: 2, md: 3 }} spacing={4}>
-
-						{comic.character_credits && comic.character_credits.map((character) => (
-								<Box
-									key={character.id}
-									p={2}
-									boxShadow="md"
-									borderRadius="md"
-								>
-									<Text textAlign="start">
-										{character.name}
-									</Text>
-								</Box>
-							))}
-
+							{comic.character_credits &&
+								comic.character_credits.map((character) => (
+									<Box
+										key={character.id}
+										p={2}
+										boxShadow="md"
+										borderRadius="md"
+									>
+										<Text textAlign="start">
+											{character.name}
+										</Text>
+									</Box>
+								))}
 						</SimpleGrid>
 					</VStack>
 					<VStack spacing={4} w="full" align="start">
@@ -213,19 +211,22 @@ const IssuePage: NextPage = () => {
 							Person Credits:
 						</Heading>
 						<SimpleGrid columns={{ base: 2, md: 3 }} spacing={4}>
-							{comic.person_credits && comic.person_credits.map((person) => (
-								<Box
-									key={person.id}
-									p={2}
-									boxShadow="md"
-									borderRadius="md"
-								>
-									<Text textAlign="start">{person.name}</Text>
-									<Badge colorScheme="blue">
-										{person.role}
-									</Badge>
-								</Box>
-							))}
+							{comic.person_credits &&
+								comic.person_credits.map((person) => (
+									<Box
+										key={person.id}
+										p={2}
+										boxShadow="md"
+										borderRadius="md"
+									>
+										<Text textAlign="start">
+											{person.name}
+										</Text>
+										<Badge colorScheme="blue">
+											{person.role}
+										</Badge>
+									</Box>
+								))}
 						</SimpleGrid>
 					</VStack>
 				</Flex>
