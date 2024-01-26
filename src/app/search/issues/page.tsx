@@ -160,21 +160,23 @@ const Issues: NextPage = () => {
 								}}
 							>
 								<Box
-									boxShadow="0 4px 8px rgba(0,0,0,0.1)"
-									rounded="md"
-									overflow="hidden"
-									p={4}
-									display="flex"
-									flexDirection="column"
-									alignItems="center"
-									justifyContent="end"
+									 boxShadow="0 4px 8px rgba(0,0,0,0.1)"
+									 rounded="md"
+									 overflow="hidden"
+									 p={4}
+									 display="flex"
+									 flexDirection="column"
+									 alignItems="center"
+									 justifyContent="space-between" // Distribute space between elements
+									 minH="630px" // Set a minimum height for the card
+									 position="relative"
 								>
 									<Image
 										src={comic.image.original_url}
 										alt={comic.name || `Comic ${comic.id}`}
 										maxW="400px"
 										maxH="400px"
-										objectFit="cover"
+										objectFit="contain"
 									/>
 									<Text
 										fontWeight="bold"

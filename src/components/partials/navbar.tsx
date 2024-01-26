@@ -123,8 +123,11 @@ const Navbar = () => {
 								<MoonIcon boxSize={4} />
 							)
 						}
-						display={{ base: "block", md: "" }} // Shown only in mobile view
-						_hover={{ bg: "transparent" }}
+						display={{ base: "block", md: "block" }} // Shown only in mobile view
+						_hover={{
+							bg: colorMode === "light" ? "gray.200" : "gray.600", // Adjust the background color on hover based on the theme
+							color: colorMode === "light" ? "gray.800" : "white", // Adjust the text color on hover based on the theme
+						}}
 					>
 						{/* Show only the sun and moon icons */}
 						{colorMode === "dark" ? "Sun" : "Moon"}

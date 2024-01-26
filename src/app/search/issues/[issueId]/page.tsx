@@ -83,7 +83,7 @@ const IssuePage: NextPage = () => {
 
 	return (
 		<>
-			<Container maxW="1200px" p={4}>
+			<Container maxW="1150px" p={4}>
 				<Box mb={4}>
 					<Button
 						leftIcon={<ArrowBackIcon />}
@@ -103,9 +103,9 @@ const IssuePage: NextPage = () => {
 						borderWidth="1px"
 						borderColor={borderColor}
 						direction={{ base: "column", md: "row" }}
-						align="center" // Center align items for better responsiveness
-						justify="center"
-						width={{ base: "100%", md: "90%", lg: "1180px" }} // Responsive width
+						align="" // Center align items for better responsiveness
+						justify=""
+						width={{ base: "100%", md: "90%", lg: "1100px" }} // Responsive width
 					>
 						{/* Image */}
 						<Image
