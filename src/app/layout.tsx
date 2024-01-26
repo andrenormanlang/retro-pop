@@ -1,4 +1,4 @@
-import Navbar from "../components/partials/Navbar";
+import Navbar from "../components/partials/navbar";
 import { Box, ChakraProvider, ColorModeProvider } from "@chakra-ui/react";
 import './globals.css'
 import type { Metadata } from 'next'
