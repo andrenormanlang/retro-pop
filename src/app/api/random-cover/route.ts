@@ -1,49 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ComicIssue, ComicIssuesResponse } from "@/types/metron.types";
 
-export async function getRandomComicCover(){
+export async function GET(request: NextRequest) {
     const authHeader = process.env.METRON_API_AUTH_HEADER;
     if (!authHeader) {
-        console.error('Authorization header is not set');
-        return null;
+        return new NextResponse("Authorization header is not set", { status: 401 });
     }
 
     const url = 'https://metron.cloud/api/issue/';
 
     try {
         const response = await fetch(url, {
-            headers: new Headers({
+            headers: {
                 'Authorization': `Basic ${authHeader}`,
-                 'Accept': 'application/json',
-            }),
+                'Accept': 'application/json',
+            },
         });
 
         if (!response.ok) {
             throw new Error(`API call failed with status: ${response.status}`);
         }
 
-        const data: ComicIssuesResponse = await response.json();
-        if (data.results.length === 0) return null;
+        const data = await response.json();
+        if (data.results.length === 0) {
+            return new NextResponse("No comic covers found", { status: 404 });
+        }
 
         const randomIndex = Math.floor(Math.random() * data.results.length);
-        return data.results[randomIndex];
-    } catch (error) {
-        console.error('Failed to fetch random comic cover:', error);
-        return null;
-    }
-}
+        const randomCover = data.results[randomIndex];
 
-export async function GET(request: NextRequest) {
-    try {
-        const randomCover = await getRandomComicCover();
         return NextResponse.json(randomCover);
     } catch (error) {
-        const message = (error instanceof Error) ? error.message : 'An unknown error occurred';
-        return new NextResponse(JSON.stringify({ error: message }), {
+        // Check if error is an instance of Error and handle accordingly
+        const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+        console.error('Failed to fetch random comic cover:', errorMessage);
+        return new NextResponse(JSON.stringify({ error: errorMessage }), {
             status: 500,
             headers: {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*', // Be cautious with this in production
             },
         });
     }

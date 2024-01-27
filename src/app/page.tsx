@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Image, Text, Flex, Container, Center, Spinner } from "@chakra-ui/react";
 import { ComicIssue } from '../types/metron.types'; // Adjust the import path as needed
-import { getRandomComicCover } from '@/helpers/getRandomCover';
+// import { getRandomComicCover } from '@/helpers/getRandomCover';
 
 export default function HomePage() {
 	const [cover, setCover] = useState<ComicIssue | null>(null);

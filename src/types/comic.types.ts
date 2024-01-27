@@ -80,3 +80,9 @@ export type ComicVine = {
 	  original_url: string;
 	};
   };
+
+export type SearchQuery = {
+	[key: string]: number | string;
+  	page: number;
+  	query: string;
+}

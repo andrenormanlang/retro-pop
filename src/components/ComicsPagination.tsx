@@ -12,9 +12,9 @@ const ComicsPagination: React.FC<ComicsPaginationProps> = ({ currentPage, totalP
   const router = useRouter();
 
   useEffect(() => {
-    if (currentPage > 65977) {
-      onPageChange(65977);
-      router.push('/issues?page=65977');
+    if (currentPage > 65980) {
+      onPageChange(65980);
+      router.push('/issues?page=65980');
     }
   }, [currentPage, onPageChange, router]);
 
@@ -23,7 +23,7 @@ const ComicsPagination: React.FC<ComicsPaginationProps> = ({ currentPage, totalP
   };
 
   const goToLastPage = () => {
-    const lastPage = 65977; // Set the last page number directly
+    const lastPage = 65980; // Set the last page number directly
     onPageChange(lastPage);
   };
 
@@ -65,7 +65,7 @@ const ComicsPagination: React.FC<ComicsPaginationProps> = ({ currentPage, totalP
           </Button>
         </>
       )}
-      {currentPage === 65977 && <Box>This is the last page</Box>}
+      {currentPage === 65980 && <Box>This is the last page</Box>}
     </Stack>
   );
 };

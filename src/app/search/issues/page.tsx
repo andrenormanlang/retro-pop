@@ -1,144 +1,90 @@
-'use client';
+'use client'
 
-import { useEffect, useState } from "react";
-import {
-	SimpleGrid,
-	Box,
-	Image,
-	Text,
-	Container,
-	Link,
-	Spinner,
-	Center,
-	Flex,
-	Badge,
-} from "@chakra-ui/react";
+import { useState, useEffect } from "react";
+import { SimpleGrid, Box, Image, Text, Container, Center, Spinner } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import NextLink from "next/link";
 import type { NextPage } from "next";
-import { ComicVine } from "@/types/comic.types";
-import { htmlToText } from "html-to-text";
-import {  usePathname, useRouter } from "next/navigation";
 import SearchBox from "@/components/SearchBox";
 import ComicsPagination from "@/components/ComicsPagination";
 import { useDebouncedCallback } from "use-debounce";
-
+import { htmlToText } from "html-to-text";
+import { useGetComicVineIssues } from "@/hooks/useComicVine";
+import { getCurrentPage } from "@/helpers/ComicVineIssues/getCurrentPage";
+import { ComicVine, SearchQuery } from "@/types/comic.types";
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 
 
 // Function to format the date as "21, Jan, 2024"
 const formatDate = (dateString: string) => {
-	const options: Intl.DateTimeFormatOptions = {
-		day: "numeric",
-		month: "short",
-		year: "numeric",
-	};
-	return new Date(dateString).toLocaleDateString(undefined, options);
+    const options: Intl.DateTimeFormatOptions = {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+    };
+    return new Date(dateString).toLocaleDateString(undefined, options);
 };
 
 const Issues: NextPage = () => {
-	// const [searchParams] = useSearchParams();
-	const [comics, setComics] = useState<ComicVine[]>([]);
-
-	const [isLoading, setIsLoading] = useState(false);
-	const pageSize = 15;
-	const maxDescriptionLength = 100;
-	const [totalComics, setTotalComics] = useState<number>(0);
-
-	const getCurrentPage = () => {
-        if (typeof window !== 'undefined') {
-            const searchParams = new URLSearchParams(window.location.search);
-            return parseInt(searchParams.get('page') || '1', 10);
-        }
-        return 1;
-    };
+    const pageSize = 15;
+    const maxDescriptionLength = 100;
     const [currentPage, setCurrentPage] = useState<number>(getCurrentPage());
-    const [searchTerm, setSearchTerm] = useState<string>(() => {
-        if (typeof window !== 'undefined') {
-            return new URLSearchParams(window.location.search).get('query') || '';
-        }
-        return '';
-    });
+    const [searchTerm, setSearchTerm] = useState<string>('');
+	const [searchQuery, setSearchQuery] = useState<SearchQuery>({
+		page: getCurrentPage(),
+		query: '',
+	  });
 
-    const updateURL = (page: number, searchTerm?: string) => {
-        const searchParams = new URLSearchParams(window.location.search);
-        searchParams.set('page', page.toString());
-        if (searchTerm !== undefined) {
-            searchParams.set('query', searchTerm);
-            setSearchTerm(searchTerm); // Update searchTerm state
-        }
-        window.history.pushState(null, '', '?' + searchParams.toString());
-    };
+	  const searchParams = useSearchParams();
+	  const pathname = usePathname();
+	  const router = useRouter();
+
+    const { data, isLoading, isError, error } = useGetComicVineIssues(searchTerm, currentPage, pageSize);
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
-        updateURL(page, searchTerm);
+		setSearchQuery({ ...searchQuery, page });
     };
 
     const handleSearchTerm = useDebouncedCallback((term: string) => {
-        updateURL(1, term);
+        setSearchTerm(term);
+        setCurrentPage(1);
+		setSearchQuery({ ...searchQuery, query: term, page: 1 });
     }, 300);
 
 	useEffect(() => {
-        async function fetchIssues() {
-            try {
-                setIsLoading(true);
-                let apiUrl = `/api/issues?page=${currentPage}&limit=${pageSize}`;
-
-                // Use searchTerm state instead of reading from URL
-                if (searchTerm) {
-					setIsLoading(true);
-					const offset = (currentPage - 1) * pageSize;
-                    apiUrl += `&query=${encodeURIComponent(searchTerm)}&limit=${pageSize}&offset=${offset}`;
-                }
-
-                const response = await fetch(apiUrl);
-                const data = await response.json();
-                setComics(data.results);
-                setTotalComics(data.number_of_total_results);
-                setIsLoading(false);
-            } catch (error) {
-                console.error("Error fetching data:", error);
-                setIsLoading(false);
+        const params = new URLSearchParams(searchParams);
+        Object.keys(searchQuery).forEach((key) => {
+            if (searchQuery[key]) {
+                params.set(key, searchQuery[key].toString());
+            } else {
+                params.delete(key);
             }
-        }
+        });
+        const queryString = params.toString();
+        const updatedPath = queryString ? `${pathname}?${queryString}` : pathname;
+        router.push(updatedPath, undefined, );
+    }, [searchQuery, searchParams, pathname, router]);
 
-        fetchIssues();
-    }, [currentPage, pageSize, searchTerm]);
+    if (isLoading) {
+        return (
+            <Center h="100vh">
+                <Spinner size="xl" />
+            </Center>
+        );
+    }
 
-	// useEffect(() => {
-	// 	// Fetch data when URL params change
-	// 	async function fetchIssuesFromParams() {
-	// 		try {
-	// 			setIsLoading(true);
-	// 			const response = await fetch(
-	// 				`/api/issues?page=${currentPage}&limit=${pageSize}`
-	// 			);
-	// 			const data = await response.json();
-	// 			setComics(data.results);
-	// 			setTotalComics(data.total);
-	// 			setIsLoading(false);
-	// 		} catch (error) {
-	// 			console.error("Error fetching data:", error);
-	// 			setIsLoading(false);
-	// 		}
-	// 	}
+    if (isError) {
+        return <div>Error: {error.message}</div>;
+    }
 
-	// 	fetchDataFromParams();
-	// }, [ pathname, currentPage]);
 
-	if (isLoading) {
-		return (
-			<Center h="100vh">
-				<Spinner size="xl" />
-			</Center>
-		);
-	}
 
 	return (
 		<Container maxW="container.xl" centerContent p={4}>
 			<SearchBox onSearch={handleSearchTerm} />
 			<SimpleGrid columns={{ base: 1, md: 3 }} spacing={10} width="100%">
-				{comics.map((comic) => {
+				{data?.results.map((comic: ComicVine) => {
 					const plainDescription = htmlToText(
 						comic.description || "",
 						{
@@ -220,9 +166,9 @@ const Issues: NextPage = () => {
 			</SimpleGrid>
 			<div style={{ marginTop: "2rem" }}>
 				<ComicsPagination
-					currentPage={currentPage}
-					totalPages={Math.ceil(totalComics / pageSize)}
-					onPageChange={handlePageChange}
+					  currentPage={currentPage}
+					  totalPages={Math.ceil(data?.total / pageSize)}
+					  onPageChange={handlePageChange}
 				/>
 			</div>
 		</Container>
