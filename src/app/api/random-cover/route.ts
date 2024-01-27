@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ComicIssue, ComicIssuesResponse } from "@/types/metron.types";
 
-export async function getRandomComicCover(): Promise<ComicIssue | null> {
+export async function getRandomComicCover(){
     const authHeader = process.env.METRON_API_AUTH_HEADER;
     if (!authHeader) {
         console.error('Authorization header is not set');
