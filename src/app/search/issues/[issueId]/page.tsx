@@ -41,7 +41,7 @@ const IssuePage: NextPage = () => {
 			return null;
 		};
 
-		async function fetchData(issueId: string) {
+		async function fetchIssue(issueId: string) {
 			try {
 				setIsLoading(true);
 				const response = await fetch(`/api/issues/${issueId}`);
@@ -56,7 +56,7 @@ const IssuePage: NextPage = () => {
 
 		const issueId = getIssueIdFromURL();
 		if (issueId) {
-			fetchData(issueId);
+			fetchIssue(issueId);
 		}
 	}, []);
 

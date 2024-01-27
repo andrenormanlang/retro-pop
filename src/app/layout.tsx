@@ -2,6 +2,7 @@ import Navbar from "../components/partials/navbar";
 import { Box, ChakraProvider, ColorModeProvider } from "@chakra-ui/react";
 import './globals.css'
 import type { Metadata } from 'next'
+import Providers from "@/lib/query-provider";
 
 
 
@@ -27,11 +28,14 @@ export default function RootLayout({
 					useSystemColorMode: true,
 				}}
 			>
+				<Providers>
 					<Navbar />
 					<Box mt="8rem">
 
 					{children}
 					</Box>
+
+				</Providers>
 					</ColorModeProvider>
 		</ChakraProvider>
 

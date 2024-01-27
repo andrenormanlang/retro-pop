@@ -44,10 +44,6 @@ const Issues: NextPage = () => {
 	const maxDescriptionLength = 100;
 	const [totalComics, setTotalComics] = useState<number>(0);
 
-
-	const pathname = usePathname();
-	// const { replace } = useRouter();
-
 	const getCurrentPage = () => {
         if (typeof window !== 'undefined') {
             const searchParams = new URLSearchParams(window.location.search);
@@ -56,68 +52,79 @@ const Issues: NextPage = () => {
         return 1;
     };
     const [currentPage, setCurrentPage] = useState<number>(getCurrentPage());
+    const [searchTerm, setSearchTerm] = useState<string>(() => {
+        if (typeof window !== 'undefined') {
+            return new URLSearchParams(window.location.search).get('query') || '';
+        }
+        return '';
+    });
 
-	const updateURL = (page: number, searchTerm?: string) => {
+    const updateURL = (page: number, searchTerm?: string) => {
         const searchParams = new URLSearchParams(window.location.search);
         searchParams.set('page', page.toString());
         if (searchTerm !== undefined) {
             searchParams.set('query', searchTerm);
+            setSearchTerm(searchTerm); // Update searchTerm state
         }
         window.history.pushState(null, '', '?' + searchParams.toString());
     };
 
-	const handlePageChange = (page: number) => {
+    const handlePageChange = (page: number) => {
         setCurrentPage(page);
-        updateURL(page);
+        updateURL(page, searchTerm);
     };
 
-	const handleSearchTerm = useDebouncedCallback((term: string) => {
+    const handleSearchTerm = useDebouncedCallback((term: string) => {
         updateURL(1, term);
     }, 300);
 
-
 	useEffect(() => {
-		async function fetchData() {
-			try {
-				setIsLoading(true);
-				const response = await fetch(
-					`/api/issues?page=${currentPage}&limit=${pageSize}`
-				);
-				const data = await response.json();
-				setComics(data.results);
-				setTotalComics(data.total);
-				setIsLoading(false);
-			} catch (error) {
-				console.error("Error fetching data:", error);
-				setIsLoading(false);
-			}
-		}
+        async function fetchIssues() {
+            try {
+                setIsLoading(true);
+                let apiUrl = `/api/issues?page=${currentPage}&limit=${pageSize}`;
 
-		if (typeof window !== 'undefined') {
-            fetchData();
+                // Use searchTerm state instead of reading from URL
+                if (searchTerm) {
+					setIsLoading(true);
+					const offset = (currentPage - 1) * pageSize;
+                    apiUrl += `&query=${encodeURIComponent(searchTerm)}&limit=${pageSize}&offset=${offset}`;
+                }
+
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+                setComics(data.results);
+                setTotalComics(data.number_of_total_results);
+                setIsLoading(false);
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                setIsLoading(false);
+            }
         }
-	}, [currentPage]);
 
-	useEffect(() => {
-		// Fetch data when URL params change
-		async function fetchDataFromParams() {
-			try {
-				setIsLoading(true);
-				const response = await fetch(
-					`/api/issues?page=${currentPage}&limit=${pageSize}`
-				);
-				const data = await response.json();
-				setComics(data.results);
-				setTotalComics(data.total);
-				setIsLoading(false);
-			} catch (error) {
-				console.error("Error fetching data:", error);
-				setIsLoading(false);
-			}
-		}
+        fetchIssues();
+    }, [currentPage, pageSize, searchTerm]);
 
-		fetchDataFromParams();
-	}, [ pathname, currentPage]);
+	// useEffect(() => {
+	// 	// Fetch data when URL params change
+	// 	async function fetchIssuesFromParams() {
+	// 		try {
+	// 			setIsLoading(true);
+	// 			const response = await fetch(
+	// 				`/api/issues?page=${currentPage}&limit=${pageSize}`
+	// 			);
+	// 			const data = await response.json();
+	// 			setComics(data.results);
+	// 			setTotalComics(data.total);
+	// 			setIsLoading(false);
+	// 		} catch (error) {
+	// 			console.error("Error fetching data:", error);
+	// 			setIsLoading(false);
+	// 		}
+	// 	}
+
+	// 	fetchDataFromParams();
+	// }, [ pathname, currentPage]);
 
 	if (isLoading) {
 		return (
