@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
 	Box,
 	Image,
@@ -19,49 +19,24 @@ import {
 	Spinner,
 	SimpleGrid,
 } from "@chakra-ui/react";
-import { ComicVineIssue } from "@/types/comic.types";
-import { htmlToText } from "html-to-text";
+import { CharacterCredit, PersonCredit } from "@/types/comic.types";
 import { ArrowBackIcon } from "@chakra-ui/icons";
 import { NextPage } from "next";
+import { useGetComicVineIssue } from "@/hooks/useComicVine";
 
 const IssuePage: NextPage = () => {
-	const [comic, setComic] = useState<ComicVineIssue | null>(null);
+	// const [comic, setComic] = useState<ComicVineIssue | null>(null);
 	const router = useRouter();
-	const [isLoading, setIsLoading] = useState(false);
+	const [ setIsLoading] = useState(false);
 	const bgColor = useColorModeValue("white", "gray.800");
 	const borderColor = useColorModeValue("gray.200", "gray.700");
+	const pathname = usePathname();
+  	const issueId = pathname.split('/').pop() || '';
 
-	useEffect(() => {
-		// Function to extract issue ID from URL
-		const getIssueIdFromURL = () => {
-			if (typeof window !== "undefined") {
-				const url = new URL(window.location.href);
-				return url.pathname.split("/").pop();
-			}
-			return null;
-		};
-
-		async function fetchIssue(issueId: string) {
-			try {
-				setIsLoading(true);
-				const response = await fetch(`/api/issues/${issueId}`);
-				const data = await response.json();
-				setComic(data.results);
-				setIsLoading(false);
-			} catch (error) {
-				console.error("Error fetching issue data:", error);
-				setIsLoading(false);
-			}
-		}
-
-		const issueId = getIssueIdFromURL();
-		if (issueId) {
-			fetchIssue(issueId);
-		}
-	}, []);
+	  const { data: comic, isLoading, isError, error } = useGetComicVineIssue(issueId);
 
 	const handleBack = () => {
-		// Assuming the grid page is the homepage, you can replace '/' with the path you need
+		
 		router.push("/search/issues");
 	};
 
@@ -74,12 +49,40 @@ const IssuePage: NextPage = () => {
 		return new Date(dateString).toLocaleDateString(undefined, options);
 	};
 
-	if (!comic)
+	if (isLoading)
 		return (
 			<Center h="100vh">
 				<Spinner size="xl" />
 			</Center>
+	);
+
+	if (isError) {
+		return (
+			<div style={{
+				display: 'flex',
+				justifyContent: 'center',
+				alignItems: 'center',
+				height: '100vh', // Full viewport height
+				fontFamily: '"Bangers", cursive', // Assuming "Bangers" font is loaded
+				fontSize: '1.5rem', // Larger font size
+				color: 'red', // Red color for the error message
+				textAlign: 'center',
+				padding: '20px',
+				backgroundColor: '#f0f0f0', // Light background for visibility
+				borderRadius: '10px',
+				boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)' // Optional shadow for better appearance
+			}}>
+				Error: {error.message}
+			</div>
 		);
+	}
+
+	const imageUrl = comic.results?.image?.original_url || 'defaultImageUrl';
+const volumeName = comic.results?.volume?.name || 'Unknown Volume';
+	console.log('imageUrl', imageUrl);
+	const coverDate = comic.results?.cover_date ? formatDate(comic.results.cover_date) : 'Invalid date';
+	const issueNumber = comic.results?.issue_number || 'N/A';
+const description = comic.results?.description || 'No description available.';
 
 	return (
 		<>
@@ -112,7 +115,7 @@ const IssuePage: NextPage = () => {
 							borderRadius="md"
 							boxSize={{ base: "100%", md: "600px" }} // Adjust the size as you like
 							objectFit="contain"
-							src={comic.image.original_url}
+							src={imageUrl}
 							alt={`Cover of ${comic.name}`}
 							mr={{ md: 1 }}
 						/>
@@ -124,14 +127,14 @@ const IssuePage: NextPage = () => {
 									letterSpacing="0.05em"
 									size="lg"
 									colorScheme="blue"
-								>{`Issue #${comic.issue_number}`}</Tag>
+								>{`Issue #${issueNumber}`}</Tag>
 								<Tag
 									fontFamily="Bangers"
 									letterSpacing="0.05em"
 									size="lg"
 									colorScheme="green"
 								>
-									{formatDate(comic.cover_date)}
+									{coverDate}
 								</Tag>
 							</HStack>
 							<Heading
@@ -141,7 +144,7 @@ const IssuePage: NextPage = () => {
 								textAlign="start"
 								size="lg"
 							>
-								{comic.volume.name}
+								{volumeName}
 							</Heading>
 
 							<Box
@@ -153,10 +156,10 @@ const IssuePage: NextPage = () => {
 								borderColor={borderColor}
 								maxWidth="600px"
 							>
-								{comic.description ? (
+								{description ? (
 									<div
 										dangerouslySetInnerHTML={{
-											__html: comic.description,
+											__html: comic.results.description,
 										}}
 									/>
 								) : (
@@ -186,8 +189,8 @@ const IssuePage: NextPage = () => {
 							Character Credits:
 						</Heading>
 						<SimpleGrid columns={{ base: 2, md: 3 }} spacing={4}>
-							{comic.character_credits &&
-								comic.character_credits.map((character) => (
+							{comic.results?.character_credits &&
+								comic.results?.character_credits.map((character: CharacterCredit) => (
 									<Box
 										key={character.id}
 										p={2}
@@ -211,8 +214,8 @@ const IssuePage: NextPage = () => {
 							Person Credits:
 						</Heading>
 						<SimpleGrid columns={{ base: 2, md: 3 }} spacing={4}>
-							{comic.person_credits &&
-								comic.person_credits.map((person) => (
+							{comic.results?.person_credits &&
+								comic.results?.person_credits?.map((person: PersonCredit) => (
 									<Box
 										key={person.id}
 										p={2}

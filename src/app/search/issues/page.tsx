@@ -75,9 +75,25 @@ const Issues: NextPage = () => {
     }
 
     if (isError) {
-        return <div>Error: {error.message}</div>;
-    }
-
+		return (
+			<div style={{
+				display: 'flex',
+				justifyContent: 'center',
+				alignItems: 'center',
+				height: '100vh', // Full viewport height
+				fontFamily: '"Bangers", cursive', // Assuming "Bangers" font is loaded
+				fontSize: '1.5rem', // Larger font size
+				color: 'red', // Red color for the error message
+				textAlign: 'center',
+				padding: '20px',
+				backgroundColor: '#f0f0f0', // Light background for visibility
+				borderRadius: '10px',
+				boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)' // Optional shadow for better appearance
+			}}>
+				Error: {error.message}
+			</div>
+		);
+	}
 
 
 	return (

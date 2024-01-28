@@ -29,3 +29,19 @@ export const useGetComicVineIssues = (category: string, page: number, pageSize: 
 
   });
 };
+
+
+const fetchIssue = async (issueId: string) => {
+	const response = await fetch(`/api/issues/${issueId}`);
+	if (!response.ok) {
+	  throw new Error('Network response was not ok');
+	}
+	return response.json();
+  };
+
+  export const useGetComicVineIssue = (issueId: string) => {
+	return useQuery({
+		queryFn: async () => fetchIssue(issueId),
+		queryKey: ['comic', issueId],
+	});
+  };

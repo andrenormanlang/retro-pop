@@ -17,28 +17,29 @@ export type ComicVine = {
 
 
   export type ComicVineIssue = {
-	id: number;
-	name: string;
-	issue_number: string;
-	aliases: string | null;
-	api_detail_url: string;
-	character_credits: CharacterCredit[];
-	concept_credits: ConceptCredit[];
-	cover_date: string;
-	date_added: string;
-	date_last_updated: string;
-	deck: string | null;
-	description: string | null;
-	image: ComicImage;
-	store_date: string;
-	volume: {
-	  api_detail_url: string;
-	  id: number;
-	  name: string;
-	  site_detail_url: string;
+	id?: number;
+	name?: string;
+	issue_number?: string;
+	aliases?: string | null;
+	api_detail_url?: string;
+	character_credits?: CharacterCredit[];
+	concept_credits?: ConceptCredit[];
+	cover_date?: string;
+	date_added?: string;
+	date_last_updated?: string;
+	deck?: string | null;
+	description?: string | null;
+	image?: ComicImage;
+	store_date?: string;
+	volume?: {
+	  api_detail_url?: string;
+	  id?: number;
+	  name?: string;
+	  site_detail_url?: string;
 	};
-	person_credits: PersonCredit[]; // Add this line
+	person_credits?: PersonCredit[];
   };
+
 
   type ComicImage = {
 	icon_url: string;
@@ -53,7 +54,7 @@ export type ComicVine = {
 	image_tags: string;
   };
 
-  type CharacterCredit = {
+ export type CharacterCredit = {
 	api_detail_url: string;
 	id: number;
 	name: string;
@@ -63,14 +64,14 @@ export type ComicVine = {
 	};
   };
 
-  type ConceptCredit = {
+ export type ConceptCredit = {
 	api_detail_url: string;
 	id: number;
 	name: string;
 	site_detail_url: string;
   };
 
-  type PersonCredit = {
+ export type PersonCredit = {
 	api_detail_url: string;
 	id: number;
 	name: string;
