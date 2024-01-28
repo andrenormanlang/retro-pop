@@ -6,7 +6,7 @@ Welcome to my mega project dedicated to lovers and collectors of classic comic b
 
 ## Features
 
-- **Comics Search Engine:** Utilize a powerful search tool linked with Comic Vine, SuperHero & Comic Books  API´s to find your favorite classic comics & characters.
+- **Comics Search Engine:** Utilize a powerful search tool linked with Comic Vine, Metron DB, SuperHero & Comic Books  API´s to find your favorite classic comics & characters.
 - **Comics Webshop:** An easy-to-navigate webshop for selling & purchasing beloved comic book classics.
 - **Community Forum:** A dedicated space for discussions, sharing insights, and connecting with fellow comic book enthusiasts.
 
