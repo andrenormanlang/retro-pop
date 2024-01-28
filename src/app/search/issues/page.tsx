@@ -88,6 +88,8 @@ const Issues: NextPage = () => {
 		(router.push as any)(updatedPath, { shallow: true });
 	}, [searchQuery, searchParams, pathname, router]);
 
+	const validData = data?.results.slice(7);
+
 	if (isLoading) {
 		return (
 			<Center h="100vh">
@@ -168,7 +170,7 @@ const Issues: NextPage = () => {
 					spacing={10}
 					width="100%"
 				>
-					{data?.results.map((comic: ComicVine) => {
+					{validData.map((comic: ComicVine) => {
 						const plainDescription = htmlToText(
 							comic.description || "",
 							{
