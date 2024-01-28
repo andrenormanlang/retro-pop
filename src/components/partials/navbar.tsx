@@ -31,45 +31,82 @@ const Navbar = () => {
 
 	const buttonStyle = {
 		width: "200px", // Existing style
-		fontFamily: "Bangers", // Existing style
-		fontSize: "1.2rem", // Existing style
+		fontWeight: "700", // Existing style
+		fontFamily: "Comic Neue", // Existing style
+		fontSize: "1.3rem", // Existing style
 		color: "white", // Existing style
-		letterSpacing: "0.2em", // Existing style
+		letterSpacing: "normal", // Existing style
 		justifyContent: "center", // Center horizontally
 		alignItems: "center", // Center vertically
 		display: "flex", // Ensure the button uses flexbox
-		height: "40px", // Optional: you might need to adjust the height
+		height: "2rem",
+		my: "0.5rem", // Add vertical margin to each menu item
+		// w: "full",
+		bg: "blue.500", // A more standard blue
+        borderRadius: "md", // Rounded corners
+		outline: "none", // Remove default outline
+        _hover: {
+			bg: "blue.500", // Change the background color on hover
+			color: "white", // Change the text color on hover
+		},
+		_active: {
+			bg: "blue.700", // Change the background color when active/pressed
+			color: "white", // Text color when active/pressed
+		},
+		_focus: {
+			bg: "blue.600", // Background color when focused
+			boxShadow: "outline", // Outline when focused
+		},
 	};
 
 	const customMenuListStyle = {
-		bg: "gray.700", // Background color
+
 		borderColor: "gray.600", // Border color
 		borderWidth: "1px", // Border width
 		borderRadius: "md", // Border radius
 		boxShadow: "lg", // Box shadow
 		minWidth: "200px", // Minimum width
 		// Add other styles as needed
+		fontSize: "10px", // Font size
+        color: "gray.800", // Darker text for readability
+		outline: "none", // Remove default outline
+		margin: "1",
+        _hover: {
+            bg: "blue.600", // Consistent with button hover style
+        },
+        _focus: {
+            bg: "blue.700", // Slightly darker on focus
+            outline: "none", // Remove default outline
+        },
 	};
 
-	// Custom styles for MenuItem
-	const customMenuItemStyle = {
-		fontSize: "10px", // Font size
-		_hover: {
-			bg: "blue.500", // Background color on hover
-			color: "white", // Text color on hover
-		},
-		_focus: {
-			bg: "blue.600", // Background color when focused
-		},
-		// Add other styles as needed
-	};
+	// const customMenuListStyle = {
+    //     // ... [existing styles]
+    //     color: "gray.800", // Darker text for readability
+    //     _hover: {
+    //         bg: "blue.600", // Consistent with button hover style
+    //     },
+    //     _focus: {
+    //         bg: "blue.700", // Slightly darker on focus
+    //         outline: "none", // Remove default outline
+    //     },
+    // };
+
+
+	// const searchButtonStyle = {
+	// 	...buttonStyle, // Include existing button styles
+	// 	_hover: {
+	// 	  bg: colorMode === 'light' ? '#0069d9' : 'desiredDarkModeHoverColor', // Change 'desiredDarkModeHoverColor' to your preferred color for dark mode
+	// 	  color: '#ffffff',
+	// 	},
+	//   };
 
 	const menuItems = [
 
 		{
 			name: "Search",
 			submenu: [
-				{ name: "Issues", href: "/search/issues" },
+				{ name: "Comic Vine", href: "/search/comic-vine" },
 				{ name: "Characters", href: "/search/characters" },
 			],
 		},

@@ -2,7 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 async function fetchIssues(searchTerm: string, page: number, pageSize: number) {
-	const url = new URL('/api/issues', window.location.origin);
+	const url = new URL('/api/comic-vine', window.location.origin);
 
 	url.searchParams.append('page', page.toString());
 	url.searchParams.append('pageSize', pageSize.toString());
@@ -32,7 +32,7 @@ export const useGetComicVineIssues = (category: string, page: number, pageSize: 
 
 
 const fetchIssue = async (issueId: string) => {
-	const response = await fetch(`/api/issues/${issueId}`);
+	const response = await fetch(`/api/comic-vine/${issueId}`);
 	if (!response.ok) {
 	  throw new Error('Network response was not ok');
 	}

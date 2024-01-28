@@ -46,7 +46,7 @@ const IssuePage: NextPage = () => {
 		// Read the page number from the search parameters
 		const page = searchParams.get("page") || "1";
 		// Navigate back to the issues page with the remembered page number
-		router.push(`/search/issues?page=${page}`);
+		router.push(`/search/comic-vine?page=${page}`);
 	};
 
 	const formatDate = (dateString: string) => {

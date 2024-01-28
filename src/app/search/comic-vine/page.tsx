@@ -148,7 +148,7 @@ const Issues: NextPage = () => {
 				<SearchBox onSearch={handleSearchTerm} />
 				{data && (
 					<Box>
-						<Text fontSize="xl" mb={4}>
+						<Text fontSize="1.5em" mb={4} textAlign="center">
 							{searchTerm
 								? `You have ${
 										data.number_of_total_results
@@ -188,7 +188,7 @@ const Issues: NextPage = () => {
 						return (
 							<NextLink
 								href={{
-									pathname: `/search/issues/${comic.id}`,
+									pathname: `/search/comic-vine/${comic.id}`,
 									query: { page: currentPage },
 								}}
 								passHref
