@@ -21,7 +21,7 @@ import { useGetComicVineIssues } from "@/hooks/comic-vine/useComicVine";
 import { getCurrentPage } from "@/helpers/ComicVineIssues/getCurrentPage";
 import { ComicVine, SearchQuery } from "@/types/comic.types";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { useSearchParameters } from "@/hooks/comic-vine/useSearchParametes";
+import { useSearchParameters } from "@/hooks/comic-vine/useSearchParameters";
 
 // Function to format the date as "21, Jan, 2024"
 const formatDate = (dateString: string) => {
