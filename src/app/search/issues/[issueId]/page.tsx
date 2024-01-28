@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
 	Box,
@@ -22,22 +22,31 @@ import {
 import { CharacterCredit, PersonCredit } from "@/types/comic.types";
 import { ArrowBackIcon } from "@chakra-ui/icons";
 import { NextPage } from "next";
-import { useGetComicVineIssue } from "@/hooks/useComicVine";
+import { useGetComicVineIssue } from "@/hooks/comic-vine/useComicVine";
+import { useSearchParams } from "next/navigation";
 
 const IssuePage: NextPage = () => {
 	// const [comic, setComic] = useState<ComicVineIssue | null>(null);
 	const router = useRouter();
-	const [ setIsLoading] = useState(false);
+	const [setIsLoading] = useState(false);
 	const bgColor = useColorModeValue("white", "gray.800");
 	const borderColor = useColorModeValue("gray.200", "gray.700");
 	const pathname = usePathname();
-  	const issueId = pathname.split('/').pop() || '';
+	const issueId = pathname.split("/").pop() || "";
+	const searchParams = useSearchParams();
 
-	  const { data: comic, isLoading, isError, error } = useGetComicVineIssue(issueId);
+	const {
+		data: comic,
+		isLoading,
+		isError,
+		error,
+	} = useGetComicVineIssue(issueId);
 
 	const handleBack = () => {
-		
-		router.push("/search/issues");
+		// Read the page number from the search parameters
+		const page = searchParams.get("page") || "1";
+		// Navigate back to the issues page with the remembered page number
+		router.push(`/search/issues?page=${page}`);
 	};
 
 	const formatDate = (dateString: string) => {
@@ -54,38 +63,64 @@ const IssuePage: NextPage = () => {
 			<Center h="100vh">
 				<Spinner size="xl" />
 			</Center>
-	);
+		);
 
 	if (isError) {
 		return (
-			<div style={{
-				display: 'flex',
-				justifyContent: 'center',
-				alignItems: 'center',
-				height: '100vh', // Full viewport height
-				fontFamily: '"Bangers", cursive', // Assuming "Bangers" font is loaded
-				fontSize: '1.5rem', // Larger font size
-				color: 'red', // Red color for the error message
-				textAlign: 'center',
-				padding: '20px',
-				backgroundColor: '#f0f0f0', // Light background for visibility
-				borderRadius: '10px',
-				boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)' // Optional shadow for better appearance
-			}}>
+			<div
+				style={{
+					display: "flex",
+					justifyContent: "center",
+					alignItems: "center",
+					height: "100vh", // Full viewport height
+					fontFamily: '"Bangers", cursive', // Assuming "Bangers" font is loaded
+					fontSize: "1.5rem", // Larger font size
+					color: "red", // Red color for the error message
+					textAlign: "center",
+					padding: "20px",
+					backgroundColor: "#f0f0f0", // Light background for visibility
+					borderRadius: "10px",
+					boxShadow: "0 4px 8px rgba(0, 0, 0, 0.15)", // Optional shadow for better appearance
+				}}
+			>
 				Error: {error.message}
 			</div>
 		);
 	}
 
-	const imageUrl = comic.results?.image?.original_url || 'defaultImageUrl';
-const volumeName = comic.results?.volume?.name || 'Unknown Volume';
-	console.log('imageUrl', imageUrl);
-	const coverDate = comic.results?.cover_date ? formatDate(comic.results.cover_date) : 'Invalid date';
-	const issueNumber = comic.results?.issue_number || 'N/A';
-const description = comic.results?.description || 'No description available.';
+	const imageUrl = comic.results?.image?.original_url || "defaultImageUrl";
+	const volumeName = comic.results?.volume?.name || "Unknown Volume";
+	console.log("imageUrl", imageUrl);
+	const coverDate = comic.results?.cover_date
+		? formatDate(comic.results.cover_date)
+		: "Invalid date";
+	const issueNumber = comic.results?.issue_number || "N/A";
+	const description =
+		comic.results?.description || "No description available.";
 
 	return (
-		<>
+		<Suspense
+			fallback={
+				<div
+					style={{
+						display: "flex",
+						justifyContent: "center",
+						alignItems: "center",
+						height: "100vh", // Full viewport height
+						fontFamily: '"Bangers", cursive', // Assuming "Bangers" font is loaded
+						fontSize: "1.5rem", // Larger font size
+						color: "red", // Red color for the error message
+						textAlign: "center",
+						padding: "20px",
+						backgroundColor: "#f0f0f0", // Light background for visibility
+						borderRadius: "10px",
+						boxShadow: "0 4px 8px rgba(0, 0, 0, 0.15)", // Optional shadow for better appearance
+					}}
+				>
+					Loading...
+				</div>
+			}
+		>
 			<Container maxW="1150px" p={4}>
 				<Box mb={4}>
 					<Button
@@ -190,18 +225,20 @@ const description = comic.results?.description || 'No description available.';
 						</Heading>
 						<SimpleGrid columns={{ base: 2, md: 3 }} spacing={4}>
 							{comic.results?.character_credits &&
-								comic.results?.character_credits.map((character: CharacterCredit) => (
-									<Box
-										key={character.id}
-										p={2}
-										boxShadow="md"
-										borderRadius="md"
-									>
-										<Text textAlign="start">
-											{character.name}
-										</Text>
-									</Box>
-								))}
+								comic.results?.character_credits.map(
+									(character: CharacterCredit) => (
+										<Box
+											key={character.id}
+											p={2}
+											boxShadow="md"
+											borderRadius="md"
+										>
+											<Text textAlign="start">
+												{character.name}
+											</Text>
+										</Box>
+									)
+								)}
 						</SimpleGrid>
 					</VStack>
 					<VStack spacing={4} w="full" align="start">
@@ -215,26 +252,28 @@ const description = comic.results?.description || 'No description available.';
 						</Heading>
 						<SimpleGrid columns={{ base: 2, md: 3 }} spacing={4}>
 							{comic.results?.person_credits &&
-								comic.results?.person_credits?.map((person: PersonCredit) => (
-									<Box
-										key={person.id}
-										p={2}
-										boxShadow="md"
-										borderRadius="md"
-									>
-										<Text textAlign="start">
-											{person.name}
-										</Text>
-										<Badge colorScheme="blue">
-											{person.role}
-										</Badge>
-									</Box>
-								))}
+								comic.results?.person_credits?.map(
+									(person: PersonCredit) => (
+										<Box
+											key={person.id}
+											p={2}
+											boxShadow="md"
+											borderRadius="md"
+										>
+											<Text textAlign="start">
+												{person.name}
+											</Text>
+											<Badge colorScheme="blue">
+												{person.role}
+											</Badge>
+										</Box>
+									)
+								)}
 						</SimpleGrid>
 					</VStack>
 				</Flex>
 			</Container>
-		</>
+		</Suspense>
 	);
 };
 

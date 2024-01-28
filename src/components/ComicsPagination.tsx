@@ -1,5 +1,4 @@
-import { Box, Button, Stack } from '@chakra-ui/react';
-import { useEffect } from 'react';
+import { Box, Button, Center, Stack } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 
 type ComicsPaginationProps = {
@@ -11,64 +10,44 @@ type ComicsPaginationProps = {
 const ComicsPagination: React.FC<ComicsPaginationProps> = ({ currentPage, totalPages, onPageChange }) => {
   const router = useRouter();
 
-  useEffect(() => {
-    if (currentPage > 65980) {
-      onPageChange(65980);
-      router.push('/issues?page=65980');
-    }
-  }, [currentPage, onPageChange, router]);
-
   const handlePageClick = (page: number) => {
     onPageChange(page);
   };
 
   const goToLastPage = () => {
-    const lastPage = 65980; // Set the last page number directly
-    onPageChange(lastPage);
+    onPageChange(totalPages);
   };
 
   return (
+	<Box>
+	{currentPage === totalPages && (
+	  <Center my={4}>
+		<Box>This is the last page at the moment</Box>
+	  </Center>
+	)}
     <Stack direction="row" spacing={2} align="center" justify="center" my="1rem">
-      <Button onClick={() => onPageChange(1)} disabled={currentPage === 0}>
+      <Button onClick={() => onPageChange(1)} disabled={currentPage === 1}>
         First
       </Button>
-      <Button onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 0}>
+      <Button onClick={() => onPageChange(Math.max(currentPage - 1, 1))} disabled={currentPage === 1}>
         Previous
       </Button>
-      {Array.from({ length: totalPages }).map((_, index) => (
-        <Button
-          key={index + 1}
-          onClick={() => onPageChange(index + 1)}
-          colorScheme={currentPage === index ? 'blue' : 'gray'}
-          variant={currentPage === index ? 'solid' : 'outline'}
-        >
-          {index + 1}
-        </Button>
-      ))}
-      {currentPage < 65977 && (
-        <>
-          <Button
-            onClick={() => onPageChange(currentPage + 1)}
-            disabled={currentPage === totalPages - 1}
-            colorScheme={currentPage === totalPages - 1 ? 'gray' : 'blue'}
-            variant="solid"
-          >
-            Next
-          </Button>
-          <Button
-            onClick={goToLastPage}
-            disabled={currentPage === totalPages - 1}
-            colorScheme={currentPage === totalPages - 1 ? 'gray' : 'blue'}
-            variant="solid"
-          >
-            Last
-          </Button>
-        </>
-      )}
-      {currentPage === 65980 && <Box>This is the last page</Box>}
+      {/* ... additional buttons for page numbers ... */}
+      <Button
+        onClick={() => onPageChange(Math.min(currentPage + 1, totalPages))}
+        disabled={currentPage === totalPages}
+      >
+        Next
+      </Button>
+      <Button
+        onClick={goToLastPage}
+        disabled={currentPage === totalPages}
+      >
+        Last
+      </Button>
     </Stack>
+	</Box>
   );
 };
 
 export default ComicsPagination;
-
