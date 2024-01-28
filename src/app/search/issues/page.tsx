@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { SimpleGrid, Box, Image, Text, Container, Center, Spinner } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import NextLink from "next/link";
@@ -63,7 +63,7 @@ const Issues: NextPage = () => {
         });
         const queryString = params.toString();
         const updatedPath = queryString ? `${pathname}?${queryString}` : pathname;
-        router.push(updatedPath, undefined, );
+		(router.push as any)(updatedPath, { shallow: true });
     }, [searchQuery, searchParams, pathname, router]);
 
     if (isLoading) {
@@ -81,6 +81,7 @@ const Issues: NextPage = () => {
 
 
 	return (
+		<Suspense fallback={<div>Loading...</div>}>
 		<Container maxW="container.xl" centerContent p={4}>
 			<SearchBox onSearch={handleSearchTerm} />
 			<SimpleGrid columns={{ base: 1, md: 3 }} spacing={10} width="100%">
@@ -172,6 +173,7 @@ const Issues: NextPage = () => {
 				/>
 			</div>
 		</Container>
+		</Suspense>
 	);
 };
 

@@ -9,7 +9,7 @@ const SearchBox: React.FC<SearchComponentProps> = ({ onSearch }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
   const handleSearch = () => {
-	console.log("Search button clicked"); // Add this line for debugging
+	
 	onSearch(searchTerm);
 	if (typeof window !== "undefined") {
 	  const searchParams = new URLSearchParams(window.location.search);

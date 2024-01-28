@@ -1,21 +1,23 @@
 
 import { useQuery } from '@tanstack/react-query';
 
-async function fetchIssues(category: string, page: number, pageSize: number) {
-  // Build the correct URL based on the category, page, and pageSize
-  const url = new URL('/api/issues', window.location.origin);
+async function fetchIssues(searchTerm: string, page: number, pageSize: number) {
+	const url = new URL('/api/issues', window.location.origin);
 
-  url.searchParams.append('page', page.toString());
-  url.searchParams.append('pageSize', pageSize.toString());
+	url.searchParams.append('page', page.toString());
+	url.searchParams.append('pageSize', pageSize.toString());
 
-  // Fetch data from the API
-  const response = await fetch(url.toString());
-  if (!response.ok) {
-    throw new Error(`API call failed with status: ${response.status}`);
+	if (searchTerm) {
+	  url.searchParams.append('query', searchTerm);
+	}
+
+	const response = await fetch(url.toString());
+	if (!response.ok) {
+	  throw new Error(`API call failed with status: ${response.status}`);
+	}
+
+	return response.json();
   }
-
-  return response.json();
-}
 
 export const useGetComicVineIssues = (category: string, page: number, pageSize: number) => {
   // The query key is an array that includes 'comics', category, and page.
