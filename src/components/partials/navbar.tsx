@@ -32,10 +32,11 @@ const Navbar = () => {
 	const buttonStyle = {
 		width: "200px", // Existing style
 		fontWeight: "700", // Existing style
-		fontFamily: "Comic Neue", // Existing style
+		fontFamily: "Bangers", // Existing style
 		fontSize: "1.3rem", // Existing style
+		letterSpacing: "0.2rem", // Existing style
 		color: "white", // Existing style
-		letterSpacing: "normal", // Existing style
+	
 		justifyContent: "center", // Center horizontally
 		alignItems: "center", // Center vertically
 		display: "flex", // Ensure the button uses flexbox
