@@ -9,20 +9,23 @@ import {
   Container,
   Center,
   Spinner,
+  Button,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import NextLink from "next/link";
 import type { NextPage } from "next";
 import SearchBox from "@/components/SearchBox";
-import ComicsPagination from "@/components/ComicsPagination";
 import { useDebouncedCallback } from "use-debounce";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useGetSuperheroes } from "@/hooks/superhero-api/useGetSuperhero";
 import { useSearchParameters } from "@/hooks/comic-vine/useSearchParameters";
 import { Superheroes } from "@/types/superheroes.types";
+import ComicsPagination from "@/components/ComicsPagination";
 
 const Superheroes: NextPage = () => {
   const pageSize = 16;
+  const router = useRouter();
+
   const {
     searchTerm,
     setSearchTerm,
@@ -37,6 +40,8 @@ const Superheroes: NextPage = () => {
   );
 
   // ... rest of the handlePageChange and handleSearchTerm functions
+   // Handle the page change
+
 
   // ... useEffect for updating URL parameters
 
@@ -78,8 +83,8 @@ if (isError) {
         {data && (
           // ... Displaying search results and pagination info
         )} */}
-        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={10} width="100%">
-          {data?.map((hero : Superheroes) => (
+        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={30} width="100%">
+		{data && Array.isArray(data.superheroes) && data.superheroes.map((hero: Superheroes) => (
             <NextLink
               href={`/search/superhero-api/${hero.id}`}
               passHref
@@ -96,7 +101,7 @@ if (isError) {
                   alignItems="center"
                   justifyContent="space-between"
                   minH="500px"
-				  minW="600px"
+				  minW="300px"
                 >
                   <Image
                     src={hero.images.lg}
@@ -105,13 +110,13 @@ if (isError) {
 					maxH="300px"
                     objectFit="contain"
                   />
-                  <Text fontWeight="bold" fontSize="lg" noOfLines={1} textAlign="center">
+                  <Text fontWeight="bold" fontSize="1.5rem" noOfLines={1} textAlign="center">
                     {hero.name}
                   </Text>
-                  <Text fontWeight="bold" fontSize="sm" noOfLines={1} textAlign="center">
+                  <Text fontWeight="bold" fontSize="1.2rem" noOfLines={1} textAlign="center">
                     first appearance: {hero.biography.firstAppearance}
                   </Text>
-                  <Text fontWeight="bold" fontSize="md" noOfLines={1} textAlign="center">
+                  <Text fontWeight="bold" fontSize="1.2rem" noOfLines={1} textAlign="center">
                     publisher: {hero.biography.publisher}
                   </Text>
                   {/* Display other hero details as needed */}
@@ -120,11 +125,15 @@ if (isError) {
             </NextLink>
           ))}
         </SimpleGrid>
-        {/* <ComicsPagination
-          currentPage={currentPage}
-          totalPages={Math.ceil(data?.number_of_total_results / pageSize)}
-          onPageChange={handlePageChange}
-        /> */}
+		<ComicsPagination
+              currentPage={currentPage}
+              totalPages={data?.totalPages}
+              onPageChange={(page) => {
+                setCurrentPage(page);
+                // Optionally update the URL, if you want to keep the page state in sync with the URL
+                router.push(`/search/superhero-api?page=${page}`);
+              }}
+            />
       </Container>
     </Suspense>
   );

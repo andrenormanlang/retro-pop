@@ -30,13 +30,18 @@ export async function GET(request: NextRequest) {
         let data = await response.json();
 
         // Paginate data if fetching all superheroes
-        if (!searchTerm) {
+      
             const startIndex = (page - 1) * limit;
-            const endIndex = startIndex + limit;
-            data = data.slice(startIndex, endIndex);
-        }
+        const endIndex = startIndex + limit;
+        const paginatedData = searchTerm ? data : data.slice(startIndex, endIndex);
 
-        return new NextResponse(JSON.stringify(data), {
+
+        return new NextResponse(JSON.stringify(({
+            superheroes: paginatedData,
+            currentPage: page,
+            totalPages: searchTerm ? 1 : Math.ceil(data.length / limit),
+            totalCount: data.length
+        }),), {
             headers: {
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*',
