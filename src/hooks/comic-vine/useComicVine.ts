@@ -20,8 +20,7 @@ async function fetchIssues(searchTerm: string, page: number, pageSize: number) {
   }
 
 export const useGetComicVineIssues = (category: string, page: number, pageSize: number) => {
-  // The query key is an array that includes 'comics', category, and page.
-  // The queryFn and options are part of an object passed as the second argument.
+  
   return useQuery({
 	  queryFn: async () => fetchIssues(category, page, pageSize),
 	  queryKey: ['comics', category, page],

@@ -36,7 +36,7 @@ const Navbar = () => {
 		fontSize: "1.3rem", // Existing style
 		letterSpacing: "0.2rem", // Existing style
 		color: "white", // Existing style
-	
+
 		justifyContent: "center", // Center horizontally
 		alignItems: "center", // Center vertically
 		display: "flex", // Ensure the button uses flexbox
@@ -108,7 +108,7 @@ const Navbar = () => {
 			name: "Search",
 			submenu: [
 				{ name: "Comic Vine", href: "/search/comic-vine" },
-				{ name: "Characters", href: "/search/characters" },
+				{ name: "Characters", href: "/search/superhero-api" },
 			],
 		},
 		{ name: "Share / Buy", href: "/shared-comics" },
