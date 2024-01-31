@@ -1,34 +1,44 @@
-import { Input, Button, Stack } from '@chakra-ui/react';
-import { useState } from 'react';
+import { Input, Button, Stack } from "@chakra-ui/react";
+import { FormEvent, useState } from "react";
 
 type SearchComponentProps = {
-  onSearch: (term: string) => void;
+	onSearch: (term: string) => void;
 };
 
 const SearchBox: React.FC<SearchComponentProps> = ({ onSearch }) => {
-  const [searchTerm, setSearchTerm] = useState('');
+	const [searchTerm, setSearchTerm] = useState("");
 
-  const handleSearch = () => {
-	
-	onSearch(searchTerm);
-	if (typeof window !== "undefined") {
-	  const searchParams = new URLSearchParams(window.location.search);
-	  searchParams.set("query", searchTerm);
-	  window.history.pushState(null, "", "?" + searchParams.toString());
-	}
-  };
+	const handleSearch = (e: FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		onSearch(searchTerm);
+		if (typeof window !== "undefined") {
+			const searchParams = new URLSearchParams(window.location.search);
+			searchParams.set("query", searchTerm);
+			window.history.pushState(null, "", "?" + searchParams.toString());
+		}
+	};
 
-  return (
-    <Stack direction="row" spacing={6} width={400} align="center" mb={5} position={'relative'} zIndex={5}>
-      <Input
-        type="text"
-        placeholder="Search..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-      />
-      <Button onClick={handleSearch}>Search</Button>
-    </Stack>
-  );
+	return (
+		<form onSubmit={handleSearch}>
+			<Stack
+				direction="row"
+				spacing={6}
+				width={400}
+				align="center"
+				mb={5}
+				position={"relative"}
+				zIndex={5}
+			>
+				<Input
+					type="text"
+					placeholder="Search..."
+					value={searchTerm}
+					onChange={(e) => setSearchTerm(e.target.value)}
+				/>
+				<Button type="submit">Search</Button>
+			</Stack>
+		</form>
+	);
 };
 
 export default SearchBox;

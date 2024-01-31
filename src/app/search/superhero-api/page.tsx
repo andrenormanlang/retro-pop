@@ -9,8 +9,9 @@ import {
   Container,
   Center,
   Spinner,
-  Button,
+  Button, Input, InputGroup, InputRightElement, IconButton
 } from "@chakra-ui/react";
+import { SearchIcon } from "@chakra-ui/icons";
 import { motion } from "framer-motion";
 import NextLink from "next/link";
 import type { NextPage } from "next";
@@ -21,10 +22,12 @@ import { useGetSuperheroes } from "@/hooks/superhero-api/useGetSuperhero";
 import { useSearchParameters } from "@/hooks/comic-vine/useSearchParameters";
 import { Superheroes } from "@/types/superheroes.types";
 import ComicsPagination from "@/components/ComicsPagination";
+import { Superhero } from "@/types/superhero.types";
 
 const Superheroes: NextPage = () => {
   const pageSize = 16;
   const router = useRouter();
+
 
   const {
     searchTerm,
@@ -39,11 +42,28 @@ const Superheroes: NextPage = () => {
     pageSize
   );
 
-  // ... rest of the handlePageChange and handleSearchTerm functions
-   // Handle the page change
+  const handleSearchTerm = useDebouncedCallback((value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  }, 500);
 
 
   // ... useEffect for updating URL parameters
+  useEffect(() => {
+	const url = new URL(window.location.href);
+	url.searchParams.set('page', currentPage.toString());
+	if (searchTerm) {
+	  url.searchParams.set('query', searchTerm);
+	} else {
+	  url.searchParams.delete('query');
+	}
+	// Convert URL object to a string
+	const urlString = url.toString();
+	router.push(urlString, undefined);
+  }, [searchTerm, currentPage, router]);
+
+  const isSearchMode = data && data.superheroes && data.superheroes.results;
+
 
   if (isLoading)
   return (
@@ -79,12 +99,57 @@ if (isError) {
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <Container maxW="container.xl" centerContent p={4}>
-        {/* <SearchBox onSearch={handleSearchTerm} />
-        {data && (
-          // ... Displaying search results and pagination info
-        )} */}
+        <SearchBox onSearch={handleSearchTerm} />
         <SimpleGrid columns={{ base: 1, md: 2 }} spacing={30} width="100%">
-		{data && Array.isArray(data.superheroes) && data.superheroes.map((hero: Superheroes) => (
+		{data &&(
+			isSearchMode ?
+			(data.superheroes.results ?
+			data.superheroes.results.map((hero: Superhero) => (
+            <NextLink
+              href={`/search/superhero-api/${hero.id}`}
+              passHref
+              key={hero.id}
+            >
+			<Box alignContent="center">
+
+              <motion.div whileHover={{ scale: 1.05 }}>
+                <Box
+                  boxShadow="0 4px 8px rgba(0,0,0,0.1)"
+                  rounded="sm"
+                  overflow="hidden"
+                  p={4}
+                  display="flex"
+                  flexDirection="column"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  minH="500px"
+				  minW="300px"
+                >
+                  <Image
+                    src={hero.image.url}
+                    alt={hero.name}
+					maxW="300px"
+					maxH="300px"
+                    objectFit="contain"
+                  />
+                  <Text fontWeight="bold" fontSize="1.5rem" noOfLines={1} textAlign="center">
+                    {hero.name}
+                  </Text>
+                  <Text fontWeight="bold" fontSize="1.2rem" noOfLines={1} textAlign="center">
+                    first appearance: {hero.biography['first-appearance']}
+                  </Text>
+                  <Text fontWeight="bold" fontSize="1.2rem" noOfLines={1} textAlign="center">
+                    publisher: {hero.biography.publisher}
+                  </Text>
+                  {/* Display other hero details as needed */}
+                </Box>
+              </motion.div>
+			</Box>
+            </NextLink>
+          )) :
+		   null
+		  ) :
+			data && Array.isArray(data.superheroes) && data.superheroes.map((hero: Superheroes) => (
             <NextLink
               href={`/search/superhero-api/${hero.id}`}
               passHref
@@ -123,17 +188,19 @@ if (isError) {
                 </Box>
               </motion.div>
             </NextLink>
-          ))}
+			))
+		)}
         </SimpleGrid>
-		<ComicsPagination
-              currentPage={currentPage}
-              totalPages={data?.totalPages}
-              onPageChange={(page) => {
-                setCurrentPage(page);
-                // Optionally update the URL, if you want to keep the page state in sync with the URL
-                router.push(`/search/superhero-api?page=${page}`);
-              }}
-            />
+		{!isSearchMode && (
+			<ComicsPagination
+			  currentPage={currentPage}
+			  totalPages={data?.totalPages}
+			  onPageChange={(page) => {
+				setCurrentPage(page);
+				router.push(`/search/superhero-api?page=${page}`);
+			  }}
+			/>
+		  )}
       </Container>
     </Suspense>
   );

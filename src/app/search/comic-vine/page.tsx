@@ -161,7 +161,7 @@ const Issues: NextPage = () => {
 								  } issues from Comic Vine in ${Math.ceil(
 										data.number_of_total_results /
 											data.limit
-								  )} pages`}
+							)} pages`}
 						</Text>
 					</Box>
 				)}

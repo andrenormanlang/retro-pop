@@ -21,10 +21,13 @@ interface PowerStats {
 
 interface Biography {
     fullName: string;
+	'full-name': string;
     alteregos: string;
+	'alter-egos': string;
     aliases: string[];
     placeOfBirth: string;
-    firstAppearance: string;
+	'place-of-birth': string;
+    'first-appearance': string;
     publisher: string;
     alignment: string;
 }
@@ -35,7 +38,9 @@ interface Appearance {
     height: string[];
     weight: string[];
     eyeColor: string;
+	'eye-color': string;
     hairColor: string;
+	'hair-color': string;
 }
 
 interface Work {
@@ -45,6 +50,7 @@ interface Work {
 
 interface Connections {
     groupAffiliation: string;
+	'group-affiliation': string;
     relatives: string;
 }
 
