@@ -111,8 +111,8 @@ const Navbar = () => {
 				{ name: "Characters", href: "/search/superhero-api" },
 			],
 		},
-		{ name: "Share / Buy", href: "/shared-comics" },
-		{ name: "Forums", href: "/forums" },
+		// { name: "Share / Buy", href: "/shared-comics" },
+		// { name: "Forums", href: "/forums" },
 	];
 
 	return (
@@ -318,7 +318,7 @@ const Navbar = () => {
 						</Menu>
 
 						{/* Register, Login, and Logout Buttons */}
-						<Box mt={4}>
+						{/* <Box mt={4}>
 							<Button style={buttonStyle} bg="blue" border="1px">
 								Register
 							</Button>
@@ -334,7 +334,7 @@ const Navbar = () => {
 							<Button style={buttonStyle} bg="red" border="1px">
 								Log Out
 							</Button>
-						</Box>
+						</Box> */}
 					</Stack>
 				</motion.div>
 			</Flex>
