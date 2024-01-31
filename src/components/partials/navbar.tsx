@@ -238,7 +238,7 @@ const Navbar = () => {
 								return (
 									<Link
 										key={index}
-										href={item.href}
+										// href={item.href}
 										padding={2}
 										rounded="md"
 										{...buttonStyle}
@@ -302,7 +302,7 @@ const Navbar = () => {
 											<Link
 												key={index}
 												alignContent={"center"}
-												href={item.href}
+												// href={item.href}
 												padding={2}
 												rounded="md"
 												{...buttonStyle}
