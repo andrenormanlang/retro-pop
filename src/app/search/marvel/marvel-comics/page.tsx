@@ -125,7 +125,7 @@ const MarvelComics: NextPage = () => {
 								? data.data.results.map(
 										(marvelComics: MarvelComics) => (
 											<NextLink
-												href={`/search/marvel-api/${marvelComics.id}`}
+												href={`/search/marvel-api/marvel/marvel-comics/${marvelComics.id}`}
 												passHref
 												key={marvelComics.id}
 											>
@@ -185,7 +185,7 @@ const MarvelComics: NextPage = () => {
 							  data.data.results.map(
 									(marvelComics: MarvelComics) => (
 										<NextLink
-											href={`/search/marvel-comics/${marvelComics.id}`}
+											href={`/search/marvel/marvel-comics/${marvelComics.id}`}
 											passHref
 											key={marvelComics.id}
 										>

@@ -6,7 +6,7 @@ async function fetchMarvelComics(searchTerm: string, page: number, pageSize: num
 
     url.searchParams.append('page', page.toString());
     url.searchParams.append('limit', pageSize.toString());
-	
+
 
     if (searchTerm) {
         url.searchParams.append('query', searchTerm);
@@ -41,7 +41,7 @@ async function fetchMarvelComic(comicId: string) {
 }
 
 // This hook uses the fetchSuperhero function to fetch data
-export const useGetSuperhero = (comicId: string) => {
+export const useGetMarvelComic = (comicId: string) => {
   return useQuery({
     queryFn: () => fetchMarvelComic(comicId),
     queryKey: ['comic', comicId],
