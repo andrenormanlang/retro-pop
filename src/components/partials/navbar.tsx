@@ -164,7 +164,7 @@ const Navbar = () => {
 					</Link>
 				</Flex>
 
-				<Flex align="center">
+				<Flex align="">
 					{/* Hamburger Icon */}
 					<IconButton
 						onClick={onToggle}
@@ -233,15 +233,15 @@ const Navbar = () => {
 						align="center"
 						alignContent="center"
 						justify="center"
-						minHeight="100vh"
+						// minHeight="100vh"
 						pt="5rem"
 					>
 						<Stack
 							spacing={4}
 							align="center"
 							justify="center"
-							minHeight="100vh"
-							pt="5rem"
+							// minHeight="100vh"
+							// pt="5rem"
 						>
 							{menuItems.map((item, index) =>
 								item.submenu

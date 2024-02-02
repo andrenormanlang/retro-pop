@@ -16,7 +16,7 @@ import NextLink from "next/link";
 import type { NextPage } from "next";
 import SearchBox from "@/components/SearchBox";
 import { useDebouncedCallback } from "use-debounce";
-import { useRouter} from "next/navigation";
+import { useRouter, useSearchParams} from "next/navigation";
 import { useSearchParameters } from "@/hooks/comic-vine/useSearchParameters";
 import ComicsPagination from "@/components/ComicsPagination";
 import { useGetMarvelComics } from "@/hooks/marvel/useMarvelComics";
@@ -26,7 +26,7 @@ import MarvelPagination from "@/components/MarvelPagination";
 const MarvelComics: NextPage = () => {
 	const pageSize = 16;
 	const router = useRouter();
-
+	const [searchParams, setSearchParams] = useSearchParams();
 
 	  const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -60,6 +60,18 @@ const MarvelComics: NextPage = () => {
 		router.push(urlString, undefined);
 	}, [searchTerm, currentPage, router]);
 
+	useEffect(() => {
+		// Make sure searchParams is a URLSearchParams object
+		const searchParams = new URLSearchParams(window.location.search);
+
+		const page = parseInt(searchParams.get('page') || '1', 10);
+
+		if (!isNaN(page) && page > 0) {
+		  setCurrentPage(page);
+		} else {
+		  setCurrentPage(1);
+		}
+	  }, []);
 	const isSearchMode = data && data.results;
 
 	useEffect(() => {
@@ -119,68 +131,7 @@ const MarvelComics: NextPage = () => {
 					spacing={30}
 					width="100%"
 				>
-					{data &&
-						(isSearchMode
-							? data.data.results
-								? data.data.results.map(
-										(marvelComics: MarvelComics) => (
-											<NextLink
-												href={`/search/marvel-api/marvel/marvel-comics/${marvelComics.id}`}
-												passHref
-												key={marvelComics.id}
-											>
-												<Box alignContent="center">
-													<motion.div
-														whileHover={{
-															scale: 1.05,
-														}}
-													>
-														<Box
-															boxShadow="0 4px 8px rgba(0,0,0,0.1)"
-															rounded="sm"
-															overflow="hidden"
-															p={4}
-															display="flex"
-															flexDirection="column"
-															alignItems="center"
-															justifyContent="space-between"
-															minH="500px"
-															minW="300px"
-														>
-															<Image
-																src={`${marvelComics.thumbnail.path}/portrait_uncanny.${marvelComics.thumbnail.extension}`}
-																alt={
-																	marvelComics.title
-																}
-																maxW="300px"
-																maxH="300px"
-																objectFit="contain"
-															/>
-															<Text
-																fontWeight="bold"
-																fontSize="1.5rem"
-																noOfLines={1}
-																textAlign="center"
-															>
-																{
-																	marvelComics.title
-																}
-															</Text>
-															{/* <Text fontWeight="bold" fontSize="1.2rem" noOfLines={1} textAlign="center">
-                    first appearance: {hero.biography['first-appearance']}
-                  </Text>
-                  <Text fontWeight="bold" fontSize="1.2rem" noOfLines={1} textAlign="center">
-                    publisher: {hero.biography.publisher}
-                  </Text> */}
-															{/* Display other hero details as needed */}
-														</Box>
-													</motion.div>
-												</Box>
-											</NextLink>
-										)
-								  )
-								: null
-							: data.data &&
+					{data.data &&
 							  Array.isArray(data.data.results) &&
 							  data.data.results.map(
 									(marvelComics: MarvelComics) => (
@@ -224,7 +175,7 @@ const MarvelComics: NextPage = () => {
 											</motion.div>
 										</NextLink>
 									)
-							  ))}
+							  )}
 				</SimpleGrid>
 				{!isSearchMode && (
 					<MarvelPagination
