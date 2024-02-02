@@ -88,7 +88,7 @@ const Issues: NextPage = () => {
 		(router.push as any)(updatedPath, { shallow: true });
 	}, [searchQuery, searchParams, pathname, router]);
 
-	const validData = data?.results.slice(7);
+	const validData = data?.results.slice(0);
 
 	if (isLoading) {
 		return (

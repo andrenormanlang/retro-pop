@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
 
 	const urlParams = new URL(request.url).searchParams;
 	const page = parseInt(urlParams.get('page') || '1', 10);
-	const limit = parseInt(urlParams.get('limit') || '16', 10);
+	const limit = parseInt(urlParams.get('limit') || '15', 10);
 	const searchTerm = urlParams.get('query') || '';
 
 	let apiUrl;
