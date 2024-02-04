@@ -121,6 +121,9 @@ const Issues: NextPage = () => {
 		);
 	}
 
+	console.log("currentPage", currentPage);
+	console.log("data", data);
+
 	return (
 		<Suspense
 			fallback={

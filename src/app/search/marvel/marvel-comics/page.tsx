@@ -28,11 +28,12 @@ const MarvelComics: NextPage = () => {
 	const router = useRouter();
 	const [searchParams, setSearchParams] = useSearchParams();
 
+
+
 	  const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
 
-	const { searchTerm, setSearchTerm } =
-		useSearchParameters(1, "");
+	const { searchTerm, setSearchTerm } = useSearchParameters(1, "");
 
 	const { data, isLoading, isError, error } = useGetMarvelComics(
 		searchTerm,
@@ -42,8 +43,9 @@ const MarvelComics: NextPage = () => {
 
 	const handleSearchTerm = useDebouncedCallback((value: string) => {
 		setSearchTerm(value);
-		setCurrentPage(1);
-	}, 500);
+		setCurrentPage(1); // Reset to page 1 whenever the search term changes
+		// No need for the `newOffset` variable here since we are not passing `newPage`
+	  }, 500);
 
 	console.log("data", data);
 	// ... useEffect for updating URL parameters
@@ -69,22 +71,35 @@ const MarvelComics: NextPage = () => {
 		if (!isNaN(page) && page > 0) {
 		  setCurrentPage(page);
 		} else {
-		  setCurrentPage(1);
+		  setCurrentPage(100);
 		}
 	  }, []);
 	const isSearchMode = data && data.results;
 
 	useEffect(() => {
 		if (data && data.data && data.data.total) {
-		  // Assuming 'data.data.limit' is the number of items per page
-		  const pages = Math.ceil(data.data.total / data.data.limit);
+		  const pages = Math.ceil(data.data.total / pageSize);
 		  setTotalPages(pages);
+		  // If you're still on page 1 after search, you may want to call onPageChange(1) here to force a refetch
 		}
-	  }, [data]);
+	  }, [data, pageSize]);
+
+	  useEffect(() => {
+		const url = new URL(window.location.href);
+		url.searchParams.set("page", currentPage.toString());
+		if (searchTerm) {
+		  url.searchParams.set("query", searchTerm);
+		} else {
+		  url.searchParams.delete("query");
+		}
+		const urlString = url.toString();
+		router.push(urlString, undefined);
+	  }, [searchTerm, currentPage, router]);
+
 
 	  const onPageChange = (newPage: number) => {
 		setCurrentPage(newPage);
-		const newOffset = (newPage - 1) * pageSize;
+		// const newOffset = (newPage - 1) * pageSize;
 		// Now you need to refetch the data with the new offset.
 		// This will depend on how your fetching logic is set up.
 	  };
@@ -120,12 +135,13 @@ const MarvelComics: NextPage = () => {
 			</div>
 		);
 	}
-	console.log("data", data);
-
+	console.log('currentPage', currentPage);
+	console.log('totalPages', totalPages);
+	console.log('data', data);
 	return (
 		<Suspense fallback={<div>Loading...</div>}>
 			<Container maxW="container.xl" centerContent p={4}>
-				<SearchBox onSearch={handleSearchTerm} />
+			<SearchBox onSearch={(value) => handleSearchTerm(value)} />
 				<SimpleGrid
 					columns={{ base: 1, md: 2 }}
 					spacing={30}
@@ -136,7 +152,7 @@ const MarvelComics: NextPage = () => {
 							  data.data.results.map(
 									(marvelComics: MarvelComics) => (
 										<NextLink
-											href={`/search/marvel/marvel-comics/${marvelComics.id}`}
+										href={`/search/marvel/marvel-comics/${marvelComics.id}?page=${currentPage}`}
 											passHref
 											key={marvelComics.id}
 										>

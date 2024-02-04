@@ -17,15 +17,14 @@ export async function GET(request: NextRequest) {
   // Generate a timestamp and hash for the API request
   const ts = new Date().getTime().toString();
   const hash = crypto.createHash('md5').update(ts + privateKey + publicKey).digest('hex');
+  const offset = (page - 1) * limit;
 
-  let apiUrl = `https://gateway.marvel.com:443/v1/public/comics?ts=${ts}&apikey=${publicKey}&hash=${hash}&limit=${limit}`;
+  let apiUrl = `https://gateway.marvel.com:443/v1/public/comics?ts=${ts}&apikey=${publicKey}&hash=${hash}&limit=${limit}&offset=${offset}`;
 
   if (searchTerm) {
     apiUrl += `&titleStartsWith=${encodeURIComponent(searchTerm)}`;
   } else {
-    // Calculate the offset based on the page number
-    const offset = (page - 1) * limit;
-    apiUrl += `&offset=${offset}`;
+   apiUrl
   }
 
   try {
