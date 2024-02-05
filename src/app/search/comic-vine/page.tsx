@@ -41,8 +41,8 @@ const Issues: NextPage = () => {
 		setSearchTerm,
 		currentPage,
 		setCurrentPage,
-		updateUrl
-	  } = useSearchParameters(getCurrentPage(), "");
+		updateUrl,
+	} = useSearchParameters(getCurrentPage(), "");
 	// const [currentPage, setCurrentPage] = useState<number>(getCurrentPage());
 	// const [searchTerm, setSearchTerm] = useState<string>("");
 	const [searchQuery, setSearchQuery] = useState<SearchQuery>({
@@ -54,7 +54,6 @@ const Issues: NextPage = () => {
 	const pathname = usePathname();
 	const router = useRouter();
 
-
 	const { data, isLoading, isError, error } = useGetComicVineIssues(
 		searchTerm,
 		currentPage,
@@ -64,29 +63,41 @@ const Issues: NextPage = () => {
 	const handlePageChange = (page: number) => {
 		setCurrentPage(page);
 		setSearchQuery({ ...searchQuery, page });
+		updateUrl(searchTerm, page);
 	};
 
 	const handleSearchTerm = useDebouncedCallback((term: string) => {
 		setSearchTerm(term);
 		setCurrentPage(1);
+		updateUrl(term, 1);
 		setSearchQuery({ ...searchQuery, query: term, page: 1 });
 	}, 300);
 
+	// useEffect(() => {
+	// 	const params = new URLSearchParams(searchParams);
+	// 	Object.keys(searchQuery).forEach((key) => {
+	// 		if (searchQuery[key]) {
+	// 			params.set(key, searchQuery[key].toString());
+	// 		} else {
+	// 			params.delete(key);
+	// 		}
+	// 	});
+	// 	const queryString = params.toString();
+	// 	const updatedPath = queryString
+	// 		? `${pathname}?${queryString}`
+	// 		: pathname;
+	// 	(router.push as any)(updatedPath, { shallow: true });
+	// }, [searchQuery, searchParams, pathname, router]);
+
 	useEffect(() => {
-		const params = new URLSearchParams(searchParams);
-		Object.keys(searchQuery).forEach((key) => {
-			if (searchQuery[key]) {
-				params.set(key, searchQuery[key].toString());
-			} else {
-				params.delete(key);
-			}
-		});
+		const params = (searchParams);
+
 		const queryString = params.toString();
-		const updatedPath = queryString
-			? `${pathname}?${queryString}`
-			: pathname;
+
+		const updatedPath = `${pathname}?${queryString}`;
 		(router.push as any)(updatedPath, { shallow: true });
 	}, [searchQuery, searchParams, pathname, router]);
+
 
 	const validData = data?.results.slice(0);
 
@@ -164,7 +175,7 @@ const Issues: NextPage = () => {
 								  } issues from Comic Vine in ${Math.ceil(
 										data.number_of_total_results /
 											data.limit
-							)} pages`}
+								  )} pages`}
 						</Text>
 					</Box>
 				)}
@@ -190,10 +201,7 @@ const Issues: NextPage = () => {
 
 						return (
 							<NextLink
-								href={{
-									pathname: `/search/comic-vine/${comic.id}`,
-									query: { page: currentPage },
-								}}
+								href={`/search/comic-vine/${comic.id}?page=${currentPage}&query=${searchTerm}`}
 								passHref
 								key={comic.id}
 							>

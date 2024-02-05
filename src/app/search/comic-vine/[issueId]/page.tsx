@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useEffect, useState } from "react";
+import React, { Suspense, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
 	Box,
@@ -19,16 +19,21 @@ import {
 	Spinner,
 	SimpleGrid,
 } from "@chakra-ui/react";
-import { CharacterCredit, PersonCredit } from "@/types/comic.types";
+import { CharacterCredit, PersonCredit, SearchQuery } from "@/types/comic.types";
 import { ArrowBackIcon } from "@chakra-ui/icons";
 import { NextPage } from "next";
 import { useGetComicVineIssue } from "@/hooks/comic-vine/useComicVine";
 import { useSearchParams } from "next/navigation";
+import { useSearchParameters } from "@/hooks/comic-vine/useSearchParameters";
+import { getCurrentPage } from "@/helpers/ComicVineIssues/getCurrentPage";
 
 const IssuePage: NextPage = () => {
 	// const [comic, setComic] = useState<ComicVineIssue | null>(null);
 	const router = useRouter();
-	const [setIsLoading] = useState(false);
+	const {
+		searchTerm,
+		currentPage,
+	} = useSearchParameters();
 	const bgColor = useColorModeValue("white", "gray.800");
 	const borderColor = useColorModeValue("gray.200", "gray.700");
 	const pathname = usePathname();
@@ -40,14 +45,17 @@ const IssuePage: NextPage = () => {
 		isLoading,
 		isError,
 		error,
-	} = useGetComicVineIssue(issueId);
+	} = useGetComicVineIssue(searchTerm, currentPage, issueId);
 
 	const handleBack = () => {
-		// Read the page number from the search parameters
-		const page = searchParams.get("page") || "1";
-		// Navigate back to the issues page with the remembered page number
-		router.push(`/search/comic-vine?page=${page}`);
+		// Read the page number and search term from the search parameters
+
+
+		// Navigate back to the issues page with both the page number and search term
+		router.push(`/search/comic-vine?page=${currentPage}&query=${encodeURIComponent(searchTerm)}`);
 	};
+
+	console.log('HANDLE BACK', handleBack);
 
 	const formatDate = (dateString: string) => {
 		const options: Intl.DateTimeFormatOptions = {

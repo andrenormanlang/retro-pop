@@ -20,7 +20,7 @@ async function fetchIssues(searchTerm: string, page: number, pageSize: number) {
   }
 
 export const useGetComicVineIssues = (category: string, page: number, pageSize: number) => {
-  
+
   return useQuery({
 	  queryFn: async () => fetchIssues(category, page, pageSize),
 	  queryKey: ['comics', category, page],
@@ -38,9 +38,9 @@ const fetchIssue = async (issueId: string) => {
 	return response.json();
   };
 
-  export const useGetComicVineIssue = (issueId: string) => {
+  export const useGetComicVineIssue = (query: string, page: number, issueId: string) => {
 	return useQuery({
-		queryFn: async () => fetchIssue(issueId),
-		queryKey: ['comic', issueId],
+		queryFn: async () => fetchIssue( issueId),
+		queryKey: ['comic', query, page, issueId],
 	});
   };

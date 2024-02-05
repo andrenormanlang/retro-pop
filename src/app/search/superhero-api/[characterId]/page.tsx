@@ -1,5 +1,6 @@
 "use client";
 
+import { useSearchParameters } from "@/hooks/comic-vine/useSearchParameters";
 import { useGetSuperhero } from "@/hooks/superhero-api/useGetSuperhero";
 import { Superhero } from "@/types/superhero.types";
 import { ArrowBackIcon } from "@chakra-ui/icons";
@@ -22,10 +23,14 @@ import { usePathname, useSearchParams, useRouter } from "next/navigation";
 const SuperheroID = () => {
 	const bgColor = useColorModeValue("white", "gray.800");
 	const borderColor = useColorModeValue("gray.200", "gray.700");
+	const {
+		searchTerm,
+		currentPage,
+	} = useSearchParameters();
 	const pathname = usePathname();
 	const superheroId = pathname.split("/").pop() || "";
-	const { data, isLoading, isError, error } = useGetSuperhero(superheroId);
-	const searchParams = useSearchParams();
+	const { data, isLoading, isError, error } = useGetSuperhero(searchTerm, currentPage, superheroId);
+
 	const router = useRouter();
 
 	const superhero = data as Superhero;
@@ -41,10 +46,12 @@ const SuperheroID = () => {
 
 	const handleBack = () => {
 		// Read the page number from the search parameters
-		const page = searchParams.get("page") || "1";
+
 		// Navigate back to the issues page with the remembered page number
-		router.push(`/search/superhero-api?page=${page}`);
+		router.push(`/search/superhero-api?page=${currentPage}&query=${encodeURIComponent(searchTerm)}`);
 	};
+
+
 
 	console.log("superhero", superhero);
 

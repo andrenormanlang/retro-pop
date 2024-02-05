@@ -26,7 +26,7 @@ export const useSearchParameters = (defaultPage = 1, defaultQuery = "") => {
     const page = parseInt(searchParams.get('page') || defaultPage.toString(), 10);
     setSearchTerm(query);
     setCurrentPage(page);
-  }, [defaultPage, defaultQuery]);
+  }, [ defaultPage, defaultQuery]);
 
   return { searchTerm, setSearchTerm, currentPage, setCurrentPage, updateUrl };
 };

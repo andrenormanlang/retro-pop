@@ -16,7 +16,7 @@ import NextLink from "next/link";
 import type { NextPage } from "next";
 import SearchBox from "@/components/SearchBox";
 import { useDebouncedCallback } from "use-debounce";
-import { useRouter, useSearchParams} from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSearchParameters } from "@/hooks/comic-vine/useSearchParameters";
 import ComicsPagination from "@/components/ComicsPagination";
 import { useGetMarvelComics } from "@/hooks/marvel/useMarvelComics";
@@ -28,10 +28,8 @@ const MarvelComics: NextPage = () => {
 	const router = useRouter();
 	const [searchParams, setSearchParams] = useSearchParams();
 
-
-
-	  const [totalPages, setTotalPages] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
+	const [totalPages, setTotalPages] = useState(0);
+	const [currentPage, setCurrentPage] = useState(1);
 
 	const { searchTerm, setSearchTerm } = useSearchParameters(1, "");
 
@@ -45,7 +43,7 @@ const MarvelComics: NextPage = () => {
 		setSearchTerm(value);
 		setCurrentPage(1); // Reset to page 1 whenever the search term changes
 		// No need for the `newOffset` variable here since we are not passing `newPage`
-	  }, 500);
+	}, 500);
 
 	console.log("data", data);
 	// ... useEffect for updating URL parameters
@@ -66,45 +64,42 @@ const MarvelComics: NextPage = () => {
 		// Make sure searchParams is a URLSearchParams object
 		const searchParams = new URLSearchParams(window.location.search);
 
-		const page = parseInt(searchParams.get('page') || '1', 10);
+		const page = parseInt(searchParams.get("page") || "1", 10);
 
 		if (!isNaN(page) && page > 0) {
-		  setCurrentPage(page);
+			setCurrentPage(page);
 		} else {
-		  setCurrentPage(100);
+			setCurrentPage(100);
 		}
-	  }, []);
+	}, []);
 	const isSearchMode = data && data.results;
 
 	useEffect(() => {
 		if (data && data.data && data.data.total) {
-		  const pages = Math.ceil(data.data.total / pageSize);
-		  setTotalPages(pages);
-		  // If you're still on page 1 after search, you may want to call onPageChange(1) here to force a refetch
+			const pages = Math.ceil(data.data.total / pageSize);
+			setTotalPages(pages);
+			// If you're still on page 1 after search, you may want to call onPageChange(1) here to force a refetch
 		}
-	  }, [data, pageSize]);
+	}, [data, pageSize]);
 
-	  useEffect(() => {
+	useEffect(() => {
 		const url = new URL(window.location.href);
 		url.searchParams.set("page", currentPage.toString());
 		if (searchTerm) {
-		  url.searchParams.set("query", searchTerm);
+			url.searchParams.set("query", searchTerm);
 		} else {
-		  url.searchParams.delete("query");
+			url.searchParams.delete("query");
 		}
 		const urlString = url.toString();
 		router.push(urlString, undefined);
-	  }, [searchTerm, currentPage, router]);
+	}, [searchTerm, currentPage, router]);
 
-
-	  const onPageChange = (newPage: number) => {
+	const onPageChange = (newPage: number) => {
 		setCurrentPage(newPage);
 		// const newOffset = (newPage - 1) * pageSize;
 		// Now you need to refetch the data with the new offset.
 		// This will depend on how your fetching logic is set up.
-	  };
-
-
+	};
 
 	if (isLoading)
 		return (
@@ -135,70 +130,82 @@ const MarvelComics: NextPage = () => {
 			</div>
 		);
 	}
-	console.log('currentPage', currentPage);
-	console.log('totalPages', totalPages);
-	console.log('data', data);
+	console.log("currentPage", currentPage);
+	console.log("totalPages", totalPages);
+	console.log("data", data);
 	return (
 		<Suspense fallback={<div>Loading...</div>}>
 			<Container maxW="container.xl" centerContent p={4}>
-			<SearchBox onSearch={(value) => handleSearchTerm(value)} />
+				<SearchBox onSearch={(value) => handleSearchTerm(value)} />
+				{data && data.data && (
+					<Box>
+						<Text fontSize="1.5em" mb={4} textAlign="center">
+							{searchTerm
+								? `You have ${
+										data.data.total
+								  } results for "${searchTerm}" in ${Math.ceil(
+										data.data.total / pageSize
+								  )} pages`
+								: `You have a total of ${
+										data.data.total
+								  } comics from Marvel in ${Math.ceil(
+										data.data.total / pageSize
+								  )} pages`}
+						</Text>
+					</Box>
+				)}
 				<SimpleGrid
 					columns={{ base: 1, md: 2 }}
 					spacing={30}
 					width="100%"
 				>
 					{data.data &&
-							  Array.isArray(data.data.results) &&
-							  data.data.results.map(
-									(marvelComics: MarvelComics) => (
-										<NextLink
-										href={`/search/marvel/marvel-comics/${marvelComics.id}?page=${currentPage}`}
-											passHref
-											key={marvelComics.id}
+						Array.isArray(data.data.results) &&
+						data.data.results.map((marvelComics: MarvelComics) => (
+							<NextLink
+								href={`/search/marvel/marvel-comics/${marvelComics.id}?page=${currentPage}&query=${searchTerm}`}
+								passHref
+								key={marvelComics.id}
+							>
+								<motion.div whileHover={{ scale: 1.05 }}>
+									<Box
+										boxShadow="0 4px 8px rgba(0,0,0,0.1)"
+										rounded="sm"
+										overflow="hidden"
+										p={4}
+										display="flex"
+										flexDirection="column"
+										alignItems="center"
+										justifyContent="space-between"
+										minH="500px"
+										minW="300px"
+									>
+										<Image
+											src={`${marvelComics.thumbnail.path}/portrait_uncanny.${marvelComics.thumbnail.extension}`}
+											alt={marvelComics.title}
+											maxW="300px"
+											maxH="300px"
+											objectFit="contain"
+										/>
+										<Text
+											fontWeight="bold"
+											fontSize="1.5rem"
+											noOfLines={1}
+											textAlign="center"
 										>
-											<motion.div
-												whileHover={{ scale: 1.05 }}
-											>
-												<Box
-													boxShadow="0 4px 8px rgba(0,0,0,0.1)"
-													rounded="sm"
-													overflow="hidden"
-													p={4}
-													display="flex"
-													flexDirection="column"
-													alignItems="center"
-													justifyContent="space-between"
-													minH="500px"
-													minW="300px"
-												>
-													<Image
-														src={`${marvelComics.thumbnail.path}/portrait_uncanny.${marvelComics.thumbnail.extension}`}
-														alt={marvelComics.title}
-														maxW="300px"
-														maxH="300px"
-														objectFit="contain"
-													/>
-													<Text
-														fontWeight="bold"
-														fontSize="1.5rem"
-														noOfLines={1}
-														textAlign="center"
-													>
-														{marvelComics.title}
-													</Text>
-
-												</Box>
-											</motion.div>
-										</NextLink>
-									)
-							  )}
+											{marvelComics.title}
+										</Text>
+									</Box>
+								</motion.div>
+							</NextLink>
+						))}
 				</SimpleGrid>
 				{!isSearchMode && (
 					<MarvelPagination
-					currentPage={currentPage}
-					totalPages={totalPages}
-					onPageChange={onPageChange}
-				  />
+						currentPage={currentPage}
+						totalPages={totalPages}
+						onPageChange={onPageChange}
+					/>
 				)}
 			</Container>
 		</Suspense>

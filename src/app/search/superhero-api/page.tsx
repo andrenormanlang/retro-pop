@@ -100,6 +100,15 @@ if (isError) {
     <Suspense fallback={<div>Loading...</div>}>
       <Container maxW="container.xl" centerContent p={4}>
         <SearchBox onSearch={handleSearchTerm} />
+		{data && (
+  <Box>
+    <Text fontSize="1.5em" mb={4} textAlign="center">
+      {searchTerm
+        ? `You have ${data.superheroes.results.length} results for "${searchTerm}"`
+        : `You have a total of ${data.totalCount} heroes from the Superheroes API in ${data.totalPages} pages`}
+    </Text>
+  </Box>
+)}
         <SimpleGrid columns={{ base: 1, md: 2 }} spacing={30} width="100%">
 		{data &&(
 			isSearchMode ?
@@ -151,7 +160,7 @@ if (isError) {
 		  ) :
 			data && Array.isArray(data.superheroes) && data.superheroes.map((hero: Superheroes) => (
             <NextLink
-              href={`/search/superhero-api/${hero.id}`}
+              href={`/search/superhero-api/${hero.id}?page=${currentPage}&query=${searchTerm}`}
               passHref
               key={hero.id}
             >

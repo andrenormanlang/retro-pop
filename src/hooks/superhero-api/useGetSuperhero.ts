@@ -28,7 +28,7 @@ export const useGetSuperheroes = (searchTerm: string, page: number, pageSize: nu
 
 
 // This function fetches details of a single superhero
-async function fetchSuperhero(superheroId: string) {
+async function fetchSuperhero(searchTerm: string, page: number,superheroId: string) {
 
   const response = await fetch(`/api/superhero/${superheroId}`);
 
@@ -40,9 +40,9 @@ async function fetchSuperhero(superheroId: string) {
 }
 
 // This hook uses the fetchSuperhero function to fetch data
-export const useGetSuperhero = (superheroId: string) => {
+export const useGetSuperhero = (searchTerm: string, page: number, superheroId: string) => {
   return useQuery({
-    queryFn: () => fetchSuperhero(superheroId),
-    queryKey: ['superhero', superheroId],
+    queryFn: () => fetchSuperhero(searchTerm, page, superheroId),
+    queryKey: ['superhero', searchTerm, page, superheroId],
   });
 };
