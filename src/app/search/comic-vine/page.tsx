@@ -21,7 +21,7 @@ import { useGetComicVineIssues } from "@/hooks/comic-vine/useComicVine";
 import { getCurrentPage } from "@/helpers/ComicVineIssues/getCurrentPage";
 import { ComicVine, SearchQuery } from "@/types/comic.types";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { useSearchParameters } from "@/hooks/comic-vine/useSearchParameters";
+import { useSearchParameters } from "@/hooks/useSearchParameters";
 
 // Function to format the date as "21, Jan, 2024"
 const formatDate = (dateString: string) => {
@@ -43,8 +43,7 @@ const Issues: NextPage = () => {
 		setCurrentPage,
 		updateUrl,
 	} = useSearchParameters(getCurrentPage(), "");
-	// const [currentPage, setCurrentPage] = useState<number>(getCurrentPage());
-	// const [searchTerm, setSearchTerm] = useState<string>("");
+
 	const [searchQuery, setSearchQuery] = useState<SearchQuery>({
 		page: getCurrentPage(),
 		query: "",
@@ -73,31 +72,14 @@ const Issues: NextPage = () => {
 		setSearchQuery({ ...searchQuery, query: term, page: 1 });
 	}, 300);
 
-	// useEffect(() => {
-	// 	const params = new URLSearchParams(searchParams);
-	// 	Object.keys(searchQuery).forEach((key) => {
-	// 		if (searchQuery[key]) {
-	// 			params.set(key, searchQuery[key].toString());
-	// 		} else {
-	// 			params.delete(key);
-	// 		}
-	// 	});
-	// 	const queryString = params.toString();
-	// 	const updatedPath = queryString
-	// 		? `${pathname}?${queryString}`
-	// 		: pathname;
-	// 	(router.push as any)(updatedPath, { shallow: true });
-	// }, [searchQuery, searchParams, pathname, router]);
-
 	useEffect(() => {
-		const params = (searchParams);
+		const params = searchParams;
 
 		const queryString = params.toString();
 
 		const updatedPath = `${pathname}?${queryString}`;
 		(router.push as any)(updatedPath, { shallow: true });
 	}, [searchQuery, searchParams, pathname, router]);
-
 
 	const validData = data?.results.slice(0);
 
@@ -131,9 +113,6 @@ const Issues: NextPage = () => {
 			</div>
 		);
 	}
-
-	console.log("currentPage", currentPage);
-	console.log("data", data);
 
 	return (
 		<Suspense

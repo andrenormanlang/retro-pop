@@ -17,7 +17,7 @@ import type { NextPage } from "next";
 import SearchBox from "@/components/SearchBox";
 import { useDebouncedCallback } from "use-debounce";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useSearchParameters } from "@/hooks/comic-vine/useSearchParameters";
+import { useSearchParameters } from "@/hooks/useSearchParameters";
 import ComicsPagination from "@/components/ComicsPagination";
 import { useGetMarvelComics } from "@/hooks/marvel/useMarvelComics";
 import { MarvelComics } from "@/types/marvel/marvel-comics.type";
@@ -45,7 +45,6 @@ const MarvelComics: NextPage = () => {
 		// No need for the `newOffset` variable here since we are not passing `newPage`
 	}, 500);
 
-	console.log("data", data);
 	// ... useEffect for updating URL parameters
 	useEffect(() => {
 		const url = new URL(window.location.href);
@@ -130,9 +129,7 @@ const MarvelComics: NextPage = () => {
 			</div>
 		);
 	}
-	console.log("currentPage", currentPage);
-	console.log("totalPages", totalPages);
-	console.log("data", data);
+
 	return (
 		<Suspense fallback={<div>Loading...</div>}>
 			<Container maxW="container.xl" centerContent p={4}>
@@ -200,13 +197,13 @@ const MarvelComics: NextPage = () => {
 							</NextLink>
 						))}
 				</SimpleGrid>
-				{!isSearchMode && (
+
 					<MarvelPagination
 						currentPage={currentPage}
 						totalPages={totalPages}
 						onPageChange={onPageChange}
 					/>
-				)}
+
 			</Container>
 		</Suspense>
 	);

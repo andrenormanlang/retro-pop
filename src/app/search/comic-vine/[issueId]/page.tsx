@@ -24,7 +24,7 @@ import { ArrowBackIcon } from "@chakra-ui/icons";
 import { NextPage } from "next";
 import { useGetComicVineIssue } from "@/hooks/comic-vine/useComicVine";
 import { useSearchParams } from "next/navigation";
-import { useSearchParameters } from "@/hooks/comic-vine/useSearchParameters";
+import { useSearchParameters } from "../../../../hooks/useSearchParameters";
 import { getCurrentPage } from "@/helpers/ComicVineIssues/getCurrentPage";
 
 const IssuePage: NextPage = () => {

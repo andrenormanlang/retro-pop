@@ -21,26 +21,31 @@ import { ArrowBackIcon } from "@chakra-ui/icons";
 import { NextPage } from "next";
 import { useSearchParams } from "next/navigation";
 import { useGetMarvelComic } from "@/hooks/marvel/useMarvelComics";
+import { useSearchParameters } from "@/hooks/useSearchParameters";
 
 const MarvelComic: NextPage = () => {
 	// const [comic, setComic] = useState<ComicVineIssue | null>(null);
 	const router = useRouter();
 	const [setIsLoading] = useState(false);
+	const {
+		searchTerm,
+		currentPage,
+	} = useSearchParameters();
 	const bgColor = useColorModeValue("white", "gray.800");
 	const borderColor = useColorModeValue("gray.200", "gray.700");
 	const pathname = usePathname();
 	const comicId = pathname.split("/").pop() || "";
 	const searchParams = useSearchParams();
 
-	console.log("issueId", comicId);
 
 	const { data, isLoading, isError, error } = useGetMarvelComic(comicId);
 
 	const handleBack = () => {
-		// Read the page number from the search parameters
-		const page = searchParams.get("page") || "1";
-		// Navigate back to the issues page with the remembered page number
-		router.push(`/search/marvel/marvel-comics?page=${page}`);
+		// Read the page number and search term from the search parameters
+
+
+		// Navigate back to the issues page with both the page number and search term
+		router.push(`/search/marvel/marvel-comics?page=${currentPage}&query=${encodeURIComponent(searchTerm)}`);
 	};
 
 	const formatDate = (dateString: string) => {
@@ -82,7 +87,6 @@ const MarvelComic: NextPage = () => {
 		);
 	}
 
-	console.log("comic", data);
 
 	const result = data?.data?.results?.[0];
 
