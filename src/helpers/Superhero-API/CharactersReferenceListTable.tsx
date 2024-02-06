@@ -1,10 +1,10 @@
 'use client'
 
-import { CharactersList } from '@/types/characters-list.types';
+import { CharactersApiResponse, CharactersList } from '@/types/characters-list.types';
 import { useRouter } from 'next/navigation';
 import { Table, Thead, Tbody, Tr, Th, Td, Flex, useColorModeValue } from '@chakra-ui/react';
 
-const CharactersReferenceListTable: React.FC<{ characters: CharactersList[] }> = ({ characters }) => {
+const CharactersReferenceListTable: React.FC<{ characters:CharactersApiResponse }> = ({ characters }) => {
   // Correctly initialize sortConfig with SortConfig type
  const router = useRouter();
 
@@ -14,8 +14,7 @@ const CharactersReferenceListTable: React.FC<{ characters: CharactersList[] }> =
   };
 
   // Call useColorModeValue outside the callback
-  const bg = useColorModeValue('gray.100', 'gray.700');
-  console.log('CHARACTERS', characters);
+  const bg = useColorModeValue('red.100', 'red.700');
 
    // Divide the characters into columns
   const columns = 3;
@@ -34,7 +33,7 @@ const CharactersReferenceListTable: React.FC<{ characters: CharactersList[] }> =
             </Tr>
           </Thead>
           <Tbody>
-            {columnCharacters.map(character => (
+		  {columnCharacters.map((character: CharactersList)  => (
               <Tr
 			  key={character.ID}
 			  _hover={{ bg: bg, cursor: 'pointer' }}
