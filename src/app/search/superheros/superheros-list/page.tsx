@@ -2,12 +2,13 @@
 
 import React from 'react';
 import { Spinner, Center, Container, Box, Text, Heading } from '@chakra-ui/react';
-import useGetCharactersList from '@/hooks/superhero-api/useGetCharactersList';
+import { useGetCharactersList } from '@/hooks/superhero-api/useGetCharactersList';
+
 import CharactersReferenceListTable from '@/helpers/Superhero-API/CharactersReferenceListTable';
 
 function CharactersComponent() {
 //   const { characters, isLoading, error } = useGetCharactersList();
-const { data: characters, isLoading, error } = useGetCharactersList();
+const {  data: CharactersApiResponse, isLoading, error } = useGetCharactersList();
 
   if (isLoading) {
     return (
@@ -25,6 +26,8 @@ const { data: characters, isLoading, error } = useGetCharactersList();
     );
   }
 
+  const charactersData = CharactersApiResponse ?? { data: [], status: 'success' };
+
   return (
     <Container maxW="1300px" p={4}>
       <Box mb={4}>
@@ -33,7 +36,7 @@ const { data: characters, isLoading, error } = useGetCharactersList();
         </Heading>
         {/* Here we use CharactersReferenceListTable instead of a simple list */}
         {/* Make sure the CharactersReferenceListTable is adapted to use Chakra UI components if needed */}
-        <CharactersReferenceListTable characters={characters ?? []} />
+        <CharactersReferenceListTable characters={charactersData} />
       </Box>
     </Container>
   );
