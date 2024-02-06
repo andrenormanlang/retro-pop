@@ -22,6 +22,7 @@ import { getCurrentPage } from "@/helpers/ComicVineIssues/getCurrentPage";
 import { ComicVine, SearchQuery } from "@/types/comic.types";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useSearchParameters } from "@/hooks/useSearchParameters";
+import MarvelPagination from "@/components/MarvelPagination";
 
 // Function to format the date as "21, Jan, 2024"
 const formatDate = (dateString: string) => {
@@ -42,10 +43,10 @@ const Issues: NextPage = () => {
 		currentPage,
 		setCurrentPage,
 		updateUrl,
-	} = useSearchParameters(getCurrentPage(), "");
+	} = useSearchParameters(1, "");
 
 	const [searchQuery, setSearchQuery] = useState<SearchQuery>({
-		page: getCurrentPage(),
+		page: 1,
 		query: "",
 	});
 
@@ -73,13 +74,17 @@ const Issues: NextPage = () => {
 	}, 300);
 
 	useEffect(() => {
-		const params = searchParams;
-
-		const queryString = params.toString();
-
-		const updatedPath = `${pathname}?${queryString}`;
-		(router.push as any)(updatedPath, { shallow: true });
-	}, [searchQuery, searchParams, pathname, router]);
+		const url = new URL(window.location.href);
+		url.searchParams.set("page", currentPage.toString());
+		if (searchTerm) {
+			url.searchParams.set("query", searchTerm);
+		} else {
+			url.searchParams.delete("query");
+		}
+		// Convert URL object to a string
+		const urlString = url.toString();
+		router.push(urlString, undefined);
+	}, [searchTerm, currentPage, router]);
 
 	const validData = data?.results.slice(0);
 
@@ -254,6 +259,13 @@ const Issues: NextPage = () => {
 						)}
 						onPageChange={handlePageChange}
 					/>
+					{/* <MarvelPagination
+						currentPage={currentPage}
+						totalPages={Math.ceil(
+							data.number_of_total_results / data.limit
+						)}
+						onPageChange={handlePageChange}
+					/> */}
 				</div>
 			</Container>
 		</Suspense>

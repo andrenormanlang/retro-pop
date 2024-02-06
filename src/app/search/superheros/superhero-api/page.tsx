@@ -117,7 +117,7 @@ const Superheroes: NextPage = () => {
 								? data.superheroes.results.map(
 										(hero: Superhero) => (
 											<NextLink
-												href={`/search/superhero-api/${hero.id}`}
+												href={`/search/superheros/superhero-api/${hero.id}`}
 												passHref
 												key={hero.id}
 											>
@@ -197,7 +197,7 @@ const Superheroes: NextPage = () => {
 							  Array.isArray(data.superheroes) &&
 							  data.superheroes.map((hero: Superheroes) => (
 									<NextLink
-										href={`/search/superhero-api/${hero.id}?page=${currentPage}&query=${searchTerm}`}
+										href={`/search/superheros/superhero-api/${hero.id}?page=${currentPage}&query=${searchTerm}`}
 										passHref
 										key={hero.id}
 									>

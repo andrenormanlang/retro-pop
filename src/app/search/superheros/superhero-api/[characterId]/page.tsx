@@ -49,11 +49,16 @@ const SuperheroID = () => {
 		// Read the page number from the search parameters
 
 		// Navigate back to the issues page with the remembered page number
-		router.push(
-			`/search/superhero-api?page=${currentPage}&query=${encodeURIComponent(
-				searchTerm
-			)}`
-		);
+		router.push(`/search/superheros/superhero-api?page=${currentPage}&query=${encodeURIComponent(searchTerm)}`);
+
+	};
+
+	const handleBackList = () => {
+		// Read the page number from the search parameters
+
+		// Navigate back to the issues page with the remembered page number
+		router.push(`/search/superheros/superheros-list`);
+
 	};
 
 
@@ -91,16 +96,24 @@ const SuperheroID = () => {
 	// Render your superhero details using the 'superhero' data object
 	return (
 		<Container maxW="1300px" p={4}>
-			<Box mb={4}>
-				<Button
-					leftIcon={<ArrowBackIcon />}
-					colorScheme="teal"
-					variant="outline"
-					onClick={handleBack}
-				>
-					Back to Grid
-				</Button>
-			</Box>
+			<Flex justifyContent="space-between" mb={4}>
+      <Button
+        leftIcon={<ArrowBackIcon />}
+        colorScheme="teal"
+        variant="outline"
+        onClick={handleBack}
+      >
+        Back to Grid
+      </Button>
+      <Button
+        leftIcon={<ArrowBackIcon />}
+        colorScheme="orange"
+        variant="outline"
+        onClick={handleBackList}
+      >
+        Back to List
+      </Button>
+    </Flex>
 			<VStack spacing={4}>
 				<Flex
 					bg={bgColor}
