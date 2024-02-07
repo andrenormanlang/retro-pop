@@ -22,6 +22,7 @@ import { NextPage } from "next";
 import { useSearchParams } from "next/navigation";
 import { useGetMarvelComic } from "@/hooks/marvel/useMarvelComics";
 import { useSearchParameters } from "@/hooks/useSearchParameters";
+import { CharacterItem, CreatorItem } from "@/types/marvel/marvel-comic.type";
 
 const MarvelComic: NextPage = () => {
 	// const [comic, setComic] = useState<ComicVineIssue | null>(null);

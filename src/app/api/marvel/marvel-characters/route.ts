@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
   let apiUrl = `https://gateway.marvel.com:443/v1/public/characters?ts=${ts}&apikey=${publicKey}&hash=${hash}&limit=${limit}`;
 
   if (searchTerm) {
-    apiUrl += `&titleStartsWith=${encodeURIComponent(searchTerm)}`;
+    apiUrl += `&name=${encodeURIComponent(searchTerm)}`;
   } else {
     // Calculate the offset based on the page number
     const offset = (page - 1) * limit;
