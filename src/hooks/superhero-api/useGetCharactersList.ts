@@ -40,20 +40,24 @@
 // export default useGetCharactersList;
 
 import { useQuery } from '@tanstack/react-query';
-import { CharactersApiResponse } from '@/types/characters-list.types';
+import { CharactersList } from '@/types/characters-list.types';
 
-// This function is an example, replace it with your actual API call
-const fetchCharacters = async (): Promise<CharactersApiResponse> => {
-    const response = await fetch('/api/characters');
-    if (!response.ok) {
-        throw new Error('Network response was not ok');
-    }
-    return response.json();
+const fetchCharactersList = async () => {
+  const response = await fetch('/api/characters-list');
+  if (!response.ok) {
+    throw new Error(`API call failed with status: ${response.status}`);
+  }
+  return response.json();
 };
 
-export const useGetCharactersList = () => {
-    return useQuery<CharactersApiResponse, Error>({
-        queryKey: ['getCharactersList'],
-        queryFn: fetchCharacters,
-    });
+const useGetCharactersList = () => {
+  return useQuery<CharactersList[], Error>({
+    queryKey: ['charactersList'],
+    queryFn: fetchCharactersList,
+    // Optionally, you can configure how React Query handles this data,
+    // such as caching, refetching, stale time, etc.
+  });
 };
+
+export default useGetCharactersList;
+
