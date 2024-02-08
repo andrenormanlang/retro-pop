@@ -49,8 +49,11 @@ const SuperheroID = () => {
 		// Read the page number from the search parameters
 
 		// Navigate back to the issues page with the remembered page number
-		router.push(`/search/superheros/superhero-api?page=${currentPage}&query=${encodeURIComponent(searchTerm)}`);
-
+		router.push(
+			`/search/superheros/superhero-api?page=${currentPage}&query=${encodeURIComponent(
+				searchTerm
+			)}`
+		);
 	};
 
 	const handleBackList = () => {
@@ -58,10 +61,7 @@ const SuperheroID = () => {
 
 		// Navigate back to the issues page with the remembered page number
 		router.push(`/search/superheros/superheros-list`);
-
 	};
-
-
 
 	if (isLoading)
 		return (
@@ -97,23 +97,23 @@ const SuperheroID = () => {
 	return (
 		<Container maxW="1300px" p={4}>
 			<Flex justifyContent="space-between" mb={4}>
-      <Button
-        leftIcon={<ArrowBackIcon />}
-        colorScheme="teal"
-        variant="outline"
-        onClick={handleBack}
-      >
-        Back to Grid
-      </Button>
-      <Button
-        leftIcon={<ArrowBackIcon />}
-        colorScheme="orange"
-        variant="outline"
-        onClick={handleBackList}
-      >
-        Back to List
-      </Button>
-    </Flex>
+				<Button
+					leftIcon={<ArrowBackIcon />}
+					colorScheme="teal"
+					variant="outline"
+					onClick={handleBack}
+				>
+					Back to Grid
+				</Button>
+				<Button
+					leftIcon={<ArrowBackIcon />}
+					colorScheme="orange"
+					variant="outline"
+					onClick={handleBackList}
+				>
+					Back to List
+				</Button>
+			</Flex>
 			<VStack spacing={4}>
 				<Flex
 					bg={bgColor}
@@ -125,18 +125,17 @@ const SuperheroID = () => {
 					wrap="wrap"
 					align="" // Center align items for better responsiveness
 					justify=""
-					width={{ sm: "100%",  md: "100%", lg: "100%" }} // Responsive width
+					width={{ sm: "100%", md: "100%", lg: "100%" }} // Responsive width
 				>
-					<Box flexShrink={0}>
-						<Image
-							borderRadius="md"
-							boxSize={{ base: "100%", md: "300px" }}
-							objectFit="contain"
-							src={superhero.image.url}
-							alt={superhero.name}
-							mb={4}
-						/>
-					</Box>
+					<Image
+						borderRadius="md"
+						boxSize={{ base: "", md: "300px" }}
+						objectFit="contain"
+						src={superhero.image.url}
+						alt={superhero.name}
+						mb={4}
+					/>
+
 					<VStack
 						ml={5}
 						spacing={1}
@@ -256,8 +255,6 @@ const SuperheroID = () => {
 						mb={4}
 					></HStack>
 				</Flex>
-
-
 			</VStack>
 		</Container>
 	);
