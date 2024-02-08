@@ -126,7 +126,7 @@ const Navbar = () => {
 						// {name: "Stories",href: "/search/marvel/marvel-stories"},
 						// {name: "Series",href: "/search/marvel/marvel-series"},
 						// {name: "Events",href: "/search/marvel/marvel-events"},
-						// {name: "Creators",href: "/search/marvel/marvel-creators"},
+						{name: "Creators",href: "/search/marvel/marvel-creators"},
 					],
 				},
 			],

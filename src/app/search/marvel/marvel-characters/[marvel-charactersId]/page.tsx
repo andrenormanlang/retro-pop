@@ -22,7 +22,7 @@ import { NextPage } from "next";
 import { useSearchParams } from "next/navigation";
 
 import { useSearchParameters } from "@/hooks/useSearchParameters";
-import { useGetMarvelCharacter } from "@/hooks/marvel/useMarvelCharacters";
+import { useGetMarvelCharacter } from "@/hooks/marvel/useGetMarvelCharacters";
 import {
 	Comic,
 	ComicItem,
@@ -246,144 +246,125 @@ const MarvelCharacter: NextPage = () => {
 						justify="space-between" // Add space between the children
 						width={{ base: "100%", md: "90%", lg: "1100px" }} // Responsive width
 					>
-						<VStack
-							spacing={4}
-							w="full"
-							align="stretch"
-							mb={{ base: 4, lg: 0 }} // Adds bottom margin on base to lg, none on lg and above
-						>
-							{/* Comics Section */}
-							<Box>
-								<Heading
-									size="md"
-									fontFamily="Bangers"
-									letterSpacing="0.05em"
-									color="orange"
-								>
-									Comics:
-								</Heading>
-								<SimpleGrid
-									columns={{ base: 2, md: 3 }}
-									spacing={4}
-								>
-									{result?.comics?.items?.map(
-										(comicItem: ComicItem) => (
-											<Box
-												key={comicItem.name}
-												p={2}
-												boxShadow="md"
-												borderRadius="md"
-											>
-												<Text textAlign="start">
-													{comicItem.name}
-												</Text>
-											</Box>
-										)
-									)}
-								</SimpleGrid>
-							</Box>
+					<VStack spacing={4} align="stretch">
+						<Box>
+							<Heading
+								size="md"
+								fontFamily="Bangers"
+								letterSpacing="0.05em"
+								color="orange"
+							>
+								Comics:
+							</Heading>
+							<SimpleGrid
+								columns={{ base: 2, md: 3 }}
+								spacing={4}
+							>
+								{result?.comics?.items?.map(
+									(comicItem: ComicItem) => (
+										<Box
+											key={comicItem.name}
+											p={2}
+											boxShadow="md"
+											borderRadius="md"
+										>
+											<Text textAlign="start">
+												{comicItem.name}
+											</Text>
+										</Box>
+									)
+								)}
+							</SimpleGrid>
+						</Box>
+						<Box>
+							<Heading
+								size="md"
+								fontFamily="Bangers"
+								letterSpacing="0.05em"
+								color="orange"
+							>
+								Series:
+							</Heading>
+							<SimpleGrid
+								columns={{ base: 2, md: 3 }}
+								spacing={4}
+							>
+								{result?.series?.items?.map(
+									(seriesItem: SeriesItem) => (
+										<Box
+											key={seriesItem.name}
+											p={2}
+											boxShadow="md"
+											borderRadius="md"
+										>
+											<Text textAlign="start">
+												{seriesItem.name}
+											</Text>
+										</Box>
+									)
+								)}
+							</SimpleGrid>
+						</Box>
+						<Box>
+							<Heading
+								size="md"
+								fontFamily="Bangers"
+								letterSpacing="0.05em"
+								color="orange"
+							>
+								Stories:
+							</Heading>
+							<SimpleGrid
+								columns={{ base: 2, md: 3 }}
+								spacing={4}
+							>
+								{result?.stories?.items?.map(
+									(storiesItem: StoryItems) => (
+										<Box
+											key={storiesItem.name}
+											p={2}
+											boxShadow="md"
+											borderRadius="md"
+										>
+											<Text textAlign="start">
+												{storiesItem.name}
+											</Text>
+										</Box>
+									)
+								)}
+							</SimpleGrid>
+						</Box>
+						<Box>
+							<Heading
+								size="md"
+								fontFamily="Bangers"
+								letterSpacing="0.05em"
+								color="orange"
+							>
+								Events:
+							</Heading>
+							<SimpleGrid
+								columns={{ base: 2, md: 3 }}
+								spacing={4}
+							>
+								{result?.events?.items?.map(
+									(eventsItem: EventItem) => (
+										<Box
+											key={eventsItem.name}
+											p={2}
+											boxShadow="md"
+											borderRadius="md"
+										>
+											<Text textAlign="start">
+												{eventsItem.name}
+											</Text>
+										</Box>
+									)
+								)}
+							</SimpleGrid>
+						</Box>
+					</VStack>
 
-							{/* Series Section */}
-							<Box>
-								<Heading
-									size="md"
-									fontFamily="Bangers"
-									letterSpacing="0.05em"
-									color="orange"
-								>
-									Series:
-								</Heading>
-								<SimpleGrid
-									columns={{ base: 2, md: 3 }}
-									spacing={4}
-								>
-									{result?.series?.items?.map(
-										(seriesItem: SeriesItem) => (
-											<Box
-												key={seriesItem.name}
-												p={2}
-												boxShadow="md"
-												borderRadius="md"
-											>
-												<Text textAlign="start">
-													{seriesItem.name}
-												</Text>
-											</Box>
-										)
-									)}
-								</SimpleGrid>
-							</Box>
-						</VStack>
-
-						{/* Right Column: Stories and Events */}
-						<VStack
-							spacing={4}
-							w="full"
-							align="stretch"
-							mb={{ base: 4, lg: 0 }} // Adds bottom margin on base to lg, none on lg and above
-						>
-							{/* Stories Section */}
-							<Box>
-								<Heading
-									size="md"
-									fontFamily="Bangers"
-									letterSpacing="0.05em"
-									color="orange"
-								>
-									Stories:
-								</Heading>
-								<SimpleGrid
-									columns={{ base: 2, md: 3 }}
-									spacing={4}
-								>
-									{result?.stories?.items?.map(
-										(storiesItem: StoryItems) => (
-											<Box
-												key={storiesItem.name}
-												p={2}
-												boxShadow="md"
-												borderRadius="md"
-											>
-												<Text textAlign="start">
-													{storiesItem.name}
-												</Text>
-											</Box>
-										)
-									)}
-								</SimpleGrid>
-							</Box>
-
-							{/* Events Section */}
-							<Box>
-								<Heading
-									size="md"
-									fontFamily="Bangers"
-									letterSpacing="0.05em"
-									color="orange"
-								>
-									Events:
-								</Heading>
-								<SimpleGrid
-									columns={{ base: 2, md: 3 }}
-									spacing={4}
-								>
-									{result?.events?.items?.map(
-										(eventsItem: EventItem) => (
-											<Box
-												key={eventsItem.name}
-												p={2}
-												boxShadow="md"
-												borderRadius="md"
-											>
-												<Text textAlign="start">
-													{eventsItem.name}
-												</Text>
-											</Box>
-										)
-									)}
-								</SimpleGrid>
-							</Box>
-						</VStack>
 					</Flex>
 				</VStack>
 			</Container>

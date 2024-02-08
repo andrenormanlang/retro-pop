@@ -20,11 +20,21 @@ import {
 import { ArrowBackIcon } from "@chakra-ui/icons";
 import { NextPage } from "next";
 import { useSearchParams } from "next/navigation";
-import { useGetMarvelComic } from "@/hooks/marvel/useGetMarvelComics";
-import { useSearchParameters } from "@/hooks/useSearchParameters";
-import { CharacterItem, CreatorItem } from "@/types/marvel/marvel-comic.type";
 
-const MarvelComic: NextPage = () => {
+import { useSearchParameters } from "@/hooks/useSearchParameters";
+import { useGetMarvelCharacter } from "@/hooks/marvel/useGetMarvelCharacters";
+import {
+	Comic,
+	ComicItem,
+	EventItem,
+	Series,
+	SeriesItem,
+	StoryItems,
+	UrlItem,
+} from "@/types/marvel/marvel-comic.type";
+import { useGetMarvelCreator } from "@/hooks/marvel/useGetMarvelCreators";
+
+const MarvelCreator: NextPage = () => {
 	// const [comic, setComic] = useState<ComicVineIssue | null>(null);
 	const router = useRouter();
 	const [setIsLoading] = useState(false);
@@ -33,16 +43,15 @@ const MarvelComic: NextPage = () => {
 	const borderColor = useColorModeValue("gray.200", "gray.700");
 	const pathname = usePathname();
 	const comicId = pathname.split("/").pop() || "";
-	const searchParams = useSearchParams();
 
-	const { data, isLoading, isError, error } = useGetMarvelComic(comicId);
+	const { data, isLoading, isError, error } = useGetMarvelCreator(comicId);
 
 	const handleBack = () => {
 		// Read the page number and search term from the search parameters
 
 		// Navigate back to the issues page with both the page number and search term
 		router.push(
-			`/search/marvel/marvel-comics?page=${currentPage}&query=${encodeURIComponent(
+			`/search/marvel/marvel-creators?page=${currentPage}&query=${encodeURIComponent(
 				searchTerm
 			)}`
 		);
@@ -55,6 +64,19 @@ const MarvelComic: NextPage = () => {
 			year: "numeric",
 		};
 		return new Date(dateString).toLocaleDateString(undefined, options);
+	};
+
+	const getColorScheme = (type: string) => {
+		switch (type) {
+			case "detail":
+				return "blue";
+			case "wiki":
+				return "green";
+			case "comiclink":
+				return "red";
+			default:
+				return "gray";
+		}
 	};
 
 	if (isLoading)
@@ -89,8 +111,7 @@ const MarvelComic: NextPage = () => {
 
 	const result = data?.data?.results?.[0];
 
-	const solicitationText =
-		result?.textObjects?.[0]?.text || "No description available.";
+	const solicitationText = result?.description || "No description available.";
 
 	return (
 		<Suspense
@@ -155,7 +176,7 @@ const MarvelComic: NextPage = () => {
 							maxW="600px"
 							marginLeft={4}
 						>
-							<Tag
+							{/* <Tag
 								size="lg"
 								colorScheme="blue"
 							>{`Issue #${result?.issueNumber}`}</Tag>
@@ -166,14 +187,14 @@ const MarvelComic: NextPage = () => {
 											date.type === "onsaleDate"
 									)?.date || new Date()
 								)}
-							</Tag>
+							</Tag> */}
 							<Heading
 								fontFamily="Bangers"
 								letterSpacing="0.05em"
 								color="tomato"
 								size="lg"
 							>
-								{result?.series?.name || "Unknown Series"}
+								{result?.name}
 							</Heading>
 							<Text
 								p={4}
@@ -183,6 +204,29 @@ const MarvelComic: NextPage = () => {
 								borderColor={borderColor}
 							>
 								{solicitationText}
+								<Flex wrap="wrap" mt={2}>
+									{result?.urls?.map((urlItem: UrlItem) => (
+										<Tag
+											key={urlItem.type}
+											colorScheme={getColorScheme(
+												urlItem.type
+											)}
+											mr={2}
+											mb={2}
+										>
+											<a
+												href={urlItem.url}
+												target="_blank"
+												rel="noopener noreferrer"
+											>
+												{urlItem.type
+													.charAt(0)
+													.toUpperCase() +
+													urlItem.type.slice(1)}
+											</a>
+										</Tag>
+									))}
+								</Flex>
 
 								<Flex
 									direction="column" // Set direction to column to stack children vertically
@@ -203,67 +247,125 @@ const MarvelComic: NextPage = () => {
 						justify="space-between" // Add space between the children
 						width={{ base: "100%", md: "90%", lg: "1100px" }} // Responsive width
 					>
-						<VStack
-							spacing={4}
-							w="full"
-							align="start"
-							flex={1}
-							mr={3}
-						>
-							{" "}
+					<VStack spacing={4} align="stretch">
+						<Box>
 							<Heading
 								size="md"
 								fontFamily="Bangers"
 								letterSpacing="0.05em"
 								color="orange"
 							>
-								Creators:
+								Comics:
 							</Heading>
 							<SimpleGrid
 								columns={{ base: 2, md: 3 }}
 								spacing={4}
 							>
-								{result?.creators?.items?.map(
-									(creator: CreatorItem) => (
+								{result?.comics?.items?.map(
+									(comicItem: ComicItem) => (
 										<Box
-											key={creator.name}
+											key={comicItem.name}
 											p={2}
 											boxShadow="md"
 											borderRadius="md"
 										>
-											<Text textAlign="start">{`${creator.name} - ${creator.role}`}</Text>
+											<Text textAlign="start">
+												{comicItem.name}
+											</Text>
 										</Box>
 									)
 								)}
 							</SimpleGrid>
-						</VStack>
-						<VStack spacing={4} w="full" align="start" flex={1}>
+						</Box>
+						<Box>
 							<Heading
 								size="md"
 								fontFamily="Bangers"
 								letterSpacing="0.05em"
 								color="orange"
 							>
-								Characters:
+								Series:
 							</Heading>
 							<SimpleGrid
 								columns={{ base: 2, md: 3 }}
 								spacing={4}
 							>
-								{result?.characters?.items?.map(
-									(character: CharacterItem) => (
+								{result?.series?.items?.map(
+									(seriesItem: SeriesItem) => (
 										<Box
-											key={character.name}
+											key={seriesItem.name}
 											p={2}
 											boxShadow="md"
 											borderRadius="md"
 										>
-											<Text textAlign="start">{`${character.name}`}</Text>
+											<Text textAlign="start">
+												{seriesItem.name}
+											</Text>
 										</Box>
 									)
 								)}
 							</SimpleGrid>
-						</VStack>
+						</Box>
+						<Box>
+							<Heading
+								size="md"
+								fontFamily="Bangers"
+								letterSpacing="0.05em"
+								color="orange"
+							>
+								Stories:
+							</Heading>
+							<SimpleGrid
+								columns={{ base: 2, md: 3 }}
+								spacing={4}
+							>
+								{result?.stories?.items?.map(
+									(storiesItem: StoryItems) => (
+										<Box
+											key={storiesItem.name}
+											p={2}
+											boxShadow="md"
+											borderRadius="md"
+										>
+											<Text textAlign="start">
+												{storiesItem.name}
+											</Text>
+										</Box>
+									)
+								)}
+							</SimpleGrid>
+						</Box>
+						<Box>
+							<Heading
+								size="md"
+								fontFamily="Bangers"
+								letterSpacing="0.05em"
+								color="orange"
+							>
+								Events:
+							</Heading>
+							<SimpleGrid
+								columns={{ base: 2, md: 3 }}
+								spacing={4}
+							>
+								{result?.events?.items?.map(
+									(eventsItem: EventItem) => (
+										<Box
+											key={eventsItem.name}
+											p={2}
+											boxShadow="md"
+											borderRadius="md"
+										>
+											<Text textAlign="start">
+												{eventsItem.name}
+											</Text>
+										</Box>
+									)
+								)}
+							</SimpleGrid>
+						</Box>
+					</VStack>
+
 					</Flex>
 				</VStack>
 			</Container>
@@ -271,4 +373,4 @@ const MarvelComic: NextPage = () => {
 	);
 };
 
-export default MarvelComic;
+export default MarvelCreator;

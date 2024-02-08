@@ -10,6 +10,8 @@ import {
 	Center,
 	Spinner,
 	Button,
+	Flex,
+	Tag,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import NextLink from "next/link";
@@ -18,13 +20,13 @@ import SearchBox from "@/components/SearchBox";
 import { useDebouncedCallback } from "use-debounce";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSearchParameters } from "@/hooks/useSearchParameters";
-import ComicsPagination from "@/components/ComicsPagination";
-import { useGetMarvelComics } from "@/hooks/marvel/useGetMarvelComics";
 import { MarvelComics } from "@/types/marvel/marvel-comics.type";
 import MarvelPagination from "@/components/MarvelPagination";
+import { useGetMarvelCreators } from "@/hooks/marvel/useGetMarvelCreators";
+import { MarvelCreator, UrlItem } from "@/types/marvel/marvel-comic.type";
 
-const MarvelComics: NextPage = () => {
-	const pageSize = 16;
+const MarvelCreators: NextPage = () => {
+	const pageSize = 18;
 	const router = useRouter();
 	const [searchParams, setSearchParams] = useSearchParams();
 
@@ -33,7 +35,7 @@ const MarvelComics: NextPage = () => {
 
 	const { searchTerm, setSearchTerm } = useSearchParameters(1, "");
 
-	const { data, isLoading, isError, error } = useGetMarvelComics(
+	const { data, isLoading, isError, error } = useGetMarvelCreators(
 		searchTerm,
 		currentPage,
 		pageSize
@@ -100,6 +102,15 @@ const MarvelComics: NextPage = () => {
 		// This will depend on how your fetching logic is set up.
 	};
 
+	const getColorScheme = (type: string) => {
+		switch (type) {
+			case "detail":
+				return "blue";
+			default:
+				return "gray";
+		}
+	};
+
 	if (isLoading)
 		return (
 			<Center h="100vh">
@@ -145,57 +156,89 @@ const MarvelComics: NextPage = () => {
 								  )} pages`
 								: `You have a total of ${
 										data.data.total
-								  } comics from Marvel in ${Math.ceil(
+								  } creators in Marvel in ${Math.ceil(
 										data.data.total / pageSize
 								  )} pages`}
 						</Text>
 					</Box>
 				)}
 				<SimpleGrid
-					columns={{ base: 1, md: 2 }}
+					columns={{ base: 1, md: 3 }}
 					spacing={30}
 					width="100%"
 				>
 					{data.data &&
 						Array.isArray(data.data.results) &&
-						data.data.results.map((marvelComics: MarvelComics) => (
-							<NextLink
-								href={`/search/marvel/marvel-comics/${marvelComics.id}?page=${currentPage}&query=${searchTerm}`}
-								passHref
-								key={marvelComics.id}
-							>
-								<motion.div whileHover={{ scale: 1.05 }}>
-									<Box
-										boxShadow="0 4px 8px rgba(0,0,0,0.1)"
-										rounded="sm"
-										overflow="hidden"
-										p={4}
-										display="flex"
-										flexDirection="column"
-										alignItems="center"
-										justifyContent="space-between"
-										minH="500px"
-										minW="300px"
-									>
-										<Image
-											src={`${marvelComics.thumbnail.path}/portrait_uncanny.${marvelComics.thumbnail.extension}`}
-											alt={marvelComics.title}
-											maxW="300px"
-											maxH="300px"
-											objectFit="contain"
-										/>
-										<Text
-											fontWeight="bold"
-											fontSize="1.5rem"
-											noOfLines={1}
-											textAlign="center"
+						data.data.results.map(
+							(marvelCreator: MarvelCreator) => (
+								<NextLink
+									href={`/search/marvel/marvel-creators/${marvelCreator.id}?page=${currentPage}&query=${searchTerm}`}
+									passHref
+									key={marvelCreator.id}
+								>
+									<motion.div whileHover={{ scale: 1.05 }}>
+										<Box
+											boxShadow="0 4px 8px rgba(0,0,0,0.1)"
+											rounded="sm"
+											overflow="hidden"
+											p={4}
+											display="flex"
+											flexDirection="column"
+											alignItems="center"
+											justifyContent="space-between"
+											minH="380px"
+											minW="350px"
 										>
-											{marvelComics.title}
-										</Text>
-									</Box>
-								</motion.div>
-							</NextLink>
-						))}
+											<Image
+												src={`${marvelCreator.thumbnail.path}/portrait_uncanny.${marvelCreator.thumbnail.extension}`}
+												alt={marvelCreator.fullName}
+												maxW="300px"
+												maxH="300px"
+												objectFit="contain"
+											/>
+											<Text
+												fontWeight="bold"
+												fontSize="1.5rem"
+												noOfLines={1}
+												textAlign="center"
+											>
+												{marvelCreator.fullName}
+											</Text>
+											{/* Display the detail URL if available */}
+											{/* <Flex wrap="wrap" mt={2}>
+												{marvelCreator.urls.map(
+													(urlItem: UrlItem) => (
+														<Tag
+															key={urlItem.type}
+															colorScheme={getColorScheme(
+																urlItem.type
+															)}
+															mr={2}
+															mb={2}
+														>
+															<a
+																href={
+																	urlItem.url
+																}
+																target="_blank"
+																rel="noopener noreferrer"
+															>
+																{urlItem.type
+																	.charAt(0)
+																	.toUpperCase() +
+																	urlItem.type.slice(
+																		1
+																	)}
+															</a>
+														</Tag>
+													)
+												)}
+											</Flex> */}
+										</Box>
+									</motion.div>
+								</NextLink>
+							)
+						)}
 				</SimpleGrid>
 
 				<MarvelPagination
@@ -208,4 +251,4 @@ const MarvelComics: NextPage = () => {
 	);
 };
 
-export default MarvelComics;
+export default MarvelCreators;

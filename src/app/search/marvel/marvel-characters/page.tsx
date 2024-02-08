@@ -22,7 +22,7 @@ import ComicsPagination from "@/components/ComicsPagination";
 
 import { MarvelCharacter } from "@/types/marvel/marvel-comic.type";
 import MarvelPagination from "@/components/MarvelPagination";
-import {  useGetMarvelCharacters } from "@/hooks/marvel/useMarvelCharacters";
+import { useGetMarvelCharacters } from "@/hooks/marvel/useGetMarvelCharacters";
 
 const MarvelCharacters: NextPage = () => {
 	const pageSize = 16;
@@ -159,44 +159,46 @@ const MarvelCharacters: NextPage = () => {
 				>
 					{data.data &&
 						Array.isArray(data.data.results) &&
-						data.data.results.map((marvelCharacter: MarvelCharacter) => (
-							<NextLink
-								href={`/search/marvel/marvel-characters/${marvelCharacter.id}?page=${currentPage}&query=${searchTerm}`}
-								passHref
-								key={marvelCharacter.id}
-							>
-								<motion.div whileHover={{ scale: 1.05 }}>
-									<Box
-										boxShadow="0 4px 8px rgba(0,0,0,0.1)"
-										rounded="sm"
-										overflow="hidden"
-										p={4}
-										display="flex"
-										flexDirection="column"
-										alignItems="center"
-										justifyContent="space-between"
-										minH="500px"
-										minW="300px"
-									>
-										<Image
-											src={`${marvelCharacter.thumbnail.path}/portrait_uncanny.${marvelCharacter.thumbnail.extension}`}
-											alt={marvelCharacter.name}
-											maxW="300px"
-											maxH="300px"
-											objectFit="contain"
-										/>
-										<Text
-											fontWeight="bold"
-											fontSize="1.5rem"
-											noOfLines={1}
-											textAlign="center"
+						data.data.results.map(
+							(marvelCharacter: MarvelCharacter) => (
+								<NextLink
+									href={`/search/marvel/marvel-characters/${marvelCharacter.id}?page=${currentPage}&query=${searchTerm}`}
+									passHref
+									key={marvelCharacter.id}
+								>
+									<motion.div whileHover={{ scale: 1.05 }}>
+										<Box
+											boxShadow="0 4px 8px rgba(0,0,0,0.1)"
+											rounded="sm"
+											overflow="hidden"
+											p={4}
+											display="flex"
+											flexDirection="column"
+											alignItems="center"
+											justifyContent="space-between"
+											minH="500px"
+											minW="300px"
 										>
-											{marvelCharacter.name}
-										</Text>
-									</Box>
-								</motion.div>
-							</NextLink>
-						))}
+											<Image
+												src={`${marvelCharacter.thumbnail.path}/portrait_uncanny.${marvelCharacter.thumbnail.extension}`}
+												alt={marvelCharacter.name}
+												maxW="300px"
+												maxH="300px"
+												objectFit="contain"
+											/>
+											<Text
+												fontWeight="bold"
+												fontSize="1.5rem"
+												noOfLines={1}
+												textAlign="center"
+											>
+												{marvelCharacter.name}
+											</Text>
+										</Box>
+									</motion.div>
+								</NextLink>
+							)
+						)}
 				</SimpleGrid>
 
 				<MarvelPagination

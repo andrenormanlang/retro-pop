@@ -14,6 +14,8 @@ export async function GET(request: NextRequest) {
   const limit = parseInt(urlParams.get('limit') || '20', 10);
   const searchTerm = urlParams.get('query') || '';
 
+
+
   // Generate a timestamp and hash for the API request
   const ts = new Date().getTime().toString();
   const hash = crypto.createHash('md5').update(ts + privateKey + publicKey).digest('hex');
@@ -21,7 +23,7 @@ export async function GET(request: NextRequest) {
   let apiUrl = `https://gateway.marvel.com:443/v1/public/creators?ts=${ts}&apikey=${publicKey}&hash=${hash}&limit=${limit}`;
 
   if (searchTerm) {
-    apiUrl += `&titleStartsWith=${encodeURIComponent(searchTerm)}`;
+    apiUrl += `&firstName=${encodeURIComponent(searchTerm)}`;
   } else {
     // Calculate the offset based on the page number
     const offset = (page - 1) * limit;

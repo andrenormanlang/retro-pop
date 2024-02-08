@@ -44,6 +44,23 @@ export type MarvelCharacter = {
 	urls: UrlItem[];
 };
 
+export type MarvelCreator =  {
+	id: number;
+	firstName: string;
+	middleName: string;
+	lastName: string;
+	suffix: string;
+	fullName: string;
+	modified: string;
+	thumbnail: ComicImage;
+	resourceURI: string;
+	comics: Comic;
+	series: Series;
+	stories: Stories;
+	events: Event;
+	urls: UrlItem[];
+  }
+
 type TextObject = {
 	type: string;
 	language: string;
