@@ -9,9 +9,9 @@ import {
 	Button,
 	Center,
 	Container,
+	Image,
 	Flex,
 	HStack,
-	Image,
 	Spinner,
 	Tag,
 	Text,
@@ -127,14 +127,15 @@ const SuperheroID = () => {
 					justify=""
 					width={{ sm: "100%", md: "100%", lg: "100%" }} // Responsive width
 				>
-					<Image
-						borderRadius="md"
-						boxSize={{ base: "", md: "300px" }}
-						objectFit="contain"
-						src={superhero.image.url}
-						alt={superhero.name}
-						mb={4}
-					/>
+
+						<Image
+							width="300px" // In Chakra UI, width and height can be set directly like this
+							height="300px"
+							objectFit="contain"
+							borderRadius="20%"
+							src={superhero.image.url}
+							alt={superhero.name}
+						/>
 
 					<VStack
 						ml={5}

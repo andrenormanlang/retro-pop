@@ -61,6 +61,45 @@ export type MarvelCreator =  {
 	urls: UrlItem[];
   }
 
+  export type MarvelEvent = {
+	id: number;
+	title: string;
+	description: string;
+	resourceURI: string;
+	urls: UrlItem[];
+	modified: string;
+	start: string;
+	end: string;
+	thumbnail: ComicImage;
+	creators: CreatorItem[];
+	characters: CharacterItem[];
+	stories: StoryItems[];
+	comics: ComicItem[];
+	series: SeriesItem[];
+	next: MarvelEventSummary;
+	previous: MarvelEventSummary;
+  }
+
+  export type MarvelSeries = {
+	id: number;
+	title: string;
+	description: string;
+	resourceURI: string;
+	urls: UrlItem[];
+	modified: string;
+	start: string;
+	end: string;
+	thumbnail: ComicImage;
+	creators: CreatorItem[];
+	characters: CharacterItem[];
+	stories: StoryItems[];
+	comics: ComicItem[];
+	series: SeriesItem[];
+	next: MarvelEventSummary;
+	previous: MarvelEventSummary;
+  }
+
+
 type TextObject = {
 	type: string;
 	language: string;
@@ -71,6 +110,11 @@ export type SeriesItem = {
 	resourceURI: string;
 	name: string;
 };
+
+type MarvelEventSummary = {
+	resourceURI: string;
+	name: string;
+  }
 
 export type UrlItem = {
 	type: string;

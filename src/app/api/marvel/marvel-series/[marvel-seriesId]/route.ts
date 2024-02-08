@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
   const ts = new Date().getTime().toString();
   const hash = crypto.createHash('md5').update(ts + privateKey + publicKey).digest('hex');
 
-  let apiUrl = `https://gateway.marvel.com:443/v1/public/stories/${serieId}?ts=${ts}&apikey=${publicKey}&hash=${hash}&limit=${limit}`;
+  let apiUrl = `https://gateway.marvel.com:443/v1/public/series/${serieId}?ts=${ts}&apikey=${publicKey}&hash=${hash}&limit=${limit}`;
 
   if (searchTerm) {
     apiUrl += `&titleStartsWith=${encodeURIComponent(searchTerm)}`;
