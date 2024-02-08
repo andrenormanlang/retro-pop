@@ -122,9 +122,10 @@ const SuperheroID = () => {
 					borderWidth="1px"
 					borderColor={borderColor}
 					direction={{ base: "column", md: "row" }}
+					wrap="wrap"
 					align="" // Center align items for better responsiveness
 					justify=""
-					width={{ base: "100%", md: "90%", lg: "1300px" }} // Responsive width
+					width={{ sm: "100%",  md: "100%", lg: "100%" }} // Responsive width
 				>
 					<Box flexShrink={0}>
 						<Image
@@ -256,8 +257,7 @@ const SuperheroID = () => {
 					></HStack>
 				</Flex>
 
-				<Box></Box>
-				{/* ...similar for work and connections... */}
+
 			</VStack>
 		</Container>
 	);
