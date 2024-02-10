@@ -1,8 +1,8 @@
 
 import { useQuery } from '@tanstack/react-query';
 
-async function fetchIssues(searchTerm: string, page: number, pageSize: number) {
-	const url = new URL('/api/comic-vine/issues', window.location.origin);
+async function fetchCharacters(searchTerm: string, page: number, pageSize: number) {
+	const url = new URL('/api/comic-vine/characters', window.location.origin);
 
 	url.searchParams.append('page', page.toString());
 	url.searchParams.append('pageSize', pageSize.toString());
@@ -19,10 +19,10 @@ async function fetchIssues(searchTerm: string, page: number, pageSize: number) {
 	return response.json();
   }
 
-export const useGetComicVineIssues = (category: string, page: number, pageSize: number) => {
+export const useGetComicVineCharacters = (category: string, page: number, pageSize: number) => {
 
   return useQuery({
-	  queryFn: async () => fetchIssues(category, page, pageSize),
+	  queryFn: async () => fetchCharacters(category, page, pageSize),
 	  queryKey: ['comics', category, page],
 
 
@@ -30,17 +30,18 @@ export const useGetComicVineIssues = (category: string, page: number, pageSize: 
 };
 
 
-const fetchIssue = async (issueId: string) => {
-	const response = await fetch(`/api/comic-vine/issues/${issueId}`);
+const fetchCharacter = async (issueId: string) => {
+	const response = await fetch(`/api/comic-vine/characters/${issueId}`);
+	console.log('response', response);
 	if (!response.ok) {
 	  throw new Error('Network response was not ok');
 	}
 	return response.json();
   };
 
-  export const useGetComicVineIssue = (query: string, page: number, issueId: string) => {
+  export const useGetComicVineCharacter = (query: string, page: number, issueId: string) => {
 	return useQuery({
-		queryFn: async () => fetchIssue( issueId),
+		queryFn: async () => fetchCharacter( issueId),
 		queryKey: ['comic', query, page, issueId],
 	});
   };

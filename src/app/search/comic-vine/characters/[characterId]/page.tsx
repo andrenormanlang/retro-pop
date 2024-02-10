@@ -24,8 +24,10 @@ import { ArrowBackIcon } from "@chakra-ui/icons";
 import { NextPage } from "next";
 import { useGetComicVineIssue } from "@/hooks/comic-vine/useComicVine";
 import { useSearchParams } from "next/navigation";
-import { useSearchParameters } from "../../../../hooks/useSearchParameters";
+
 import { getCurrentPage } from "@/helpers/ComicVineIssues/getCurrentPage";
+import { useSearchParameters } from "@/hooks/useSearchParameters";
+import { useGetComicVineCharacter } from "@/hooks/comic-vine/useGetComicVineCharacters";
 
 const IssuePage: NextPage = () => {
 	// const [comic, setComic] = useState<ComicVineIssue | null>(null);
@@ -45,14 +47,14 @@ const IssuePage: NextPage = () => {
 		isLoading,
 		isError,
 		error,
-	} = useGetComicVineIssue(searchTerm, currentPage, issueId);
+	} = useGetComicVineCharacter(searchTerm, currentPage, issueId);
 
 	const handleBack = () => {
 		// Read the page number and search term from the search parameters
 
 
 		// Navigate back to the issues page with both the page number and search term
-		router.push(`/search/comic-vine?page=${currentPage}&query=${encodeURIComponent(searchTerm)}`);
+		router.push(`/search/comic-vine/characters?page=${currentPage}&query=${encodeURIComponent(searchTerm)}`);
 	};
 
 	console.log('HANDLE BACK', handleBack);
@@ -164,7 +166,7 @@ const IssuePage: NextPage = () => {
 						/>
 
 						<VStack spacing={4} align="">
-							<HStack justifyContent="" mt={2}>
+							{/* <HStack justifyContent="" mt={2}>
 								<Tag
 									fontFamily="Bangers"
 									letterSpacing="0.05em"
@@ -179,8 +181,8 @@ const IssuePage: NextPage = () => {
 								>
 									{coverDate}
 								</Tag>
-							</HStack>
-							<Heading
+							</HStack> */}
+							{/* <Heading
 								fontFamily="Bangers"
 								letterSpacing="0.05em"
 								color="tomato"
@@ -188,7 +190,7 @@ const IssuePage: NextPage = () => {
 								size="lg"
 							>
 								{volumeName}
-							</Heading>
+							</Heading> */}
 
 							<Box
 								bg={bgColor}
@@ -222,7 +224,7 @@ const IssuePage: NextPage = () => {
 					justify="space-between"
 					gap={8}
 				>
-					<VStack spacing={4} w="full" align="start">
+					{/* <VStack spacing={4} w="full" align="start">
 						<Heading
 							size="md"
 							fontFamily="Bangers"
@@ -278,7 +280,7 @@ const IssuePage: NextPage = () => {
 									)
 								)}
 						</SimpleGrid>
-					</VStack>
+					</VStack> */}
 				</Flex>
 			</Container>
 		</Suspense>

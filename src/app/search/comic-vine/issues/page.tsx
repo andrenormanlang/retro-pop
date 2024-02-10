@@ -185,7 +185,7 @@ const Issues: NextPage = () => {
 
 						return (
 							<NextLink
-								href={`/search/comic-vine/${comic.id}?page=${currentPage}&query=${searchTerm}`}
+								href={`/search/comic-vine/issues/${comic.id}?page=${currentPage}&query=${searchTerm}`}
 								passHref
 								key={comic.id}
 							>

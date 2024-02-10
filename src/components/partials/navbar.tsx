@@ -104,7 +104,16 @@ const Navbar = () => {
 		{
 			name: "Search",
 			submenu: [
-				{ name: "Comic Vine", href: "/search/comic-vine" },
+				{ name: "Comic Vine",
+					submenu: [
+					{	name: "Issues",
+						href: "/search/comic-vine/issues"
+					},
+					{	name: "Characters",
+						href: "/search/comic-vine/characters"
+					},
+				]
+				},
 				{ name: "Characters",
 					submenu: [
 					{	name: "Superheros API",
