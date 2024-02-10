@@ -18,14 +18,13 @@ import SearchBox from "@/components/SearchBox";
 import { useDebouncedCallback } from "use-debounce";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSearchParameters } from "@/hooks/useSearchParameters";
-import ComicsPagination from "@/components/ComicsPagination";
-
-import { MarvelCharacter } from "@/types/marvel/marvel-comic.type";
 import MarvelPagination from "@/components/MarvelPagination";
-import { useGetMarvelCharacters } from "@/hooks/marvel/useGetMarvelCharacters";
+import { MarvelSeries, MarvelStory } from "@/types/marvel/marvel-comic.type";
+import { useGetMarvelStories } from "@/hooks/marvel/useGetMarvelStories";
 
-const MarvelCharacters: NextPage = () => {
-	const pageSize = 16;
+
+const MarvelStories: NextPage = () => {
+	const pageSize = 15;
 	const router = useRouter();
 	const [searchParams, setSearchParams] = useSearchParams();
 
@@ -34,7 +33,7 @@ const MarvelCharacters: NextPage = () => {
 
 	const { searchTerm, setSearchTerm } = useSearchParameters(1, "");
 
-	const { data, isLoading, isError, error } = useGetMarvelCharacters(
+	const { data, isLoading, isError, error } = useGetMarvelStories(
 		searchTerm,
 		currentPage,
 		pageSize
@@ -131,6 +130,9 @@ const MarvelCharacters: NextPage = () => {
 		);
 	}
 
+
+	  const result = data?.data?.results[0];;
+
 	return (
 		<Suspense fallback={<div>Loading...</div>}>
 			<Container maxW="container.xl" centerContent p={4}>
@@ -146,7 +148,7 @@ const MarvelCharacters: NextPage = () => {
 								  )} pages`
 								: `You have a total of ${
 										data.data.total
-								  } Marvel characters in ${Math.ceil(
+								  } Marvel Stories in ${Math.ceil(
 										data.data.total / pageSize
 								  )} pages`}
 						</Text>
@@ -159,46 +161,69 @@ const MarvelCharacters: NextPage = () => {
 				>
 					{data.data &&
 						Array.isArray(data.data.results) &&
-						data.data.results.map(
-							(marvelCharacter: MarvelCharacter) => (
-								<NextLink
-									href={`/search/marvel/marvel-characters/${marvelCharacter.id}?page=${currentPage}&query=${searchTerm}`}
-									passHref
-									key={marvelCharacter.id}
-								>
-									<motion.div whileHover={{ scale: 1.05 }}>
-										<Box
-											boxShadow="0 4px 8px rgba(0,0,0,0.1)"
-											rounded="sm"
-											overflow="hidden"
-											p={4}
-											display="flex"
-											flexDirection="column"
-											alignItems="center"
-											justifyContent="space-between"
-											minH="500px"
-											minW="300px"
-										>
-											<Image
-												src={`${marvelCharacter.thumbnail.path}/portrait_uncanny.${marvelCharacter.thumbnail.extension}`}
-												alt={marvelCharacter.name}
-												maxW="300px"
-												maxH="300px"
-												objectFit="contain"
-											/>
-											<Text
-											mt={4}
+						data.data.results.map((marvelStories: MarvelStory) => (
+
+							<NextLink
+								href={`/search/marvel/marvel-stories/${marvelStories.id}?page=${currentPage}&query=${searchTerm}`}
+								passHref
+								key={marvelStories.id}
+							>
+								<motion.div whileHover={{ scale: 1.05 }}>
+									<Box
+										boxShadow="0 4px 8px rgba(0,0,0,0.1)"
+										rounded="sm"
+										overflow="hidden"
+										p={4}
+										display="flex"
+										flexDirection="column"
+
+										objectFit="cover"
+										justifyContent=""
+										minH="380px"
+										minW="200px"
+									>
+										{/* <Image
+											src={`${marvelStories.thumbnail}/portrait_uncanny.jpg`}
+											alt={marvelStories.thumbnail}
+											maxW="300px"
+											maxH="300px"
+											objectFit="contain"
+										/> */}
+										{/* Render title and type here */}
+										<Text
 											fontWeight="bold"
-											fontSize="1rem"
+											fontSize={"lg"}
+
+											flex={1}
 											textAlign="center"
 										>
-												{marvelCharacter.name}
-											</Text>
-										</Box>
-									</motion.div>
-								</NextLink>
-							)
-						)}
+											{marvelStories.originalIssue.name}
+										</Text>
+										<Text
+											mt={1}
+											fontWeight=""
+											fontSize={"md"}
+											letterSpacing="0.08rem"
+											flex={1}
+											textAlign="initial"
+										>
+											{marvelStories.title}{" "}
+
+										</Text>
+										<Text
+											fontWeight=""
+											fontSize="1rem"
+											letterSpacing="0.08rem"
+											flex={1}
+											textAlign="initial"
+										>	type: {marvelStories.type}
+
+										</Text>
+										{/* Render name or any other detail here */}
+									</Box>
+								</motion.div>
+							</NextLink>
+						))}
 				</SimpleGrid>
 
 				<MarvelPagination
@@ -211,4 +236,4 @@ const MarvelCharacters: NextPage = () => {
 	);
 };
 
-export default MarvelCharacters;
+export default MarvelStories;

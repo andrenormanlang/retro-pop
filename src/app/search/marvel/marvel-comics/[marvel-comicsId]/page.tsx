@@ -18,11 +18,14 @@ import {
 	SimpleGrid,
 } from "@chakra-ui/react";
 import { ArrowBackIcon } from "@chakra-ui/icons";
+import NextLink from "next/link";
 import { NextPage } from "next";
 import { useSearchParams } from "next/navigation";
 import { useGetMarvelComic } from "@/hooks/marvel/useGetMarvelComics";
 import { useSearchParameters } from "@/hooks/useSearchParameters";
-import { CharacterItem, CreatorItem } from "@/types/marvel/marvel-comic.type";
+import { CharacterItem, ComicItem, CreatorItem, EventItem, SeriesItem, StoryItems } from "@/types/marvel/marvel-comic.type";
+import { extractIdFromURI } from "@/helpers/Marvel/extractIdFromURI";
+import FlexContainer from "@/helpers/Marvel/FlexContainer";
 
 const MarvelComic: NextPage = () => {
 	// const [comic, setComic] = useState<ComicVineIssue | null>(null);
@@ -31,6 +34,9 @@ const MarvelComic: NextPage = () => {
 	const { searchTerm, currentPage } = useSearchParameters();
 	const bgColor = useColorModeValue("white", "gray.800");
 	const borderColor = useColorModeValue("gray.200", "gray.700");
+	const hoverBgColor = useColorModeValue('red.100', 'red.700');
+	const textColor = useColorModeValue('black', 'white');
+	const boxHoverShadow = '0 0 10px 0 rgba(0,0,0,0.5)';
 	const pathname = usePathname();
 	const comicId = pathname.split("/").pop() || "";
 	const searchParams = useSearchParams();
@@ -56,6 +62,14 @@ const MarvelComic: NextPage = () => {
 		};
 		return new Date(dateString).toLocaleDateString(undefined, options);
 	};
+
+	const linkHoverStyle = {
+		textDecoration: 'none',
+		backgroundColor: useColorModeValue('red.100', 'red.700'), // change color based on color mode
+		transform: 'translateY(-2px)', // subtle lift effect
+		boxShadow: 'lg', // larger shadow for lifted effect
+	  };
+
 
 	if (isLoading)
 		return (
@@ -152,7 +166,7 @@ const MarvelComic: NextPage = () => {
 						<VStack
 							spacing={4}
 							align="start"
-							maxW="600px"
+							maxW="1000px"
 							marginLeft={4}
 						>
 							<Tag
@@ -179,38 +193,26 @@ const MarvelComic: NextPage = () => {
 								p={4}
 								bg={bgColor}
 								borderRadius="md"
-								borderWidth="1px"
+								// borderWidth="1px"
 								borderColor={borderColor}
 							>
 								{solicitationText}
-
-								<Flex
-									direction="column" // Set direction to column to stack children vertically
-									align="stretch" // Stretch children to take full width
-									w="full"
-								></Flex>
 							</Text>
 						</VStack>
 					</Flex>
 					<Flex
-						bg={bgColor}
-						p={4}
-						borderRadius="md"
-						borderWidth="1px"
-						borderColor={borderColor}
-						direction={{ base: "column", md: "row" }}
-						align="flex-start" // Align children to the start of the cross-axis
-						justify="space-between" // Add space between the children
-						width={{ base: "100%", md: "90%", lg: "1100px" }} // Responsive width
-					>
-						<VStack
-							spacing={4}
-							w="full"
-							align="start"
-							flex={1}
-							mr={3}
-						>
-							{" "}
+					bg={bgColor}
+					p={4}
+					borderRadius="md"
+					borderWidth="1px"
+					borderColor={borderColor}
+					direction={{ base: "column", md: "row" }}
+					align="flex-start"
+					justify="space-between"
+					width={{ base: "100%", md: "90%", lg: "1100px" }}
+				>
+					<VStack spacing={4} align="stretch">
+						<Box>
 							<Heading
 								size="md"
 								fontFamily="Bangers"
@@ -221,23 +223,31 @@ const MarvelComic: NextPage = () => {
 							</Heading>
 							<SimpleGrid
 								columns={{ base: 2, md: 3 }}
-								spacing={4}
+								spacing={1}
 							>
 								{result?.creators?.items?.map(
-									(creator: CreatorItem) => (
-										<Box
-											key={creator.name}
-											p={2}
-											boxShadow="md"
-											borderRadius="md"
-										>
-											<Text textAlign="start">{`${creator.name} - ${creator.role}`}</Text>
-										</Box>
-									)
+									(creator: CreatorItem) => {
+										const comicId = extractIdFromURI(
+											creator.resourceURI
+										);
+
+										// Wrap with NextLink for navigation
+										return (
+											<NextLink
+												href={`/search/marvel/marvel-creators/${comicId}`}
+												passHref
+												key={creator.name}
+											>
+												 <FlexContainer as="a" p={2} boxShadow="md" borderRadius="md" _hover={linkHoverStyle}>
+													<Text textAlign="start">{`${creator.name} - ${creator.role}`}</Text>
+												</FlexContainer>
+											</NextLink>
+										);
+									}
 								)}
 							</SimpleGrid>
-						</VStack>
-						<VStack spacing={4} w="full" align="start" flex={1}>
+						</Box>
+						<Box>
 							<Heading
 								size="md"
 								fontFamily="Bangers"
@@ -249,22 +259,149 @@ const MarvelComic: NextPage = () => {
 							<SimpleGrid
 								columns={{ base: 2, md: 3 }}
 								spacing={4}
-							>
-								{result?.characters?.items?.map(
-									(character: CharacterItem) => (
-										<Box
-											key={character.name}
-											p={2}
-											boxShadow="md"
-											borderRadius="md"
+							>	{result?.characters?.items?.map(
+								(charactersItem: CharacterItem) => {
+									// Extract the ID inside the map callback function
+									const comicId = extractIdFromURI(
+										charactersItem.resourceURI
+									);
+
+									return (
+										// Assuming you have a route set up for comic details
+										<NextLink
+											href={`/search/marvel/marvel-characters/${comicId}`}
+											passHref
+											key={charactersItem.name}
 										>
-											<Text textAlign="start">{`${character.name}`}</Text>
-										</Box>
-									)
+											<FlexContainer as="a" p={2} boxShadow="md" borderRadius="md" _hover={linkHoverStyle}>
+												<Text textAlign="start">
+													{charactersItem.name}
+												</Text>
+											</FlexContainer>
+										</NextLink>
+									);
+								}
+							)}
+							</SimpleGrid>
+						</Box>
+						
+						<Box>
+							<Heading
+								size="md"
+								fontFamily="Bangers"
+								letterSpacing="0.05em"
+								color="orange"
+							>
+								Series:
+							</Heading>
+							<SimpleGrid
+								columns={{ base: 2, md: 3 }}
+								spacing={1}
+
+							>
+								{result?.comics?.items?.map(
+									(seriesItem: SeriesItem) => {
+										// Extract the ID inside the map callback function
+										const comicId = extractIdFromURI(
+											seriesItem.resourceURI
+										);
+
+										return (
+											// Assuming you have a route set up for comic details
+											<NextLink
+												href={`/search/marvel/marvel-series/${comicId}`}
+												passHref
+												key={seriesItem.name}
+											>
+												<FlexContainer as="a" p={2} boxShadow="md" borderRadius="md" _hover={linkHoverStyle}>
+													<Text textAlign="start">
+														{seriesItem.name}
+													</Text>
+												</FlexContainer>
+											</NextLink>
+										);
+									}
 								)}
 							</SimpleGrid>
-						</VStack>
-					</Flex>
+						</Box>
+						<Box>
+							<Heading
+								size="md"
+								fontFamily="Bangers"
+								letterSpacing="0.05em"
+								color="orange"
+							>
+								Events:
+							</Heading>
+							<SimpleGrid
+								columns={{ base: 2, md: 3 }}
+								spacing={1}
+							>
+								{result?.events?.items?.map(
+									(eventItem: EventItem) => {
+										// Extract the ID inside the map callback function
+										const comicId = extractIdFromURI(
+											eventItem.resourceURI
+										);
+
+										return (
+											// Assuming you have a route set up for comic details
+											<NextLink
+												href={`/search/marvel/marvel-events/${comicId}`}
+												passHref
+												key={eventItem.name}
+											>
+												<FlexContainer as="a" p={2} boxShadow="md" borderRadius="md" _hover={linkHoverStyle}>
+													<Text textAlign="start">
+														{eventItem.name}
+													</Text>
+												</FlexContainer>
+											</NextLink>
+										);
+									}
+								)}
+							</SimpleGrid>
+						</Box>
+						<Box>
+							<Heading
+								size="md"
+								fontFamily="Bangers"
+								letterSpacing="0.05em"
+								color="orange"
+							>
+								Stories:
+							</Heading>
+							<SimpleGrid
+								columns={{ base: 2, md: 3 }}
+								spacing={1}
+							>
+								{result?.stories?.items?.map(
+									(storyItem: StoryItems) => {
+										// Extract the ID inside the map callback function
+										const comicId = extractIdFromURI(
+											storyItem.resourceURI
+										);
+
+										return (
+											// Assuming you have a route set up for comic details
+											<NextLink
+												href={`/search/marvel/marvel-stories/${comicId}`}
+												passHref
+												key={storyItem.name}
+											>
+												<FlexContainer as="a" p={2} boxShadow="md" borderRadius="md" _hover={linkHoverStyle}>
+													<Text textAlign="start">
+														{storyItem.name}
+													</Text>
+												</FlexContainer>
+											</NextLink>
+										);
+									}
+								)}
+							</SimpleGrid>
+						</Box>
+					</VStack>
+				</Flex>
 				</VStack>
 			</Container>
 		</Suspense>

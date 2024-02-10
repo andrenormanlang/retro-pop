@@ -20,7 +20,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useSearchParameters } from "@/hooks/useSearchParameters";
 import MarvelPagination from "@/components/MarvelPagination";
 import { MarvelEvent, MarvelSeries } from "@/types/marvel/marvel-comic.type";
-import { useGetMarvelSeries } from "@/hooks/marvel/useGetMarveSeries";
+import { useGetMarvelSeries } from "@/hooks/marvel/useGetMarvelSeries";
 
 const MarvelSeries: NextPage = () => {
 	const pageSize = 15;
@@ -185,9 +185,9 @@ const MarvelSeries: NextPage = () => {
 											objectFit="contain"
 										/>
 										<Text
+											mt={4}
 											fontWeight="bold"
-											fontSize="1.5rem"
-											noOfLines={1}
+											fontSize="1rem"
 											textAlign="center"
 										>
 											{marvelSeries.title}

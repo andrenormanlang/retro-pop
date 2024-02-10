@@ -197,11 +197,11 @@ const MarvelCreators: NextPage = () => {
 												objectFit="contain"
 											/>
 											<Text
-												fontWeight="bold"
-												fontSize="1.5rem"
-												noOfLines={1}
-												textAlign="center"
-											>
+											mt={4}
+											fontWeight="bold"
+											fontSize="1rem"
+											textAlign="center"
+										>
 												{marvelCreator.fullName}
 											</Text>
 											{/* Display the detail URL if available */}

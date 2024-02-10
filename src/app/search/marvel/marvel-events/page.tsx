@@ -185,9 +185,9 @@ const MarvelEvents: NextPage = () => {
 											objectFit="contain"
 										/>
 										<Text
+											mt={4}
 											fontWeight="bold"
-											fontSize="1.5rem"
-											noOfLines={1}
+											fontSize="1rem"
 											textAlign="center"
 										>
 											{marvelEvents.title}

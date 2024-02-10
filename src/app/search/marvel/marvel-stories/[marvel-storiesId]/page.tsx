@@ -18,46 +18,42 @@ import {
 	SimpleGrid,
 } from "@chakra-ui/react";
 import { ArrowBackIcon } from "@chakra-ui/icons";
-import NextLink from "next/link";
 import { NextPage } from "next";
-import { useSearchParams } from "next/navigation";
+import NextLink from "next/link";
 import { useSearchParameters } from "@/hooks/useSearchParameters";
-import { CharacterItem, ComicItem, CreatorItem, EventItem, SeriesItem, StoryItems } from "@/types/marvel/marvel-comic.type";
-import { useGetMarvelEvent } from "@/hooks/marvel/useGetMarvelEvents";
+import {
+	CharacterItem,
+	ComicItem,
+	CreatorItem,
+	EventItem,
+	SeriesItem,
+	StoryItems,
+	UrlItem,
+} from "@/types/marvel/marvel-comic.type";
+import { useGetMarvelStory } from "@/hooks/marvel/useGetMarvelStories";
 import { extractIdFromURI } from "@/helpers/Marvel/extractIdFromURI";
 import FlexContainer from "@/helpers/Marvel/FlexContainer";
 
-const MarvelEvent: NextPage = () => {
+const MarvelStory: NextPage = () => {
 	// const [comic, setComic] = useState<ComicVineIssue | null>(null);
 	const router = useRouter();
-	const [setIsLoading] = useState(false);
 	const { searchTerm, currentPage } = useSearchParameters();
 	const bgColor = useColorModeValue("white", "gray.800");
 	const borderColor = useColorModeValue("gray.200", "gray.700");
 	const pathname = usePathname();
 	const comicId = pathname.split("/").pop() || "";
-	const searchParams = useSearchParams();
 
-	const { data, isLoading, isError, error } = useGetMarvelEvent(comicId);
+	const { data, isLoading, isError, error } = useGetMarvelStory(comicId);
 
 	const handleBack = () => {
 		// Read the page number and search term from the search parameters
 
 		// Navigate back to the issues page with both the page number and search term
 		router.push(
-			`/search/marvel/marvel-events?page=${currentPage}&query=${encodeURIComponent(
+			`/search/marvel/marvel-stories?page=${currentPage}&query=${encodeURIComponent(
 				searchTerm
 			)}`
 		);
-	};
-
-	const formatDate = (dateString: string) => {
-		const options: Intl.DateTimeFormatOptions = {
-			day: "numeric",
-			month: "short",
-			year: "numeric",
-		};
-		return new Date(dateString).toLocaleDateString(undefined, options);
 	};
 
 	const linkHoverStyle = {
@@ -98,60 +94,76 @@ const MarvelEvent: NextPage = () => {
 		);
 	}
 
-	const result = data?.data?.results?.[0];
+	const getColorScheme = (type: string) => {
+		switch (type) {
+			case "detail":
+				return "blue";
+			case "wiki":
+				return "green";
+			case "comiclink":
+				return "red";
+			default:
+				return "gray";
+		}
+	};
 
-	const solicitationText =
-		result?.description || "No description available.";
+	console.log("data", data);
+
+	const result = data?.data?.results[0];
+	const originaId = extractIdFromURI(result.originalIssue.resourceURI);
+	console.log("originalId", originaId);
+
+	const solicitationText = result?.title || "No description available.";
+
+	console.log("result", result);
 
 	return (
+		<Container maxW="1100px" p={4}>
+			<Box mb={4}>
+				<Button
+					leftIcon={<ArrowBackIcon />}
+					colorScheme="teal"
+					variant="outline"
+					onClick={handleBack}
+				>
+					Back to Grid
+				</Button>
+			</Box>
 
-			<Container maxW="1100px" p={4}>
-				<Box mb={4}>
-					<Button
-						leftIcon={<ArrowBackIcon />}
-						colorScheme="teal"
-						variant="outline"
-						onClick={handleBack}
+			<VStack spacing={2}>
+				{/* Content Box */}
+				<Flex
+					bg={bgColor}
+					p={4}
+					borderRadius="md"
+					borderWidth="1px"
+					borderColor={borderColor}
+					direction={{ base: "column", md: "row" }}
+					align="" // Center align items for better responsiveness
+					justify=""
+					width={{ base: "100%", md: "90%", lg: "1100px" }} // Responsive width
+				>
+					{/* Image */}
+					{/* <Image
+						src={`${result?.thumbnail.path}/portrait_uncanny.jpg`}
+						alt={data?.data?.results?.[0]?.title || "No Title"}
+						maxW="300px"
+						maxH="450px"
+						objectFit="contain"
+					/> */}
+
+					<VStack
+						spacing={4}
+						align="start"
+						maxW="1000px"
+						marginLeft={4}
 					>
-						Back to Grid
-					</Button>
-				</Box>
-
-				<VStack spacing={2}>
-					{/* Content Box */}
-					<Flex
-						bg={bgColor}
-						p={4}
-						borderRadius="md"
-						borderWidth="1px"
-						borderColor={borderColor}
-						direction={{ base: "column", md: "row" }}
-						align="" // Center align items for better responsiveness
-						justify=""
-						width={{ base: "100%", md: "90%", lg: "1100px" }} // Responsive width
-					>
-						{/* Image */}
-						<Image
-							src={`${result?.thumbnail.path}/portrait_uncanny.jpg`}
-							alt={data?.data?.results?.[0]?.title || "No Title"}
-							maxW="300px"
-							maxH="450px"
-							objectFit="contain"
-						/>
-
-						<VStack
-							spacing={4}
-							align="start"
-							maxW="1000px"
-							marginLeft={4}
-						>
-							{/* <Tag
+						{/* <Tag
 								size="lg"
 								colorScheme="blue"
 							>{`Issue #${result?.issueNumber}`}</Tag> */}
-							<Flex>
-
-							<Tag size="lg" colorScheme="green">
+						<Flex>
+							{/* <Tag size="lg" colorScheme="green">
 								START: {formatDate(
 									result?.start
 								)}
@@ -161,50 +173,97 @@ const MarvelEvent: NextPage = () => {
 									END: {formatDate(
 									result?.end
 								)}
-							</Tag>
+							</Tag> */}
+						</Flex>
+						<Heading
+							fontFamily="Bangers"
+							letterSpacing="0.05em"
+							color="tomato"
+							size="lg"
+						>
+							{result?.originalIssue.name}
+						</Heading>
+						<Text
+							p={4}
+							bg={bgColor}
+							fontSize={{ base: "sm", md: "md" }}
+							borderColor={borderColor}
+						>
+							{solicitationText}
+							<Flex wrap="wrap" mt={2}>
+								{/* {result?.urls?.map((urlItem: UrlItem) => (
+									<Tag
+										key={urlItem.type}
+										colorScheme={getColorScheme(
+											urlItem.type
+										)}
+										mr={2}
+										mb={2}
+										minH="30px"
+									>
+										<a
+											href={urlItem.url}
+											target="_blank"
+											rel="noopener noreferrer"
+										>
+											{urlItem.type
+												.charAt(0)
+												.toUpperCase() +
+												urlItem.type.slice(1)}
+										</a>
+									</Tag>
+								))} */}
 							</Flex>
-							<Heading
-								fontFamily="Bangers"
-								letterSpacing="0.05em"
-								color="tomato"
-								size="lg"
-							>
-								{result?.title || "Unknown Event"}
-							</Heading>
-							<Text
-								p={4}
-								bg={bgColor}
-								borderRadius="md"
-								// borderWidth="1px"
-								borderColor={borderColor}
-							>
-								{solicitationText}
-								<Flex justify="space-between" mt={4}>
-          {result.previous && (
-            <Tag colorScheme="purple" mr={2} minH="40px">
-              <NextLink href={result.previous.resourceURI}>Previous: {result.previous.name}</NextLink>
-            </Tag>
-          )}
-          {result.next && (
-            <Tag colorScheme="teal"minH="40px">
-              <NextLink href={result.next.resourceURI}>Next: {result.next.name}</NextLink>
-            </Tag>
-          )}
-        </Flex>
-							</Text>
-						</VStack>
-					</Flex>
-
-					<Flex
+						</Text>
+					</VStack>
+				</Flex>
+				<Flex
+					bg={bgColor}
+					// p={4}
+					borderRadius="md"
+					// borderWidth="1px"
+					// borderColor={borderColor}
+					direction={{ base: "column", md: "row" }}
+					align="flex-start" // Align children to the start of the cross-axis
+					justify="space-between" // Add space between the children
+					width={{ base: "100%", md: "90%", lg: "1100px" }} // Responsive width
+				>
+					<VStack
+						// spacing={4}
+						// w="full"
+						align="start"
+						flex={1}
+						mr={3}
+					>
+						{" "}
+						<Heading
+							size="md"
+							fontFamily="Bangers"
+							// letterSpacing="0.05em"
+							color="orange"
+						></Heading>
+						<SimpleGrid
+							columns={{ base: 2, md: 3 }}
+							// spacing={4}
+						></SimpleGrid>
+					</VStack>
+					<VStack
+						// spacing={4}
+						w="full"
+						align="start"
+						flex={1}
+					></VStack>
+				</Flex>
+				<Flex
 					bg={bgColor}
 					p={4}
 					borderRadius="md"
 					borderWidth="1px"
 					borderColor={borderColor}
 					direction={{ base: "column", md: "row" }}
-					align="flex-start"
-					justify="space-between"
-					width={{ base: "100%", md: "90%", lg: "1100px" }}
+					align="flex-start" // Align children to the start of the cross-axis
+					justify="space-between" // Add space between the children
+					width={{ base: "100%", md: "90%", lg: "1100px" }} // Responsive width
 				>
 					<VStack spacing={4} align="stretch">
 						<Box>
@@ -291,7 +350,6 @@ const MarvelEvent: NextPage = () => {
 							<SimpleGrid
 								columns={{ base: 2, md: 3 }}
 								spacing={1}
-
 							>
 								{result?.comics?.items?.map(
 									(comicItem: ComicItem) => {
@@ -325,30 +383,29 @@ const MarvelEvent: NextPage = () => {
 								letterSpacing="0.05em"
 								color="orange"
 							>
-								Series:
+								Events:
 							</Heading>
 							<SimpleGrid
 								columns={{ base: 2, md: 3 }}
 								spacing={1}
-
 							>
-								{result?.comics?.items?.map(
-									(seriesItem: SeriesItem) => {
+								{result?.events?.items?.map(
+									(eventItem: EventItem) => {
 										// Extract the ID inside the map callback function
 										const comicId = extractIdFromURI(
-											seriesItem.resourceURI
+											eventItem.resourceURI
 										);
 
 										return (
 											// Assuming you have a route set up for comic details
 											<NextLink
-												href={`/search/marvel/marvel-comics/${comicId}`}
+												href={`/search/marvel/marvel-events/${comicId}`}
 												passHref
-												key={seriesItem.name}
+												key={eventItem.name}
 											>
 												<FlexContainer as="a" p={2} boxShadow="md" borderRadius="md" _hover={linkHoverStyle}>
 													<Text textAlign="start">
-														{seriesItem.name}
+														{eventItem.name}
 													</Text>
 												</FlexContainer>
 											</NextLink>
@@ -397,10 +454,9 @@ const MarvelEvent: NextPage = () => {
 						</Box>
 					</VStack>
 				</Flex>
-				</VStack>
-			</Container>
-
+			</VStack>
+		</Container>
 	);
 };
 
-export default MarvelEvent;
+export default MarvelStory;

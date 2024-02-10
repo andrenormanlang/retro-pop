@@ -99,6 +99,22 @@ export type MarvelCreator =  {
 	previous: MarvelEventSummary;
   }
 
+  export type MarvelStory = {
+	id: number;
+	title: string;
+	description: string;
+	resourceURI: string;
+	type: string;
+	modified: string;
+	thumbnail: string;
+	creators: ComicCreators;
+	characters: ComicCharacters;
+	series: Series;
+	comics: Comic;
+	events: Event;
+	originalIssue: OriginalIssue;
+  }
+
 
 type TextObject = {
 	type: string;
@@ -236,3 +252,9 @@ type ComicEvents = {
 	items: any[];
 	returned: number;
 };
+
+type OriginalIssue = {
+	resourceURI: string;
+	name: string;
+  }
+

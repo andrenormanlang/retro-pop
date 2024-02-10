@@ -18,7 +18,6 @@ import SearchBox from "@/components/SearchBox";
 import { useDebouncedCallback } from "use-debounce";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSearchParameters } from "@/hooks/useSearchParameters";
-import ComicsPagination from "@/components/ComicsPagination";
 import { useGetMarvelComics } from "@/hooks/marvel/useGetMarvelComics";
 import { MarvelComics } from "@/types/marvel/marvel-comics.type";
 import MarvelPagination from "@/components/MarvelPagination";
@@ -174,7 +173,7 @@ const MarvelComics: NextPage = () => {
 										flexDirection="column"
 										alignItems="center"
 										justifyContent="space-between"
-										minH="500px"
+										minH="300px"
 										minW="300px"
 									>
 										<Image
@@ -185,9 +184,9 @@ const MarvelComics: NextPage = () => {
 											objectFit="contain"
 										/>
 										<Text
+											mt={4}
 											fontWeight="bold"
-											fontSize="1.5rem"
-											noOfLines={1}
+											fontSize="1rem"
 											textAlign="center"
 										>
 											{marvelComics.title}
