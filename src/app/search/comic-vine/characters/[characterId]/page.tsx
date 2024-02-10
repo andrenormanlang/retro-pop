@@ -19,7 +19,11 @@ import {
 	Spinner,
 	SimpleGrid,
 } from "@chakra-ui/react";
-import { CharacterCredit, PersonCredit, SearchQuery } from "@/types/comic.types";
+import {
+	CharacterCredit,
+	PersonCredit,
+	SearchQuery,
+} from "@/types/comic.types";
 import { ArrowBackIcon } from "@chakra-ui/icons";
 import { NextPage } from "next";
 import { useGetComicVineIssue } from "@/hooks/comic-vine/useComicVine";
@@ -29,13 +33,10 @@ import { getCurrentPage } from "@/helpers/ComicVineIssues/getCurrentPage";
 import { useSearchParameters } from "@/hooks/useSearchParameters";
 import { useGetComicVineCharacter } from "@/hooks/comic-vine/useGetComicVineCharacters";
 
-const IssuePage: NextPage = () => {
+const ComicVineCharacter: NextPage = () => {
 	// const [comic, setComic] = useState<ComicVineIssue | null>(null);
 	const router = useRouter();
-	const {
-		searchTerm,
-		currentPage,
-	} = useSearchParameters();
+	const { searchTerm, currentPage } = useSearchParameters();
 	const bgColor = useColorModeValue("white", "gray.800");
 	const borderColor = useColorModeValue("gray.200", "gray.700");
 	const pathname = usePathname();
@@ -52,12 +53,14 @@ const IssuePage: NextPage = () => {
 	const handleBack = () => {
 		// Read the page number and search term from the search parameters
 
-
 		// Navigate back to the issues page with both the page number and search term
-		router.push(`/search/comic-vine/characters?page=${currentPage}&query=${encodeURIComponent(searchTerm)}`);
+		router.push(
+			`/search/comic-vine/characters?page=${currentPage}&query=${encodeURIComponent(
+				searchTerm
+			)}`
+		);
 	};
 
-	console.log('HANDLE BACK', handleBack);
 
 	const formatDate = (dateString: string) => {
 		const options: Intl.DateTimeFormatOptions = {
@@ -67,6 +70,9 @@ const IssuePage: NextPage = () => {
 		};
 		return new Date(dateString).toLocaleDateString(undefined, options);
 	};
+
+
+
 
 	if (isLoading)
 		return (
@@ -100,13 +106,13 @@ const IssuePage: NextPage = () => {
 
 	const imageUrl = comic.results?.image?.original_url || "defaultImageUrl";
 	const volumeName = comic.results?.volume?.name || "Unknown Volume";
-	console.log("imageUrl", imageUrl);
 	const coverDate = comic.results?.cover_date
 		? formatDate(comic.results.cover_date)
 		: "Invalid date";
 	const issueNumber = comic.results?.issue_number || "N/A";
-	const description =
-		comic.results?.description || "No description available.";
+	const deck = comic.results?.deck || "No description available.";
+	const aliasesArray = comic.results?.aliases ? comic.results.aliases.split(/\r\n|\n/) : [];
+	console.log("description", deck);
 
 	return (
 		<Suspense
@@ -153,7 +159,7 @@ const IssuePage: NextPage = () => {
 						direction={{ base: "column", md: "row" }}
 						align="" // Center align items for better responsiveness
 						justify=""
-						width={{ base: "100%", md: "90%", lg: "1100px" }} // Responsive width
+						width={{ base: "100%", md: "90%", lg: "1300px" }} // Responsive width
 					>
 						{/* Image */}
 						<Image
@@ -189,35 +195,86 @@ const IssuePage: NextPage = () => {
 								textAlign="start"
 								size="lg"
 							>
-								{volumeName}
+								{volumeName
+								}
 							</Heading> */}
 
+<Box
+								bg={bgColor}
+								p={4}
+								borderRadius="md"
+								shadow="md"
+								color="red.500"
+								// borderWidth="1px"
+								borderColor={borderColor}
+								maxWidth=""
+							>
+								<Text
+											fontWeight="bold"
+											fontSize="lg"
+											textAlign="initial"
+											mt={4}
+										>
+											REAL NAME: {comic.results.real_name}
+
+										</Text>
+							</Box>
+
+							<Box
+      bg={bgColor}
+      p={4}
+      borderRadius="md"
+      shadow="md"
+      borderColor={borderColor}
+      maxWidth="full"
+      overflowX="auto" // Allows scrolling on the x-axis if needed
+      className="alias-container" // Class for additional styling if needed
+    >
+  <Text fontWeight="bold" fontSize="lg" mb={2}>
+    Aliases:
+  </Text>
+  <HStack spacing={2} wrap="wrap">
+    {aliasesArray.map((alias: string , index: React.Key | null | undefined) => (
+     <Tag
+	 key={index}
+	 borderRadius="full"
+	 variant="solid"
+	 colorScheme="teal"
+	 size="md"
+	 px={3} // Adds padding left and right within the tag for more space
+	 py={1} // Adds padding top and bottom within the tag (optional)
+	 m={1} // Adds margin around each tag for additional space (optional)
+	 _hover={{ transform: 'scale(1.05)', cursor: 'pointer' }}
+   >
+        {alias}
+      </Tag>
+    ))}
+  </HStack>
+</Box>
 							<Box
 								bg={bgColor}
 								p={4}
 								borderRadius="md"
 								shadow="md"
-								borderWidth="0px"
+								// borderWidth="1px"
 								borderColor={borderColor}
-								maxWidth="600px"
+								maxWidth=""
 							>
-								{description ? (
-									<div
-										dangerouslySetInnerHTML={{
-											__html: comic.results.description,
-										}}
-									/>
-								) : (
-									<Text fontSize="md" fontStyle="italic">
-										No description available.
-									</Text>
-								)}
+								<Text
+											fontWeight="bold"
+											fontSize="lg"
+											textAlign="initial"
+
+										>
+											{comic.results.deck}
+
+										</Text>
 							</Box>
 						</VStack>
 					</Flex>
 				</VStack>
 			</Container>
-			<Container maxW="1100px" p={4}>
+			<Container maxW="1000px" p={4}>
 				<Flex
 					direction={{ base: "column", md: "row" }}
 					align="start"
@@ -287,4 +344,4 @@ const IssuePage: NextPage = () => {
 	);
 };
 
-export default IssuePage;
+export default ComicVineCharacter;
