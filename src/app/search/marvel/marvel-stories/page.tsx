@@ -24,7 +24,7 @@ import { useGetMarvelStories } from "@/hooks/marvel/useGetMarvelStories";
 
 
 const MarvelStories: NextPage = () => {
-	const pageSize = 15;
+	const pageSize = 16;
 	const router = useRouter();
 	const [searchParams, setSearchParams] = useSearchParams();
 

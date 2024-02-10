@@ -25,7 +25,7 @@ import MarvelPagination from "@/components/MarvelPagination";
 import { useGetMarvelCharacters } from "@/hooks/marvel/useGetMarvelCharacters";
 
 const MarvelCharacters: NextPage = () => {
-	const pageSize = 16;
+	const pageSize = 15;
 	const router = useRouter();
 	const [searchParams, setSearchParams] = useSearchParams();
 
@@ -153,7 +153,7 @@ const MarvelCharacters: NextPage = () => {
 					</Box>
 				)}
 				<SimpleGrid
-					columns={{ base: 1, md: 2 }}
+					columns={{ base: 1, md: 3 }}
 					spacing={30}
 					width="100%"
 				>
@@ -176,7 +176,7 @@ const MarvelCharacters: NextPage = () => {
 											flexDirection="column"
 											alignItems="center"
 											justifyContent="space-between"
-											minH="500px"
+											minH="300px"
 											minW="300px"
 										>
 											<Image
