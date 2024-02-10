@@ -60,9 +60,26 @@ const MarvelEvent: NextPage = () => {
 		return new Date(dateString).toLocaleDateString(undefined, options);
 	};
 
+	const createEventNavigationUrl = (resourceURI: string) => {
+		const id = extractIdFromURI(resourceURI);
+		return `/search/marvel/marvel-events/${id}`;
+	  };
+
 	const linkHoverStyle = {
 		textDecoration: 'none',
 		backgroundColor: useColorModeValue('red.100', 'red.700'), // change color based on color mode
+		transform: 'translateY(-2px)', // subtle lift effect
+		boxShadow: 'lg', // larger shadow for lifted effect
+	  };
+	const linkHoverStylePrevious = {
+		textDecoration: 'none',
+		backgroundColor: useColorModeValue('yellow.100', 'yellow.700'), // change color based on color mode
+		transform: 'translateY(-2px)', // subtle lift effect
+		boxShadow: 'lg', // larger shadow for lifted effect
+	  };
+	const linkHoverStyleNext = {
+		textDecoration: 'none',
+		backgroundColor: useColorModeValue('pink.100', 'pink.700'), // change color based on color mode
 		transform: 'translateY(-2px)', // subtle lift effect
 		boxShadow: 'lg', // larger shadow for lifted effect
 	  };
@@ -180,16 +197,20 @@ const MarvelEvent: NextPage = () => {
 							>
 								{solicitationText}
 								<Flex justify="space-between" mt={4}>
-          {result.previous && (
-            <Tag colorScheme="purple" mr={2} minH="40px">
-              <NextLink href={result.previous.resourceURI}>Previous: {result.previous.name}</NextLink>
-            </Tag>
-          )}
-          {result.next && (
-            <Tag colorScheme="teal"minH="40px">
-              <NextLink href={result.next.resourceURI}>Next: {result.next.name}</NextLink>
-            </Tag>
-          )}
+								{result.previous && (
+    <Tag colorScheme="purple" mr={2} minH="40px" _hover={linkHoverStylePrevious}>
+      <NextLink href={createEventNavigationUrl(result.previous.resourceURI)} passHref>
+        PREVIOUS: {result.previous.name}
+      </NextLink>
+    </Tag>
+  )}
+  {result.next && (
+    <Tag colorScheme="teal" minH="40px" _hover={linkHoverStyleNext}>
+      <NextLink href={createEventNavigationUrl(result.next.resourceURI)} passHref>
+        NEXT: {result.next.name}
+      </NextLink>
+    </Tag>
+  )}
         </Flex>
 							</Text>
 						</VStack>
