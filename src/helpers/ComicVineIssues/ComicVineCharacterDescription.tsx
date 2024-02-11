@@ -31,7 +31,7 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 					effect="blur"
 					placeholderSrc={attribs["data-placeholder"] ?? "path_to_your_placeholder_image"}
 					scrollPosition={scrollPosition}
-					width="300px"
+					width="400px"
 					style={{ maxWidth: '100%', height: 'auto' }}
 					srcSet={attribs["data-srcset"]}
 
