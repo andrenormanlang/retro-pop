@@ -35,7 +35,8 @@ const CharactersReferenceListTable: React.FC<{ characters: CharactersApiResponse
 			});
 			setCharacterColumns(newCharacterColumns);
 		} else {
-			"Data is not an array:", characters.data;
+			console.log('Data is not an array:', characters.data);
+	
 		}
 	}, [characters, columns]);
 

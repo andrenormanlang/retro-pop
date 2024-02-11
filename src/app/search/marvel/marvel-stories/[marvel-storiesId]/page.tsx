@@ -102,15 +102,11 @@ const MarvelStory: NextPage = () => {
 		}
 	};
 
-	"data", data;
 
 	const result = data?.data?.results[0];
 	const originaId = extractIdFromURI(result.originalIssue.resourceURI);
-	"originalId", originaId;
 
 	const solicitationText = result?.title || "No description available.";
-
-	"result", result;
 
 	return (
 		<Container maxW="1100px" p={4}>

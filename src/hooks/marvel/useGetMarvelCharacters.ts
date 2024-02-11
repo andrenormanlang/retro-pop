@@ -14,7 +14,6 @@ async function fetchMarvelCharacters(searchTerm: string, page: number, pageSize:
 	if (!response.ok) {
 		throw new Error(`API call failed with status: ${response.status}`);
 	}
-	"response", response;
 	return response.json();
 }
 
