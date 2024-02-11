@@ -47,7 +47,6 @@ const IssuePage: NextPage = () => {
 		router.push(`/search/comic-vine/issues?page=${currentPage}&query=${encodeURIComponent(searchTerm)}`);
 	};
 
-	"HANDLE BACK", handleBack;
 
 	const formatDate = (dateString: string) => {
 		const options: Intl.DateTimeFormatOptions = {
@@ -90,7 +89,6 @@ const IssuePage: NextPage = () => {
 
 	const imageUrl = comic.results?.image?.original_url || "defaultImageUrl";
 	const volumeName = comic.results?.volume?.name || "Unknown Volume";
-	"imageUrl", imageUrl;
 	const coverDate = comic.results?.cover_date ? formatDate(comic.results.cover_date) : "Invalid date";
 	const issueNumber = comic.results?.issue_number || "N/A";
 	const description = comic.results?.description || "No description available.";
