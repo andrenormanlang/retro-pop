@@ -252,7 +252,7 @@ const ComicVineCharacter: NextPage = () => {
 					</Flex>
 				</VStack>
 			</Container>
-			<Container maxW="1300px" borderWidth="1px">
+			<Container maxW="1300px"   {...contentContainerStyle}>
 				<ComicVineCharacterDescription content={htmlContent} />
 			</Container>
 		</Suspense>

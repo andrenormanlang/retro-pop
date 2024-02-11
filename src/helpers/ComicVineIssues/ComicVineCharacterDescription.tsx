@@ -19,6 +19,7 @@ interface DomNode {
 }
 
 const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps> = ({ content, scrollPosition }) => {
+
 	const options = {
 		replace: (domNode: DomNode) => {
 			if (domNode.name === "img" && domNode.attribs["data-src"]) {
@@ -31,7 +32,7 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 					effect="blur"
 					placeholderSrc={attribs["data-placeholder"] ?? "path_to_your_placeholder_image"}
 					scrollPosition={scrollPosition}
-					width="400px"
+					width="320px"
 					style={{ maxWidth: '100%', height: 'auto' }}
 					srcSet={attribs["data-srcset"]}
 
