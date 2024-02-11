@@ -57,12 +57,11 @@ const MarvelCharacter: NextPage = () => {
 	};
 
 	const linkHoverStyle = {
-		textDecoration: 'none',
-		backgroundColor: useColorModeValue('red.100', 'red.700'), // change color based on color mode
-		transform: 'translateY(-2px)', // subtle lift effect
-		boxShadow: 'lg', // larger shadow for lifted effect
-	  };
-
+		textDecoration: "none",
+		backgroundColor: useColorModeValue("red.100", "red.700"), // change color based on color mode
+		transform: "translateY(-2px)", // subtle lift effect
+		boxShadow: "lg", // larger shadow for lifted effect
+	};
 
 	const getColorScheme = (type: string) => {
 		switch (type) {
@@ -75,6 +74,36 @@ const MarvelCharacter: NextPage = () => {
 			default:
 				return "gray";
 		}
+	};
+
+	/**
+	 * Transforms Marvel API URL to the desired format.
+	 * @param {string} url - The original URL from the Marvel API.
+	 * @returns {string} - The transformed URL in the desired format.
+	 */
+	const transformMarvelUrl = (url: string) => {
+		// Example input: http://marvel.com/universe/Bishop_(Lucas_Bishop)?utm_campaign=apiRef&utm_source=4cc0a3d6045e6c6d9ad0f39f2815eee7
+		// Desired output: https://www.marvel.com/characters/bishop-lucas-bishop
+
+		// Remove the query parameters
+		const baseUrl = url.split("?")[0];
+
+		// Extract the character name part
+		const characterNamePart = baseUrl.split("/").pop();
+
+		if (!characterNamePart) {
+			throw new Error('URL does not contain a character name part.');
+		  }
+
+		// Replace underscores with hyphens and remove parentheses
+		const formattedName = characterNamePart
+			.replace(/_/g, "-")
+			.replace(/\(/g, "")
+			.replace(/\)/g, "")
+			.toLowerCase(); // Ensure it's all lowercase to match the example output
+
+		// Construct the new URL
+		return `https://www.marvel.com/characters/${formattedName}`;
 	};
 
 	if (isLoading)
@@ -195,7 +224,7 @@ const MarvelCharacter: NextPage = () => {
 							>
 								{solicitationText}
 								<Flex wrap="wrap" mt={2}>
-									{result?.urls?.map((urlItem: UrlItem) => (
+									{/* {result?.urls?.map((urlItem: UrlItem) => (
 										<Tag
 											key={urlItem.type}
 											colorScheme={getColorScheme(
@@ -215,7 +244,36 @@ const MarvelCharacter: NextPage = () => {
 													urlItem.type.slice(1)}
 											</a>
 										</Tag>
-									))}
+									))} */}
+									{result?.urls
+										?.filter((urlItem: UrlItem) => urlItem.type === "wiki" || urlItem.type === "comiclink")
+										.map((urlItem: UrlItem) => (
+											<Tag
+												key={urlItem.type}
+												colorScheme={getColorScheme(
+													urlItem.type
+												)}
+												mr={2}
+												mb={2}
+											>
+												<a
+													href={
+														urlItem.type === "wiki"
+															? transformMarvelUrl(
+																	urlItem.url
+															  )
+															: urlItem.url
+													} // Apply transformation conditionally
+													target="_blank"
+													rel="noopener noreferrer"
+												>
+													{urlItem.type
+														.charAt(0)
+														.toUpperCase() +
+														urlItem.type.slice(1)}
+												</a>
+											</Tag>
+										))}
 								</Flex>
 							</Text>
 						</VStack>
@@ -231,202 +289,228 @@ const MarvelCharacter: NextPage = () => {
 						justify="space-between" // Add space between the children
 						width={{ base: "100%", md: "90%", lg: "1100px" }} // Responsive width
 					>
-					<VStack spacing={4} align="stretch">
+						<VStack spacing={4} align="stretch">
+							<Box>
+								<Heading
+									size="md"
+									fontFamily="Bangers"
+									letterSpacing="0.05em"
+									color="orange"
+								>
+									Comics:
+								</Heading>
+								<SimpleGrid
+									columns={{ base: 2, md: 3 }}
+									spacing={4}
+								>
+									{result?.comics?.items?.map(
+										(comicItem: ComicItem) => {
+											// Extract the ID inside the map callback function
+											const comicId = extractIdFromURI(
+												comicItem.resourceURI
+											);
 
-						<Box>
-							<Heading
-								size="md"
-								fontFamily="Bangers"
-								letterSpacing="0.05em"
-								color="orange"
-							>
-								Comics:
-							</Heading>
-							<SimpleGrid
-								columns={{ base: 2, md: 3 }}
-								spacing={4}
-							>
-								{result?.comics?.items?.map(
-									(comicItem: ComicItem) => {
-										// Extract the ID inside the map callback function
-										const comicId = extractIdFromURI(
-											comicItem.resourceURI
-										);
+											return (
+												// Assuming you have a route set up for comic details
+												<NextLink
+													href={`/search/marvel/marvel-comics/${comicId}`}
+													passHref
+													key={comicItem.name}
+												>
+													<FlexContainer
+														as="a"
+														p={2}
+														boxShadow="md"
+														borderRadius="md"
+														_hover={linkHoverStyle}
+													>
+														<Text textAlign="start">
+															{comicItem.name}
+														</Text>
+													</FlexContainer>
+												</NextLink>
+											);
+										}
+									)}
+								</SimpleGrid>
+							</Box>
+							<Box>
+								<Heading
+									size="md"
+									fontFamily="Bangers"
+									letterSpacing="0.05em"
+									color="orange"
+								>
+									Events:
+								</Heading>
+								<SimpleGrid
+									columns={{ base: 2, md: 3 }}
+									spacing={4}
+								>
+									{result?.events?.items?.map(
+										(eventItem: EventItem) => {
+											// Extract the ID inside the map callback function
+											const comicId = extractIdFromURI(
+												eventItem.resourceURI
+											);
 
-										return (
-											// Assuming you have a route set up for comic details
-											<NextLink
-												href={`/search/marvel/marvel-comics/${comicId}`}
-												passHref
-												key={comicItem.name}
-											>
-												<FlexContainer as="a" p={2} boxShadow="md" borderRadius="md" _hover={linkHoverStyle}>
-													<Text textAlign="start">
-														{comicItem.name}
-													</Text>
-												</FlexContainer>
-											</NextLink>
-										);
-									}
-								)}
-							</SimpleGrid>
-						</Box>
-						<Box>
-							<Heading
-								size="md"
-								fontFamily="Bangers"
-								letterSpacing="0.05em"
-								color="orange"
-							>
-								Events:
-							</Heading>
-							<SimpleGrid
-								columns={{ base: 2, md: 3 }}
-								spacing={4}
-							>
-								{result?.events?.items?.map(
-									(eventItem: EventItem) => {
-										// Extract the ID inside the map callback function
-										const comicId = extractIdFromURI(
-											eventItem.resourceURI
-										);
+											return (
+												// Assuming you have a route set up for comic details
+												<NextLink
+													href={`/search/marvel/marvel-events/${comicId}`}
+													passHref
+													key={eventItem.name}
+												>
+													<FlexContainer
+														as="a"
+														p={2}
+														boxShadow="md"
+														borderRadius="md"
+														_hover={linkHoverStyle}
+													>
+														<Text textAlign="start">
+															{eventItem.name}
+														</Text>
+													</FlexContainer>
+												</NextLink>
+											);
+										}
+									)}
+								</SimpleGrid>
+							</Box>
+							<Box>
+								<Heading
+									size="md"
+									fontFamily="Bangers"
+									letterSpacing="0.05em"
+									color="orange"
+								>
+									Creators:
+								</Heading>
+								<SimpleGrid
+									columns={{ base: 2, md: 3 }}
+									spacing={4}
+								>
+									{result?.creators?.items?.map(
+										(creatorItem: CreatorItem) => {
+											// Extract the ID inside the map callback function
+											const comicId = extractIdFromURI(
+												creatorItem.resourceURI
+											);
 
-										return (
-											// Assuming you have a route set up for comic details
-											<NextLink
-												href={`/search/marvel/marvel-events/${comicId}`}
-												passHref
-												key={eventItem.name}
-											>
-												<FlexContainer as="a" p={2} boxShadow="md" borderRadius="md" _hover={linkHoverStyle}>
-													<Text textAlign="start">
-														{eventItem.name}
-													</Text>
-												</FlexContainer>
-											</NextLink>
-										);
-									}
-								)}
-							</SimpleGrid>
-						</Box>
-						<Box>
-							<Heading
-								size="md"
-								fontFamily="Bangers"
-								letterSpacing="0.05em"
-								color="orange"
-							>
-								Creators:
-							</Heading>
-							<SimpleGrid
-								columns={{ base: 2, md: 3 }}
-								spacing={4}
-							>
-								{result?.creators?.items?.map(
-									(creatorItem: CreatorItem) => {
-										// Extract the ID inside the map callback function
-										const comicId = extractIdFromURI(
-											creatorItem.resourceURI
-										);
+											return (
+												// Assuming you have a route set up for comic details
+												<NextLink
+													href={`/search/marvel/marvel-creators/${comicId}`}
+													passHref
+													key={creatorItem.name}
+												>
+													<FlexContainer
+														as="a"
+														p={2}
+														boxShadow="md"
+														borderRadius="md"
+														_hover={linkHoverStyle}
+													>
+														<Text textAlign="start">
+															{creatorItem.name}
+														</Text>
+													</FlexContainer>
+												</NextLink>
+											);
+										}
+									)}
+								</SimpleGrid>
+							</Box>
+							<Box>
+								<Heading
+									size="md"
+									fontFamily="Bangers"
+									letterSpacing="0.05em"
+									color="orange"
+								>
+									Series:
+								</Heading>
+								<SimpleGrid
+									columns={{ base: 2, md: 3 }}
+									spacing={4}
+								>
+									{result?.series?.items?.map(
+										(seriesItem: SeriesItem) => {
+											// Extract the ID inside the map callback function
+											const comicId = extractIdFromURI(
+												seriesItem.resourceURI
+											);
 
-										return (
-											// Assuming you have a route set up for comic details
-											<NextLink
-												href={`/search/marvel/marvel-creators/${comicId}`}
-												passHref
-												key={creatorItem.name}
-											>
-												<FlexContainer as="a" p={2} boxShadow="md" borderRadius="md" _hover={linkHoverStyle}>
-													<Text textAlign="start">
-														{creatorItem.name}
-													</Text>
-												</FlexContainer>
-											</NextLink>
-										);
-									}
-								)}
-							</SimpleGrid>
-						</Box>
-						<Box>
-							<Heading
-								size="md"
-								fontFamily="Bangers"
-								letterSpacing="0.05em"
-								color="orange"
-							>
-								Series:
-							</Heading>
-							<SimpleGrid
-								columns={{ base: 2, md: 3 }}
-								spacing={4}
-							>
-								{result?.series?.items?.map(
-									(seriesItem: SeriesItem) => {
-										// Extract the ID inside the map callback function
-										const comicId = extractIdFromURI(
-											seriesItem.resourceURI
-										);
+											return (
+												// Assuming you have a route set up for comic details
+												<NextLink
+													href={`/search/marvel/marvel-series/${comicId}`}
+													passHref
+													key={seriesItem.name}
+												>
+													<FlexContainer
+														as="a"
+														p={2}
+														boxShadow="md"
+														borderRadius="md"
+														_hover={linkHoverStyle}
+													>
+														<Text textAlign="start">
+															{seriesItem.name}
+														</Text>
+													</FlexContainer>
+												</NextLink>
+											);
+										}
+									)}
+								</SimpleGrid>
+							</Box>
+							<Box>
+								<Heading
+									size="md"
+									fontFamily="Bangers"
+									letterSpacing="0.05em"
+									color="orange"
+								>
+									Stories:
+								</Heading>
+								<SimpleGrid
+									columns={{ base: 2, md: 3 }}
+									spacing={4}
+								>
+									{result?.stories?.items?.map(
+										(storyItem: StoryItems) => {
+											// Extract the ID inside the map callback function
+											const comicId = extractIdFromURI(
+												storyItem.resourceURI
+											);
 
-										return (
-											// Assuming you have a route set up for comic details
-											<NextLink
-												href={`/search/marvel/marvel-series/${comicId}`}
-												passHref
-												key={seriesItem.name}
-											>
-												<FlexContainer as="a" p={2} boxShadow="md" borderRadius="md" _hover={linkHoverStyle}>
-													<Text textAlign="start">
-														{seriesItem.name}
-													</Text>
-												</FlexContainer>
-											</NextLink>
-										);
-									}
-								)}
-
-							</SimpleGrid>
-						</Box>
-						<Box>
-							<Heading
-								size="md"
-								fontFamily="Bangers"
-								letterSpacing="0.05em"
-								color="orange"
-							>
-								Stories:
-							</Heading>
-							<SimpleGrid
-								columns={{ base: 2, md: 3 }}
-								spacing={4}
-							>
-								{result?.stories?.items?.map(
-									(storyItem: StoryItems) => {
-										// Extract the ID inside the map callback function
-										const comicId = extractIdFromURI(
-											storyItem.resourceURI
-										);
-
-										return (
-											// Assuming you have a route set up for comic details
-											<NextLink
-												href={`/search/marvel/marvel-stories/${comicId}`}
-												passHref
-												key={storyItem.name}
-											>
-												<FlexContainer as="a" p={2} boxShadow="md" borderRadius="md" _hover={linkHoverStyle}>
-													<Text textAlign="start">
-														{storyItem.name}
-													</Text>
-												</FlexContainer>
-											</NextLink>
-										);
-									}
-								)}
-							</SimpleGrid>
-						</Box>
-
-					</VStack>
-
+											return (
+												// Assuming you have a route set up for comic details
+												<NextLink
+													href={`/search/marvel/marvel-stories/${comicId}`}
+													passHref
+													key={storyItem.name}
+												>
+													<FlexContainer
+														as="a"
+														p={2}
+														boxShadow="md"
+														borderRadius="md"
+														_hover={linkHoverStyle}
+													>
+														<Text textAlign="start">
+															{storyItem.name}
+														</Text>
+													</FlexContainer>
+												</NextLink>
+											);
+										}
+									)}
+								</SimpleGrid>
+							</Box>
+						</VStack>
 					</Flex>
 				</VStack>
 			</Container>
