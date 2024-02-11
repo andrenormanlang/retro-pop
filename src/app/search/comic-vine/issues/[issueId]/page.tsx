@@ -31,32 +31,23 @@ import { useSearchParameters } from "@/hooks/useSearchParameters";
 const IssuePage: NextPage = () => {
 	// const [comic, setComic] = useState<ComicVineIssue | null>(null);
 	const router = useRouter();
-	const {
-		searchTerm,
-		currentPage,
-	} = useSearchParameters();
+	const { searchTerm, currentPage } = useSearchParameters();
 	const bgColor = useColorModeValue("white", "gray.800");
 	const borderColor = useColorModeValue("gray.200", "gray.700");
 	const pathname = usePathname();
 	const issueId = pathname.split("/").pop() || "";
 	const searchParams = useSearchParams();
 
-	const {
-		data: comic,
-		isLoading,
-		isError,
-		error,
-	} = useGetComicVineIssue(searchTerm, currentPage, issueId);
+	const { data: comic, isLoading, isError, error } = useGetComicVineIssue(searchTerm, currentPage, issueId);
 
 	const handleBack = () => {
 		// Read the page number and search term from the search parameters
-
 
 		// Navigate back to the issues page with both the page number and search term
 		router.push(`/search/comic-vine/issues?page=${currentPage}&query=${encodeURIComponent(searchTerm)}`);
 	};
 
-	console.log('HANDLE BACK', handleBack);
+	"HANDLE BACK", handleBack;
 
 	const formatDate = (dateString: string) => {
 		const options: Intl.DateTimeFormatOptions = {
@@ -99,13 +90,10 @@ const IssuePage: NextPage = () => {
 
 	const imageUrl = comic.results?.image?.original_url || "defaultImageUrl";
 	const volumeName = comic.results?.volume?.name || "Unknown Volume";
-	console.log("imageUrl", imageUrl);
-	const coverDate = comic.results?.cover_date
-		? formatDate(comic.results.cover_date)
-		: "Invalid date";
+	"imageUrl", imageUrl;
+	const coverDate = comic.results?.cover_date ? formatDate(comic.results.cover_date) : "Invalid date";
 	const issueNumber = comic.results?.issue_number || "N/A";
-	const description =
-		comic.results?.description || "No description available.";
+	const description = comic.results?.description || "No description available.";
 
 	return (
 		<Suspense
@@ -132,12 +120,7 @@ const IssuePage: NextPage = () => {
 		>
 			<Container maxW="1150px" p={4}>
 				<Box mb={4}>
-					<Button
-						leftIcon={<ArrowBackIcon />}
-						colorScheme="teal"
-						variant="outline"
-						onClick={handleBack}
-					>
+					<Button leftIcon={<ArrowBackIcon />} colorScheme="teal" variant="outline" onClick={handleBack}>
 						Back to Grid
 					</Button>
 				</Box>
@@ -176,12 +159,7 @@ const IssuePage: NextPage = () => {
 									size="lg"
 									colorScheme="blue"
 								>{`Issue #${issueNumber}`}</Tag>
-								<Tag
-									fontFamily="Bangers"
-									letterSpacing="0.05em"
-									size="lg"
-									colorScheme="green"
-								>
+								<Tag fontFamily="Bangers" letterSpacing="0.05em" size="lg" colorScheme="green">
 									{coverDate}
 								</Tag>
 							</HStack>
@@ -221,67 +199,32 @@ const IssuePage: NextPage = () => {
 				</VStack>
 			</Container>
 			<Container maxW="1100px" p={4}>
-				<Flex
-					direction={{ base: "column", md: "row" }}
-					align="start"
-					justify="space-between"
-					gap={8}
-				>
+				<Flex direction={{ base: "column", md: "row" }} align="start" justify="space-between" gap={8}>
 					<VStack spacing={4} w="full" align="start">
-						<Heading
-							size="md"
-							fontFamily="Bangers"
-							letterSpacing="0.05em"
-							color="orange"
-						>
+						<Heading size="md" fontFamily="Bangers" letterSpacing="0.05em" color="orange">
 							Character Credits:
 						</Heading>
 						<SimpleGrid columns={{ base: 2, md: 3 }} spacing={4}>
 							{comic.results?.character_credits &&
-								comic.results?.character_credits.map(
-									(character: CharacterCredit) => (
-										<Box
-											key={character.id}
-											p={2}
-											boxShadow="md"
-											borderRadius="md"
-										>
-											<Text textAlign="start">
-												{character.name}
-											</Text>
-										</Box>
-									)
-								)}
+								comic.results?.character_credits.map((character: CharacterCredit) => (
+									<Box key={character.id} p={2} boxShadow="md" borderRadius="md">
+										<Text textAlign="start">{character.name}</Text>
+									</Box>
+								))}
 						</SimpleGrid>
 					</VStack>
 					<VStack spacing={4} w="full" align="start">
-						<Heading
-							size="md"
-							fontFamily="Bangers"
-							letterSpacing="0.05em"
-							color="lightblue"
-						>
+						<Heading size="md" fontFamily="Bangers" letterSpacing="0.05em" color="lightblue">
 							Person Credits:
 						</Heading>
 						<SimpleGrid columns={{ base: 2, md: 3 }} spacing={4}>
 							{comic.results?.person_credits &&
-								comic.results?.person_credits?.map(
-									(person: PersonCredit) => (
-										<Box
-											key={person.id}
-											p={2}
-											boxShadow="md"
-											borderRadius="md"
-										>
-											<Text textAlign="start">
-												{person.name}
-											</Text>
-											<Badge colorScheme="blue">
-												{person.role}
-											</Badge>
-										</Box>
-									)
-								)}
+								comic.results?.person_credits?.map((person: PersonCredit) => (
+									<Box key={person.id} p={2} boxShadow="md" borderRadius="md">
+										<Text textAlign="start">{person.name}</Text>
+										<Badge colorScheme="blue">{person.role}</Badge>
+									</Box>
+								))}
 						</SimpleGrid>
 					</VStack>
 				</Flex>

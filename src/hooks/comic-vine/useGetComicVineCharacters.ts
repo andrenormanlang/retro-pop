@@ -32,7 +32,6 @@ export const useGetComicVineCharacters = (category: string, page: number, pageSi
 
 const fetchCharacter = async (issueId: string) => {
 	const response = await fetch(`/api/comic-vine/characters/${issueId}`);
-	console.log('response', response);
 	if (!response.ok) {
 	  throw new Error('Network response was not ok');
 	}

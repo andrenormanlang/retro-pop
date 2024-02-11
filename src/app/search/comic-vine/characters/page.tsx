@@ -1,15 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import {
-	SimpleGrid,
-	Box,
-	Image,
-	Text,
-	Container,
-	Center,
-	Spinner,
-} from "@chakra-ui/react";
+import { SimpleGrid, Box, Image, Text, Container, Center, Spinner } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import NextLink from "next/link";
 import type { NextPage } from "next";
@@ -38,13 +30,7 @@ const formatDate = (dateString: string) => {
 const ComicVineCharacters: NextPage = () => {
 	const pageSize = 15;
 	const maxDescriptionLength = 100;
-	const {
-		searchTerm,
-		setSearchTerm,
-		currentPage,
-		setCurrentPage,
-		updateUrl,
-	} = useSearchParameters(1, "");
+	const { searchTerm, setSearchTerm, currentPage, setCurrentPage, updateUrl } = useSearchParameters(1, "");
 
 	const [searchQuery, setSearchQuery] = useState<SearchQuery>({
 		page: 1,
@@ -55,11 +41,7 @@ const ComicVineCharacters: NextPage = () => {
 	const pathname = usePathname();
 	const router = useRouter();
 
-	const { data, isLoading, isError, error } = useGetComicVineCharacters(
-		searchTerm,
-		currentPage,
-		pageSize
-	);
+	const { data, isLoading, isError, error } = useGetComicVineCharacters(searchTerm, currentPage, pageSize);
 
 	const handlePageChange = (page: number) => {
 		setCurrentPage(page);
@@ -119,7 +101,7 @@ const ComicVineCharacters: NextPage = () => {
 			</div>
 		);
 	}
-	console.log('DATA', data);
+
 
 	return (
 		<Suspense
@@ -150,39 +132,25 @@ const ComicVineCharacters: NextPage = () => {
 					<Box>
 						<Text fontSize="1.5em" mb={4} textAlign="center">
 							{searchTerm
-								? `You have ${
-										data.number_of_total_results
-								  } results for "${searchTerm}" in ${Math.ceil(
-										data.number_of_total_results /
-											data.limit
+								? `You have ${data.number_of_total_results} results for "${searchTerm}" in ${Math.ceil(
+										data.number_of_total_results / data.limit
 								  )} pages`
 								: `You have a total of ${
 										data.number_of_total_results
 								  } characters from Comic Vine in ${Math.ceil(
-										data.number_of_total_results /
-											data.limit
+										data.number_of_total_results / data.limit
 								  )} pages`}
 						</Text>
 					</Box>
 				)}
-				<SimpleGrid
-					columns={{ base: 1, md: 3 }}
-					spacing={10}
-					width="100%"
-				>
+				<SimpleGrid columns={{ base: 1, md: 3 }} spacing={10} width="100%">
 					{validData.map((comic: ComicVine) => {
-						const plainDescription = htmlToText(
-							comic.description || "",
-							{
-								wordwrap: 130,
-							}
-						);
+						const plainDescription = htmlToText(comic.description || "", {
+							wordwrap: 130,
+						});
 						const truncatedDescription =
 							plainDescription.length > maxDescriptionLength
-								? plainDescription.substring(
-										0,
-										maxDescriptionLength
-								  ) + "..."
+								? plainDescription.substring(0, maxDescriptionLength) + "..."
 								: plainDescription;
 
 						return (
@@ -212,21 +180,12 @@ const ComicVineCharacters: NextPage = () => {
 									>
 										<Image
 											src={comic.image.original_url}
-											alt={
-												comic.name ||
-												`Comic ${comic.id}`
-											}
+											alt={comic.name || `Comic ${comic.id}`}
 											maxW="400px"
 											maxH="400px"
 											objectFit="contain"
 										/>
-										<Text
-											fontWeight="bold"
-											fontSize="lg"
-											noOfLines={1}
-											textAlign="center"
-											mt={4}
-										>
+										<Text fontWeight="bold" fontSize="lg" noOfLines={1} textAlign="center" mt={4}>
 											{/* {comic.volume.name} #
 											{comic.issue_number} */}
 										</Text>
@@ -258,9 +217,7 @@ const ComicVineCharacters: NextPage = () => {
 				<div style={{ marginTop: "2rem" }}>
 					<ComicsPagination
 						currentPage={currentPage}
-						totalPages={Math.ceil(
-							data.number_of_total_results / data.limit
-						)}
+						totalPages={Math.ceil(data.number_of_total_results / data.limit)}
 						onPageChange={handlePageChange}
 					/>
 					{/* <MarvelPagination
