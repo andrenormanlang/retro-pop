@@ -28,10 +28,14 @@ import {
 	EventItem,
 	SeriesItem,
 	StoryItems,
-	UrlItem,
 } from "@/types/marvel/marvel-comic.type";
 import { extractIdFromURI } from "@/helpers/Marvel/extractIdFromURI";
 import FlexContainer from "@/helpers/Marvel/FlexContainer";
+
+interface UrlItem {
+	type: 'detail' | 'comiclink' | 'wiki'; // Add other types as needed
+	url: string;
+  }
 
 const MarvelCharacter: NextPage = () => {
 	// const [comic, setComic] = useState<ComicVineIssue | null>(null);
@@ -81,31 +85,38 @@ const MarvelCharacter: NextPage = () => {
 	 * @param {string} url - The original URL from the Marvel API.
 	 * @returns {string} - The transformed URL in the desired format.
 	 */
-	const transformMarvelUrl = (url: string) => {
-		// Example input: http://marvel.com/universe/Bishop_(Lucas_Bishop)?utm_campaign=apiRef&utm_source=4cc0a3d6045e6c6d9ad0f39f2815eee7
-		// Desired output: https://www.marvel.com/characters/bishop-lucas-bishop
+	const transformDetailUrl = (url: string): string => {
+		// Decode URI components to handle encoded characters like %28 and %29
+		const decodedUrl = decodeURIComponent(url);
 
-		// Remove the query parameters
-		const baseUrl = url.split("?")[0];
+		// Remove the query parameters and the API-specific path segments
+		let baseUrl = decodedUrl.split("?")[0];
+		baseUrl = baseUrl.replace("/comics/characters/", "/characters/");
 
-		// Extract the character name part
-		const characterNamePart = baseUrl.split("/").pop();
+		// Extract the character name part and ensure it is the last segment
+		const characterNameParts = baseUrl.split("/").pop();
 
-		if (!characterNamePart) {
-			throw new Error('URL does not contain a character name part.');
-		  }
+		if (!characterNameParts) {
+			throw new Error("URL does not contain a character name part.");
+		}
 
-		// Replace underscores with hyphens and remove parentheses
-		const formattedName = characterNamePart
+		// Replace underscores with hyphens
+		const formattedName = characterNameParts
 			.replace(/_/g, "-")
-			.replace(/\(/g, "")
-			.replace(/\)/g, "")
-			.toLowerCase(); // Ensure it's all lowercase to match the example output
+			.toLowerCase();
 
 		// Construct the new URL
-		return `https://www.marvel.com/characters/${formattedName}`;
+		return `http://marvel.com/characters/${formattedName}`;
 	};
 
+	const getLabelFromType = (type: UrlItem['type'], isTransformed: boolean): string | null => {
+		if (type === "comiclink" && isTransformed) {
+		  return "Detail"; // If it's a transformed comiclink, label it as 'Detail'
+		} else if (type === "comiclink") {
+		  return "Comiclink"; // If it's a non-transformed comiclink, label it as 'Comiclink'
+		}
+		return null; // For other types, like 'wiki', we return null to exclude them
+	  };
 	if (isLoading)
 		return (
 			<Center h="100vh">
@@ -246,34 +257,53 @@ const MarvelCharacter: NextPage = () => {
 										</Tag>
 									))} */}
 									{result?.urls
-										?.filter((urlItem: UrlItem) => urlItem.type === "wiki" || urlItem.type === "comiclink")
-										.map((urlItem: UrlItem) => (
-											<Tag
-												key={urlItem.type}
-												colorScheme={getColorScheme(
-													urlItem.type
-												)}
-												mr={2}
-												mb={2}
-											>
-												<a
-													href={
-														urlItem.type === "wiki"
-															? transformMarvelUrl(
-																	urlItem.url
-															  )
-															: urlItem.url
-													} // Apply transformation conditionally
-													target="_blank"
-													rel="noopener noreferrer"
-												>
-													{urlItem.type
-														.charAt(0)
-														.toUpperCase() +
-														urlItem.type.slice(1)}
-												</a>
-											</Tag>
-										))}
+										// Map over the urls to create tags with appropriate labels and transformations
+										.map(
+											(
+												urlItem: UrlItem,
+												index: number
+											) => {
+												let url = urlItem.url;
+												let label = "";
+
+												if (
+													urlItem.type === "comiclink"
+												) {
+													// Transform the URL for comiclink and label it as 'Detail'
+													url = transformDetailUrl(
+														urlItem.url
+													);
+													label = "Detail";
+												} else if (
+													urlItem.type === "detail"
+												) {
+													// Do not transform the URL for detail and label it as 'Comiclink'
+													label = "Comiclink";
+												} else {
+													// Exclude any other types, such as 'wiki'
+													return null;
+												}
+
+												return (
+													<Tag
+														key={`${urlItem.type}-${index}`}
+														colorScheme={getColorScheme(
+															urlItem.type
+														)}
+														mr={2}
+														mb={2}
+													>
+														<a
+															href={url}
+															target="_blank"
+															rel="noopener noreferrer"
+														>
+															{label}
+														</a>
+													</Tag>
+												);
+											}
+										)}
 								</Flex>
 							</Text>
 						</VStack>
@@ -303,35 +333,53 @@ const MarvelCharacter: NextPage = () => {
 									columns={{ base: 2, md: 3 }}
 									spacing={4}
 								>
-									{result?.comics?.items?.map(
-										(comicItem: ComicItem) => {
-											// Extract the ID inside the map callback function
-											const comicId = extractIdFromURI(
-												comicItem.resourceURI
-											);
+									{result?.urls
+										// Filter out any types that we don't want to display, like 'wiki'
+										.filter(
+											(urlItem: UrlItem) => urlItem.type !== "wiki"
+										)
+										// Map over the filtered array to create the tags
+										.map(
+											(
+												urlItem: UrlItem,
+												index: number
+											) => {
+												// Use the original URL for the actual 'comiclink'
+												const url =
+													urlItem.type === "comiclink"
+														? urlItem.url
+														: transformDetailUrl(
+																urlItem.url
+														  );
+												// Determine the label based on the type
+												const label = getLabelFromType(
+													urlItem.type,
+													index === 0
+												);
 
-											return (
-												// Assuming you have a route set up for comic details
-												<NextLink
-													href={`/search/marvel/marvel-comics/${comicId}`}
-													passHref
-													key={comicItem.name}
-												>
-													<FlexContainer
-														as="a"
-														p={2}
-														boxShadow="md"
-														borderRadius="md"
-														_hover={linkHoverStyle}
+												// If getLabelFromType returns null, do not render the tag
+												if (!label) return null;
+
+												return (
+													<Tag
+														key={`${urlItem.type}-${index}`}
+														colorScheme={getColorScheme(
+															urlItem.type
+														)}
+														mr={2}
+														mb={2}
 													>
-														<Text textAlign="start">
-															{comicItem.name}
-														</Text>
-													</FlexContainer>
-												</NextLink>
-											);
-										}
-									)}
+														<a
+															href={url}
+															target="_blank"
+															rel="noopener noreferrer"
+														>
+															{label}
+														</a>
+													</Tag>
+												);
+											}
+										)}
 								</SimpleGrid>
 							</Box>
 							<Box>
