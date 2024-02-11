@@ -139,13 +139,16 @@ const MarvelSeries: NextPage = () => {
 				>
 					{/* Image */}
 					<Image
-						src={`${result?.thumbnail.path}/portrait_uncanny.jpg`}
-						alt={data?.data?.results?.[0]?.title || "No Title"}
-						maxW="300px"
-						maxH="450px"
-						objectFit="contain"
-					/>
-
+							src={`${result?.thumbnail.path}/portrait_uncanny.jpg`}
+							alt={data?.data?.results?.[0]?.title || "No Title"}
+							maxW="300px"
+							maxH="450px"
+							objectFit="cover"
+							mb={{ base: 4, md: 0 }}
+							alignSelf={{ base: "center", md: "auto" }} // Center on mobile, default alignment on larger screens
+							justifySelf={{ base: "center", md: "auto" }} // Center on mobile, default alignment on larger screens
+							mx={{ base: "auto", md: 0 }} // Horizontal margin auto for mobile to center the image
+						/>
 					<VStack
 						spacing={4}
 						align="start"

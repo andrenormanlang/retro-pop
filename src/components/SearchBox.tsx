@@ -23,7 +23,7 @@ const SearchBox: React.FC<SearchComponentProps> = ({ onSearch }) => {
 			<Stack
 				direction="row"
 				spacing={6}
-				width={400}
+				width={350}
 				align="center"
 				mb={5}
 				position={"relative"}

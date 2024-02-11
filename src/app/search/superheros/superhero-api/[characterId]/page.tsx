@@ -127,15 +127,18 @@ const SuperheroID = () => {
 					justify=""
 					width={{ sm: "100%", md: "100%", lg: "100%" }} // Responsive width
 				>
-
-						<Image
-							width="300px" // In Chakra UI, width and height can be set directly like this
-							height="300px"
-							objectFit="contain"
-							borderRadius="20%"
-							src={superhero.image.url}
-							alt={superhero.name}
-						/>
+					<Image
+						width="300px" // In Chakra UI, width and height can be set directly like this
+						height="300px"
+						objectFit="contain"
+						borderRadius="20%"
+						src={superhero.image.url}
+						alt={superhero.name}
+						mb={{ base: 4, md: 0 }}
+						alignSelf={{ base: "center", md: "auto" }} // Center on mobile, default alignment on larger screens
+						justifySelf={{ base: "center", md: "auto" }} // Center on mobile, default alignment on larger screens
+						mx={{ base: "auto", md: 0 }}
+					/>
 
 					<VStack
 						ml={5}

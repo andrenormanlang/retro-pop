@@ -168,7 +168,10 @@ const ComicVineCharacter: NextPage = () => {
 							objectFit="contain"
 							src={imageUrl}
 							alt={`Cover of ${comic.name}`}
-							mr={{ md: 1 }}
+							mb={{ base: 4, md: 0 }}
+							alignSelf={{ base: "center", md: "auto" }} // Center on mobile, default alignment on larger screens
+							justifySelf={{ base: "center", md: "auto" }} // Center on mobile, default alignment on larger screens
+							mx={{ base: "auto", md: 0 }}
 						/>
 
 						<VStack spacing={4} align="">
