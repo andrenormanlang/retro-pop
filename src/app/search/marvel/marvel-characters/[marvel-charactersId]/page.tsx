@@ -238,9 +238,6 @@ const MarvelCharacter: NextPage = () => {
 								<Heading size="md" fontFamily="Bangers" letterSpacing="0.05em" color="orange">
 									Comics:
 								</Heading>
-								<Heading size="md" fontFamily="Bangers" letterSpacing="0.05em" color="orange">
-									Comics:
-								</Heading>
 								<SimpleGrid columns={{ base: 2, md: 3 }} spacing={1}>
 									{result?.comics?.items?.map((comicItem: ComicItem) => {
 										// Extract the ID inside the map callback function
