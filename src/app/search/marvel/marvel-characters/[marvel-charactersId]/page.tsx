@@ -22,20 +22,14 @@ import NextLink from "next/link";
 import { NextPage } from "next";
 import { useSearchParameters } from "@/hooks/useSearchParameters";
 import { useGetMarvelCharacter } from "@/hooks/marvel/useGetMarvelCharacters";
-import {
-	ComicItem,
-	CreatorItem,
-	EventItem,
-	SeriesItem,
-	StoryItems,
-} from "@/types/marvel/marvel-comic.type";
+import { ComicItem, CreatorItem, EventItem, SeriesItem, StoryItems } from "@/types/marvel/marvel-comic.type";
 import { extractIdFromURI } from "@/helpers/Marvel/extractIdFromURI";
 import FlexContainer from "@/helpers/Marvel/FlexContainer";
 
 interface UrlItem {
-	type: 'detail' | 'comiclink' | 'wiki'; // Add other types as needed
+	type: "detail" | "comiclink" | "wiki"; // Add other types as needed
 	url: string;
-  }
+}
 
 const MarvelCharacter: NextPage = () => {
 	// const [comic, setComic] = useState<ComicVineIssue | null>(null);
@@ -53,11 +47,7 @@ const MarvelCharacter: NextPage = () => {
 		// Read the page number and search term from the search parameters
 
 		// Navigate back to the issues page with both the page number and search term
-		router.push(
-			`/search/marvel/marvel-characters?page=${currentPage}&query=${encodeURIComponent(
-				searchTerm
-			)}`
-		);
+		router.push(`/search/marvel/marvel-characters?page=${currentPage}&query=${encodeURIComponent(searchTerm)}`);
 	};
 
 	const linkHoverStyle = {
@@ -80,11 +70,6 @@ const MarvelCharacter: NextPage = () => {
 		}
 	};
 
-	/**
-	 * Transforms Marvel API URL to the desired format.
-	 * @param {string} url - The original URL from the Marvel API.
-	 * @returns {string} - The transformed URL in the desired format.
-	 */
 	const transformDetailUrl = (url: string): string => {
 		// Decode URI components to handle encoded characters like %28 and %29
 		const decodedUrl = decodeURIComponent(url);
@@ -101,22 +86,12 @@ const MarvelCharacter: NextPage = () => {
 		}
 
 		// Replace underscores with hyphens
-		const formattedName = characterNameParts
-			.replace(/_/g, "-")
-			.toLowerCase();
+		const formattedName = characterNameParts.replace(/_/g, "-").toLowerCase();
 
 		// Construct the new URL
 		return `http://marvel.com/characters/${formattedName}`;
 	};
 
-	const getLabelFromType = (type: UrlItem['type'], isTransformed: boolean): string | null => {
-		if (type === "comiclink" && isTransformed) {
-		  return "Detail"; // If it's a transformed comiclink, label it as 'Detail'
-		} else if (type === "comiclink") {
-		  return "Comiclink"; // If it's a non-transformed comiclink, label it as 'Comiclink'
-		}
-		return null; // For other types, like 'wiki', we return null to exclude them
-	  };
 	if (isLoading)
 		return (
 			<Center h="100vh">
@@ -176,12 +151,7 @@ const MarvelCharacter: NextPage = () => {
 		>
 			<Container maxW="1100px" p={4}>
 				<Box mb={4}>
-					<Button
-						leftIcon={<ArrowBackIcon />}
-						colorScheme="teal"
-						variant="outline"
-						onClick={handleBack}
-					>
+					<Button leftIcon={<ArrowBackIcon />} colorScheme="teal" variant="outline" onClick={handleBack}>
 						Back to Grid
 					</Button>
 				</Box>
@@ -212,98 +182,42 @@ const MarvelCharacter: NextPage = () => {
 							mx={{ base: "auto", md: 0 }} // Horizontal margin auto for mobile to center the image
 						/>
 
-						<VStack
-							spacing={4}
-							align="start"
-							maxW="1000px"
-							marginLeft={4}
-						>
-							<Heading
-								fontFamily="Bangers"
-								letterSpacing="0.05em"
-								color="tomato"
-								size="lg"
-							>
+						<VStack spacing={4} align="start" maxW="1000px" marginLeft={4}>
+							<Heading fontFamily="Bangers" letterSpacing="0.05em" color="tomato" size="lg">
 								{result?.name}
 							</Heading>
-							<Text
-								p={4}
-								bg={bgColor}
-								borderRadius="md"
-								// borderWidth="1px"
-								borderColor={borderColor}
-							>
+							<Text p={4} bg={bgColor} borderRadius="md" borderColor={borderColor}>
 								{solicitationText}
 								<Flex wrap="wrap" mt={2}>
-									{/* {result?.urls?.map((urlItem: UrlItem) => (
-										<Tag
-											key={urlItem.type}
-											colorScheme={getColorScheme(
-												urlItem.type
-											)}
-											mr={2}
-											mb={2}
-										>
-											<a
-												href={urlItem.url}
-												target="_blank"
-												rel="noopener noreferrer"
+									{result?.urls.map((urlItem: UrlItem, index: number) => {
+										let url = urlItem.url;
+										let label = "";
+
+										if (urlItem.type === "comiclink") {
+											// Transform the URL for comiclink and label it as 'Detail'
+											url = transformDetailUrl(urlItem.url);
+											label = "Detail";
+										} else if (urlItem.type === "detail") {
+											// Do not transform the URL for detail and label it as 'Comiclink'
+											label = "Comiclink";
+										} else {
+											// Exclude any other types, such as 'wiki'
+											return null;
+										}
+
+										return (
+											<Tag
+												key={`${urlItem.type}-${index}`}
+												colorScheme={getColorScheme(urlItem.type)}
+												mr={2}
+												mb={2}
 											>
-												{urlItem.type
-													.charAt(0)
-													.toUpperCase() +
-													urlItem.type.slice(1)}
-											</a>
-										</Tag>
-									))} */}
-									{result?.urls
-										// Map over the urls to create tags with appropriate labels and transformations
-										.map(
-											(
-												urlItem: UrlItem,
-												index: number
-											) => {
-												let url = urlItem.url;
-												let label = "";
-
-												if (
-													urlItem.type === "comiclink"
-												) {
-													// Transform the URL for comiclink and label it as 'Detail'
-													url = transformDetailUrl(
-														urlItem.url
-													);
-													label = "Detail";
-												} else if (
-													urlItem.type === "detail"
-												) {
-													// Do not transform the URL for detail and label it as 'Comiclink'
-													label = "Comiclink";
-												} else {
-													// Exclude any other types, such as 'wiki'
-													return null;
-												}
-
-												return (
-													<Tag
-														key={`${urlItem.type}-${index}`}
-														colorScheme={getColorScheme(
-															urlItem.type
-														)}
-														mr={2}
-														mb={2}
-													>
-														<a
-															href={url}
-															target="_blank"
-															rel="noopener noreferrer"
-														>
-															{label}
-														</a>
-													</Tag>
-												);
-											}
-										)}
+												<a href={url} target="_blank" rel="noopener noreferrer">
+													{label}
+												</a>
+											</Tag>
+										);
+									})}
 								</Flex>
 							</Text>
 						</VStack>
@@ -321,241 +235,156 @@ const MarvelCharacter: NextPage = () => {
 					>
 						<VStack spacing={4} align="stretch">
 							<Box>
-								<Heading
-									size="md"
-									fontFamily="Bangers"
-									letterSpacing="0.05em"
-									color="orange"
-								>
+								<Heading size="md" fontFamily="Bangers" letterSpacing="0.05em" color="orange">
 									Comics:
 								</Heading>
-								<SimpleGrid
-									columns={{ base: 2, md: 3 }}
-									spacing={4}
-								>
-									{result?.urls
-										// Filter out any types that we don't want to display, like 'wiki'
-										.filter(
-											(urlItem: UrlItem) => urlItem.type !== "wiki"
-										)
-										// Map over the filtered array to create the tags
-										.map(
-											(
-												urlItem: UrlItem,
-												index: number
-											) => {
-												// Use the original URL for the actual 'comiclink'
-												const url =
-													urlItem.type === "comiclink"
-														? urlItem.url
-														: transformDetailUrl(
-																urlItem.url
-														  );
-												// Determine the label based on the type
-												const label = getLabelFromType(
-													urlItem.type,
-													index === 0
-												);
+								<Heading size="md" fontFamily="Bangers" letterSpacing="0.05em" color="orange">
+									Comics:
+								</Heading>
+								<SimpleGrid columns={{ base: 2, md: 3 }} spacing={1}>
+									{result?.comics?.items?.map((comicItem: ComicItem) => {
+										// Extract the ID inside the map callback function
+										const comicId = extractIdFromURI(comicItem.resourceURI);
 
-												// If getLabelFromType returns null, do not render the tag
-												if (!label) return null;
-
-												return (
-													<Tag
-														key={`${urlItem.type}-${index}`}
-														colorScheme={getColorScheme(
-															urlItem.type
-														)}
-														mr={2}
-														mb={2}
-													>
-														<a
-															href={url}
-															target="_blank"
-															rel="noopener noreferrer"
-														>
-															{label}
-														</a>
-													</Tag>
-												);
-											}
-										)}
+										return (
+											// Assuming you have a route set up for comic details
+											<NextLink
+												href={`/search/marvel/marvel-comics/${comicId}`}
+												passHref
+												key={comicItem.name}
+											>
+												<FlexContainer
+													as="a"
+													p={2}
+													boxShadow="md"
+													borderRadius="md"
+													_hover={linkHoverStyle}
+												>
+													<Text textAlign="start">{comicItem.name}</Text>
+												</FlexContainer>
+											</NextLink>
+										);
+									})}
 								</SimpleGrid>
 							</Box>
 							<Box>
-								<Heading
-									size="md"
-									fontFamily="Bangers"
-									letterSpacing="0.05em"
-									color="orange"
-								>
+								<Heading size="md" fontFamily="Bangers" letterSpacing="0.05em" color="orange">
 									Events:
 								</Heading>
-								<SimpleGrid
-									columns={{ base: 2, md: 3 }}
-									spacing={4}
-								>
-									{result?.events?.items?.map(
-										(eventItem: EventItem) => {
-											// Extract the ID inside the map callback function
-											const comicId = extractIdFromURI(
-												eventItem.resourceURI
-											);
+								<SimpleGrid columns={{ base: 2, md: 3 }} spacing={4}>
+									{result?.events?.items?.map((eventItem: EventItem) => {
+										// Extract the ID inside the map callback function
+										const comicId = extractIdFromURI(eventItem.resourceURI);
 
-											return (
-												// Assuming you have a route set up for comic details
-												<NextLink
-													href={`/search/marvel/marvel-events/${comicId}`}
-													passHref
-													key={eventItem.name}
+										return (
+											// Assuming you have a route set up for comic details
+											<NextLink
+												href={`/search/marvel/marvel-events/${comicId}`}
+												passHref
+												key={eventItem.name}
+											>
+												<FlexContainer
+													as="a"
+													p={2}
+													boxShadow="md"
+													borderRadius="md"
+													_hover={linkHoverStyle}
 												>
-													<FlexContainer
-														as="a"
-														p={2}
-														boxShadow="md"
-														borderRadius="md"
-														_hover={linkHoverStyle}
-													>
-														<Text textAlign="start">
-															{eventItem.name}
-														</Text>
-													</FlexContainer>
-												</NextLink>
-											);
-										}
-									)}
+													<Text textAlign="start">{eventItem.name}</Text>
+												</FlexContainer>
+											</NextLink>
+										);
+									})}
 								</SimpleGrid>
 							</Box>
 							<Box>
-								<Heading
-									size="md"
-									fontFamily="Bangers"
-									letterSpacing="0.05em"
-									color="orange"
-								>
+								<Heading size="md" fontFamily="Bangers" letterSpacing="0.05em" color="orange">
 									Creators:
 								</Heading>
-								<SimpleGrid
-									columns={{ base: 2, md: 3 }}
-									spacing={4}
-								>
-									{result?.creators?.items?.map(
-										(creatorItem: CreatorItem) => {
-											// Extract the ID inside the map callback function
-											const comicId = extractIdFromURI(
-												creatorItem.resourceURI
-											);
+								<SimpleGrid columns={{ base: 2, md: 3 }} spacing={4}>
+									{result?.creators?.items?.map((creatorItem: CreatorItem) => {
+										// Extract the ID inside the map callback function
+										const comicId = extractIdFromURI(creatorItem.resourceURI);
 
-											return (
-												// Assuming you have a route set up for comic details
-												<NextLink
-													href={`/search/marvel/marvel-creators/${comicId}`}
-													passHref
-													key={creatorItem.name}
+										return (
+											// Assuming you have a route set up for comic details
+											<NextLink
+												href={`/search/marvel/marvel-creators/${comicId}`}
+												passHref
+												key={creatorItem.name}
+											>
+												<FlexContainer
+													as="a"
+													p={2}
+													boxShadow="md"
+													borderRadius="md"
+													_hover={linkHoverStyle}
 												>
-													<FlexContainer
-														as="a"
-														p={2}
-														boxShadow="md"
-														borderRadius="md"
-														_hover={linkHoverStyle}
-													>
-														<Text textAlign="start">
-															{creatorItem.name}
-														</Text>
-													</FlexContainer>
-												</NextLink>
-											);
-										}
-									)}
+													<Text textAlign="start">{creatorItem.name}</Text>
+												</FlexContainer>
+											</NextLink>
+										);
+									})}
 								</SimpleGrid>
 							</Box>
 							<Box>
-								<Heading
-									size="md"
-									fontFamily="Bangers"
-									letterSpacing="0.05em"
-									color="orange"
-								>
+								<Heading size="md" fontFamily="Bangers" letterSpacing="0.05em" color="orange">
 									Series:
 								</Heading>
-								<SimpleGrid
-									columns={{ base: 2, md: 3 }}
-									spacing={4}
-								>
-									{result?.series?.items?.map(
-										(seriesItem: SeriesItem) => {
-											// Extract the ID inside the map callback function
-											const comicId = extractIdFromURI(
-												seriesItem.resourceURI
-											);
+								<SimpleGrid columns={{ base: 2, md: 3 }} spacing={4}>
+									{result?.series?.items?.map((seriesItem: SeriesItem) => {
+										// Extract the ID inside the map callback function
+										const comicId = extractIdFromURI(seriesItem.resourceURI);
 
-											return (
-												// Assuming you have a route set up for comic details
-												<NextLink
-													href={`/search/marvel/marvel-series/${comicId}`}
-													passHref
-													key={seriesItem.name}
+										return (
+											// Assuming you have a route set up for comic details
+											<NextLink
+												href={`/search/marvel/marvel-series/${comicId}`}
+												passHref
+												key={seriesItem.name}
+											>
+												<FlexContainer
+													as="a"
+													p={2}
+													boxShadow="md"
+													borderRadius="md"
+													_hover={linkHoverStyle}
 												>
-													<FlexContainer
-														as="a"
-														p={2}
-														boxShadow="md"
-														borderRadius="md"
-														_hover={linkHoverStyle}
-													>
-														<Text textAlign="start">
-															{seriesItem.name}
-														</Text>
-													</FlexContainer>
-												</NextLink>
-											);
-										}
-									)}
+													<Text textAlign="start">{seriesItem.name}</Text>
+												</FlexContainer>
+											</NextLink>
+										);
+									})}
 								</SimpleGrid>
 							</Box>
 							<Box>
-								<Heading
-									size="md"
-									fontFamily="Bangers"
-									letterSpacing="0.05em"
-									color="orange"
-								>
+								<Heading size="md" fontFamily="Bangers" letterSpacing="0.05em" color="orange">
 									Stories:
 								</Heading>
-								<SimpleGrid
-									columns={{ base: 2, md: 3 }}
-									spacing={4}
-								>
-									{result?.stories?.items?.map(
-										(storyItem: StoryItems) => {
-											// Extract the ID inside the map callback function
-											const comicId = extractIdFromURI(
-												storyItem.resourceURI
-											);
+								<SimpleGrid columns={{ base: 2, md: 3 }} spacing={4}>
+									{result?.stories?.items?.map((storyItem: StoryItems) => {
+										// Extract the ID inside the map callback function
+										const comicId = extractIdFromURI(storyItem.resourceURI);
 
-											return (
-												// Assuming you have a route set up for comic details
-												<NextLink
-													href={`/search/marvel/marvel-stories/${comicId}`}
-													passHref
-													key={storyItem.name}
+										return (
+											// Assuming you have a route set up for comic details
+											<NextLink
+												href={`/search/marvel/marvel-stories/${comicId}`}
+												passHref
+												key={storyItem.name}
+											>
+												<FlexContainer
+													as="a"
+													p={2}
+													boxShadow="md"
+													borderRadius="md"
+													_hover={linkHoverStyle}
 												>
-													<FlexContainer
-														as="a"
-														p={2}
-														boxShadow="md"
-														borderRadius="md"
-														_hover={linkHoverStyle}
-													>
-														<Text textAlign="start">
-															{storyItem.name}
-														</Text>
-													</FlexContainer>
-												</NextLink>
-											);
-										}
-									)}
+													<Text textAlign="start">{storyItem.name}</Text>
+												</FlexContainer>
+											</NextLink>
+										);
+									})}
 								</SimpleGrid>
 							</Box>
 						</VStack>
