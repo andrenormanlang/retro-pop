@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useEffect, Suspense } from "react";
 import {
 	SimpleGrid,
 	Box,
@@ -9,11 +9,6 @@ import {
 	Container,
 	Center,
 	Spinner,
-	Button,
-	Input,
-	InputGroup,
-	InputRightElement,
-	IconButton,
 } from "@chakra-ui/react";
 import { SearchIcon } from "@chakra-ui/icons";
 import { motion } from "framer-motion";
@@ -21,7 +16,7 @@ import NextLink from "next/link";
 import type { NextPage } from "next";
 import SearchBox from "@/components/SearchBox";
 import { useDebouncedCallback } from "use-debounce";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useGetSuperheroes } from "@/hooks/superhero-api/useGetSuperhero";
 import { useSearchParameters } from "@/hooks/useSearchParameters";
 import { Superheroes } from "@/types/superheroes.types";

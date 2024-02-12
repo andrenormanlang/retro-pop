@@ -77,9 +77,10 @@ const ComicVineCharacter: NextPage = () => {
 		borderRadius: "md",
 		borderWidth: "1px",
 		borderColor: useColorModeValue("gray.200", "gray.700"),
-		p: 4,
+		p: 8,
 		my: 4, // Margin for y-axis (top and bottom)
 		overflow: "hidden", // In case of overflow, you can adjust this
+		
 	};
 	const handleBack = () => {
 		// Navigate back to the issues page with both the page number and search term
@@ -243,10 +244,9 @@ const ComicVineCharacter: NextPage = () => {
 								// borderWidth="1px"
 								borderColor={borderColor}
 								maxWidth=""
+
 							>
-								<Text fontWeight="bold" fontSize="lg" textAlign="initial">
 									{comic.results.deck}
-								</Text>
 							</Box>
 						</VStack>
 					</Flex>
