@@ -36,20 +36,17 @@ interface DomNode {
 
 const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps> = ({ content, scrollPosition }) => {
 	const linkStyle = {
-		color: "teal.500",
+		fontWeight: "bold",
+		fontSize: "sm",
+		color: "teal",
 		textDecoration: "underline",
 		_before: {
 			content: '"• "',
-			color: "gray.500",
+			color: "red",
 		},
 		ml: 2, // Add margin if you want spacing between bullet and text
 	};
 
-	const figcaptionStyle = {
-		fontSize: "sm",
-		color: "gray.500",
-		mt: 2,
-	};
 	const options = {
 		replace: (domNode: DomNode) => {
 			if (domNode.name === "img" && domNode.attribs["data-src"]) {
@@ -71,33 +68,48 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 						placeholderSrc={placeholder}
 						scrollPosition={scrollPosition}
 						width="320px"
-						style={{ maxWidth: "100%", height: "auto" }}
+						style={{ maxWidth: "1000px", height: "auto" }}
 						srcSet={srcSet}
+
 					/>
 				);
 			} else if (domNode.name === "h2") {
 				return (
-					<Heading as="h2" size="lg" fontFamily="Bangers" mt="1rem" mb="1rem">
+					<Heading as="h2" size="lg" fontFamily="Libre Franklin" mt="1rem" mb="1rem" color="red">
 						{domNode.children[0].data}
 					</Heading>
 				);
+			}  else if (domNode.name === "h3") {
+				return (
+					<Heading as="h2" size="md" fontFamily="Libre Franklin" mt="1rem" mb="1rem" color="red.300">
+						{domNode.children[0].data}
+					</Heading>
+				);
+			}  else if (domNode.name === "figcaption") {
+				return (
+					<Text  fontSize="sm" fontFamily="Libre Franklin" fontWeight="bold" mt="0.2rem" mb="1rem" color="teal.300" textAlign="initial"minW="350px">
+						{domNode.children[0].data}
+					</Text>
+				);
 			} else if (domNode.name === "p") {
 				return (
-				  <Text mb="0.5rem">
+				  <Text mb="0.7rem" mt="0.5rem">
 					{domNode.children.map((child, index) => {
 					  if (child.type === "text" && typeof child.data === "string") {
 						return <React.Fragment key={index}>{child.data}</React.Fragment>;
-					  } else if (child.type === "tag" && child.name === "a") {
-						// Ensure that child.children[0].data is a string
+					  } else if (child.type === "tag" && child.name === "a" && child.attribs && child.children) {
+						// Ensure that child.children[0].data is a string and that child.attribs.href exists
 						const linkText = typeof child.children[0].data === "string" ? child.children[0].data : '';
+						const href = child.attribs.href ? child.attribs.href : '#';
 						return (
-						  <Box as="a" href={child.attribs.href} style={linkStyle} key={index}>
+						  <Box as="a" href={href} style={linkStyle} key={index} target="_blank" rel="noopener noreferrer" mb="1rem">
 							{linkText}
 						  </Box>
 						);
-					  } else if (child.type === "tag") {
-						// Recursively parse any other type of tags
+					  } else if (child.type === "tag" && child.children) {
+						// Recursively parse any other type of tags, ensuring child.children is defined
 						const innerContent = typeof child.children[0].data === "string" ? child.children[0].data : '';
+						// @ts-ignore
 						return parse(innerContent, options);
 					  }
 					})}
@@ -112,7 +124,7 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 	// @ts-ignore
 	const parsedContent = parse(content, options);
 
-	return <Box p={0}>{parsedContent}</Box>;
+	return <Box p={10}>{parsedContent}</Box>;
 };
 
 export default trackWindowScroll(ComicVineCharacterDescription);
