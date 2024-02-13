@@ -46,6 +46,12 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 		},
 		ml: 2, // Add margin if you want spacing between bullet and text
 	};
+	const b = {
+		fontWeight: "bold",
+		fontSize: "sm",
+		color: "teal",
+		ml: 2, // Add margin if you want spacing between bullet and text
+	};
 	const maxWidth = useBreakpointValue({ base: "300px", objectFit: "contain" });
 
 	const options = {
@@ -112,6 +118,19 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 						{domNode.children[0].data}
 					</Heading>
 				);
+			} else if (domNode.name === "h4") {
+				return (
+					<Heading
+						as="h3"
+						size={{ base: "md", md: "md" }}
+						fontFamily="Libre Franklin"
+						mt="1rem"
+						mb="1rem"
+						color="silver"
+					>
+						{domNode.children[0].data}
+					</Heading>
+				);
 			} else if (domNode.name === "figcaption") {
 				return (
 					<Text
@@ -151,6 +170,25 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 									>
 										{linkText}
 									</Box>
+								);
+							} else if (child.type === "tag" && child.name === "b" && child.attribs && child.children) {
+								// Ensure that child.children[0].data is a string and that child.attribs.href exists
+								const b =
+									typeof child.children[0].data === "string" ? child.children[0].data : "";
+								return (
+									<Text
+										as="b"
+										key={index}
+										style={{
+											fontWeight: "bold",
+		fontSize: "1.2rem",
+		color: "steelblue",
+
+										}}
+										mb="1rem"
+									>
+										{b}
+									</Text>
 								);
 							} else if (child.type === "tag" && child.children) {
 								// Recursively parse any other type of tags, ensuring child.children is defined
