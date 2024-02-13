@@ -126,7 +126,7 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 						fontFamily="Libre Franklin"
 						mt="1rem"
 						mb="1rem"
-						color="silver"
+						color="red"
 					>
 						{domNode.children[0].data}
 					</Heading>
@@ -157,7 +157,10 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 								// Ensure that child.children[0].data is a string and that child.attribs.href exists
 								const linkText =
 									typeof child.children[0].data === "string" ? child.children[0].data : "";
-								const href = child.attribs.href ? child.attribs.href : "#";
+								let href = child.attribs.href ? child.attribs.href : "#";
+								if (href.startsWith('/')) {
+									href = `https://comicvine.gamespot.com${href}`;
+								  }
 								return (
 									<Box
 										as="a"
