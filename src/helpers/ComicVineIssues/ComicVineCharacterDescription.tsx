@@ -1,6 +1,6 @@
 import React from "react";
 import parse from "html-react-parser";
-import { Box, Heading, Text } from "@chakra-ui/react";
+import { Box, Heading, Text, useBreakpointValue } from "@chakra-ui/react";
 import { LazyLoadImage, trackWindowScroll, ScrollPosition } from "react-lazy-load-image-component";
 import "react-lazy-load-image-component/src/effects/blur.css"; // Import the CSS for blur effect
 
@@ -15,11 +15,11 @@ interface DomNodeChild {
 	// Add these properties if a DomNodeChild can be an element with attributes and children
 	name?: string;
 	attribs?: {
-	  [key: string]: string | undefined;
-	  href?: string;
+		[key: string]: string | undefined;
+		href?: string;
 	};
 	children?: DomNodeChild[];
-  }
+}
 
 interface DomNode {
 	name: string;
@@ -46,6 +46,7 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 		},
 		ml: 2, // Add margin if you want spacing between bullet and text
 	};
+	const maxWidth = useBreakpointValue({ base: "300px", objectFit: "contain" });
 
 	const options = {
 		replace: (domNode: DomNode) => {
@@ -61,70 +62,116 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 				const srcSet = dataSrcset || ""; // Provide a default empty string if undefined
 				return (
 					<LazyLoadImage
-						alt={alt || ""} // Provide a default empty string if undefined
-						height="auto"
+						alt={alt || ""}
 						src={src}
 						effect="blur"
 						placeholderSrc={placeholder}
 						scrollPosition={scrollPosition}
-						width="320px"
-						style={{ maxWidth: "1000px", height: "auto" }}
-						srcSet={srcSet}
+						style={{
+							height: "auto",
+							width: "100%",
+							maxWidth: maxWidth,
+						}}
 
+						srcSet={srcSet}
+						// borderRadius="md"
+						// 	boxSize={{ base: "100%", md: "600px" }}
+						// 	objectFit="contain"
+						// 	p={2}
+						// 	src={imageUrl}
+						// 	alt={`Cover of ${comic.name}`}
+						// 	mb={{ base: 4, md: 0 }}
+						// 	alignSelf={{ base: "center", md: "auto" }}
+						// 	justifySelf={{ base: "center", md: "auto" }}
+						// 	mx={{ base: "auto", md: 0 }}
 					/>
 				);
 			} else if (domNode.name === "h2") {
 				return (
-					<Heading as="h2" size="lg" fontFamily="Libre Franklin" mt="1rem" mb="1rem" color="red">
+					<Heading
+						as="h2"
+						size={{ base: "md", md: "lg" }}
+						fontFamily="Libre Franklin"
+						mt="1rem"
+						mb="1rem"
+						color="red"
+					>
 						{domNode.children[0].data}
 					</Heading>
 				);
-			}  else if (domNode.name === "h3") {
+			} else if (domNode.name === "h3") {
 				return (
-					<Heading as="h2" size="md" fontFamily="Libre Franklin" mt="1rem" mb="1rem" color="red.300">
+					<Heading
+						as="h3"
+						size={{ base: "md", md: "lg" }}
+						fontFamily="Libre Franklin"
+						mt="1rem"
+						mb="1rem"
+						color="red"
+					>
 						{domNode.children[0].data}
 					</Heading>
 				);
-			}  else if (domNode.name === "figcaption") {
+			} else if (domNode.name === "figcaption") {
 				return (
-					<Text  fontSize="sm" fontFamily="Libre Franklin" fontWeight="bold" mt="0.2rem" mb="1rem" color="teal.300" textAlign="initial"minW="350px">
+					<Text
+					fontSize={{ base: "0.9rem", md: "md" }}
+						fontFamily="Libre Franklin"
+						fontWeight="bold"
+						mt="0.2rem"
+						mb="1rem"
+						pl="0.5rem"
+						color="teal.300"
+						textAlign="initial"
+						minW="300px"
+					>
 						{domNode.children[0].data}
 					</Text>
 				);
 			} else if (domNode.name === "p") {
 				return (
-				  <Text mb="0.7rem" mt="0.5rem">
-					{domNode.children.map((child, index) => {
-					  if (child.type === "text" && typeof child.data === "string") {
-						return <React.Fragment key={index}>{child.data}</React.Fragment>;
-					  } else if (child.type === "tag" && child.name === "a" && child.attribs && child.children) {
-						// Ensure that child.children[0].data is a string and that child.attribs.href exists
-						const linkText = typeof child.children[0].data === "string" ? child.children[0].data : '';
-						const href = child.attribs.href ? child.attribs.href : '#';
-						return (
-						  <Box as="a" href={href} style={linkStyle} key={index} target="_blank" rel="noopener noreferrer" mb="1rem">
-							{linkText}
-						  </Box>
-						);
-					  } else if (child.type === "tag" && child.children) {
-						// Recursively parse any other type of tags, ensuring child.children is defined
-						const innerContent = typeof child.children[0].data === "string" ? child.children[0].data : '';
-						// @ts-ignore
-						return parse(innerContent, options);
-					  }
-					})}
-				  </Text>
+					<Text mb="0.7rem" mt="0.5rem" fontSize={{ base: "0.9rem", md: "md" }}>
+						{domNode.children.map((child, index) => {
+							if (child.type === "text" && typeof child.data === "string") {
+								return <React.Fragment key={index}>{child.data}</React.Fragment>;
+							} else if (child.type === "tag" && child.name === "a" && child.attribs && child.children) {
+								// Ensure that child.children[0].data is a string and that child.attribs.href exists
+								const linkText =
+									typeof child.children[0].data === "string" ? child.children[0].data : "";
+								const href = child.attribs.href ? child.attribs.href : "#";
+								return (
+									<Box
+										as="a"
+										href={href}
+										style={linkStyle}
+										key={index}
+										target="_blank"
+										rel="noopener noreferrer"
+										mb="1rem"
+									>
+										{linkText}
+									</Box>
+								);
+							} else if (child.type === "tag" && child.children) {
+								// Recursively parse any other type of tags, ensuring child.children is defined
+								const innerContent =
+									typeof child.children[0].data === "string" ? child.children[0].data : "";
+								// @ts-ignore
+								return parse(innerContent, options);
+							}
+						})}
+					</Text>
 				);
-			  }
-			 // If no specific replacement is needed, return undefined to let html-react-parser handle the node as usual
-			 return undefined;
+			}
+			// If no specific replacement is needed, return undefined to let html-react-parser handle the node as usual
+			return undefined;
 		},
 	};
 
 	// @ts-ignore
 	const parsedContent = parse(content, options);
 
-	return <Box p={10}>{parsedContent}</Box>;
+	return <Box>{parsedContent}</Box>;
 };
 
 export default trackWindowScroll(ComicVineCharacterDescription);

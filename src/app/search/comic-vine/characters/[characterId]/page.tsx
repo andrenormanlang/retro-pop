@@ -77,11 +77,14 @@ const ComicVineCharacter: NextPage = () => {
 		borderRadius: "md",
 		borderWidth: "1px",
 		borderColor: useColorModeValue("gray.200", "gray.700"),
-		p: 8,
 		my: 4, // Margin for y-axis (top and bottom)
 		overflow: "hidden", // In case of overflow, you can adjust this
-		
-	};
+		maxWidth: { base: "90vw", sm: "400px", md: "700px", lg: "900px", xl: "1200px" },
+		// You could also use percentage values for maxWidth, for example, base: "100%", sm: "90%", etc.
+		width: "100%", // Ensure the width is always 100% of the parent container
+		px: { base: 1.5, sm: 4, md: 6 }, // Responsive padding on the x-axis (left and right)
+		py: { base: 2, sm: 4 }, // Responsive padding on the y-axis (top and bottom)
+	  };;
 	const handleBack = () => {
 		// Navigate back to the issues page with both the page number and search term
 		router.push(`/search/comic-vine/characters?page=${currentPage}&query=${encodeURIComponent(searchTerm)}`);
@@ -173,7 +176,8 @@ const ComicVineCharacter: NextPage = () => {
 						direction={{ base: "column", md: "row" }}
 						align=""
 						justify=""
-						width={{ base: "100%", md: "90%", lg: "1300px" }}
+						// maxWidth: { base: "90vw", sm: "500px", md: "800px", lg: "1000px", xl: "1300px" },
+						width={{  base: "90vw", sm: "400px", md: "700px", lg: "900px", xl: "1200px" }}
 					>
 						{/* Image */}
 						<Image
@@ -200,7 +204,7 @@ const ComicVineCharacter: NextPage = () => {
 								borderColor={borderColor}
 								maxWidth=""
 							>
-								<Text fontWeight="bold" fontSize="lg" textAlign="initial" mt={4}>
+								<Text fontWeight="bold" fontSize={{ base: "1rem", md: "lg" }}textAlign="initial" mt={4}>
 									REAL NAME: {comic.results.real_name}
 								</Text>
 							</Box>
@@ -215,7 +219,7 @@ const ComicVineCharacter: NextPage = () => {
 								overflowX="auto"
 								className="alias-container"
 							>
-								<Text fontWeight="bold" fontSize="lg" mb={2}>
+								<Text fontWeight="bold"  fontSize={{ base: "1rem", md: "lg" }} mb={2}>
 									Aliases:
 								</Text>
 								<HStack spacing={2} wrap="wrap">
@@ -225,9 +229,10 @@ const ComicVineCharacter: NextPage = () => {
 											borderRadius="full"
 											variant="solid"
 											colorScheme="teal"
-											size="md"
+											fontWeight={600}
+											fontSize={{ base: "1rem", md: "md" }}
 											px={3}
-											py={1}
+											py={2}
 											m={1}
 											_hover={{ transform: "scale(1.05)", cursor: "pointer" }}
 										>
@@ -241,7 +246,7 @@ const ComicVineCharacter: NextPage = () => {
 								p={4}
 								borderRadius="md"
 								shadow="md"
-								// borderWidth="1px"
+								fontSize={{ base: "0.9rem", md: "md" }}
 								borderColor={borderColor}
 								maxWidth=""
 
@@ -252,7 +257,7 @@ const ComicVineCharacter: NextPage = () => {
 					</Flex>
 				</VStack>
 			</Container>
-			<Container maxW="1300px"   {...contentContainerStyle}>
+			<Container {...contentContainerStyle}>
 				<ComicVineCharacterDescription content={htmlContent} />
 			</Container>
 		</Suspense>
