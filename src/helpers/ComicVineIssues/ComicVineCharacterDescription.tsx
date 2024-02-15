@@ -161,6 +161,9 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 								if (href.startsWith('/')) {
 									href = `https://comicvine.gamespot.com${href}`;
 								  }
+								if (href.startsWith('../../')) {
+									href = `https://comicvine.gamespot.com/${href}`;
+								  }
 								return (
 									<Box
 										as="a"

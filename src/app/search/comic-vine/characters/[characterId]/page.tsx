@@ -18,6 +18,11 @@ import {
 	Center,
 	Spinner,
 	SimpleGrid,
+	Accordion,
+	AccordionItem,
+	AccordionButton,
+	AccordionIcon,
+	AccordionPanel,
 } from "@chakra-ui/react";
 import { ArrowBackIcon } from "@chakra-ui/icons";
 import { NextPage } from "next";
@@ -169,7 +174,7 @@ const ComicVineCharacter: NextPage = () => {
 					{/* Content Box */}
 					<Flex
 						bg={bgColor}
-						p={4}
+						p={2}
 						borderRadius="md"
 						borderWidth="1px"
 						borderColor={borderColor}
@@ -179,7 +184,19 @@ const ComicVineCharacter: NextPage = () => {
 						// maxWidth: { base: "90vw", sm: "500px", md: "800px", lg: "1000px", xl: "1300px" },
 						width={{  base: "90vw", sm: "400px", md: "700px", lg: "900px", xl: "1200px" }}
 					>
+												<VStack spacing={4} align="">
 						{/* Image */}
+						<Box
+								bg={bgColor}
+								p={4}
+								borderRadius="md"
+								shadow="md"
+								color="red.500"
+								// borderWidth="1px"
+								borderColor={borderColor}
+								maxWidth=""
+							>
+
 						<Image
 							borderRadius="md"
 							boxSize={{ base: "100%", md: "600px" }}
@@ -187,13 +204,12 @@ const ComicVineCharacter: NextPage = () => {
 							p={2}
 							src={imageUrl}
 							alt={`Cover of ${comic.name}`}
-							mb={{ base: 4, md: 0 }}
-							alignSelf={{ base: "center", md: "auto" }}
-							justifySelf={{ base: "center", md: "auto" }}
+							mb={{ base: 2, md: 0 }}
 							mx={{ base: "auto", md: 0 }}
 						/>
+							</Box>
 
-						<VStack spacing={4} align="">
+
 							<Box
 								bg={bgColor}
 								p={4}
@@ -261,7 +277,26 @@ const ComicVineCharacter: NextPage = () => {
 				</VStack>
 			</Container>
 			<Container {...contentContainerStyle}>
-				<ComicVineCharacterDescription content={htmlContent} />
+			<Accordion allowToggle>
+  <AccordionItem>
+    <h2>
+      <AccordionButton>
+        <Box as="span" color="red" flex='1' textAlign='left'>
+		<Text fontWeight="bold"  fontSize={{ base: "1rem", md: "lg" }} mb={2}>
+									FULL DESCRIPTION:
+								</Text>
+        </Box>
+        <AccordionIcon />
+      </AccordionButton>
+    </h2>
+    <AccordionPanel pb={4}>
+	<ComicVineCharacterDescription content={htmlContent} />
+    </AccordionPanel>
+  </AccordionItem>
+
+
+</Accordion>
+
 			</Container>
 		</Suspense>
 	);
