@@ -9,6 +9,9 @@ export type ComicVine = {
     volume: {
       name: string;
     };
+	publisher: {
+		name: string;
+	};
     cover_date: string;
     // Include any other properties as per the API response
     deck: string | null; // Add the deck field

@@ -168,7 +168,7 @@ const Issues: NextPage = () => {
 					spacing={10}
 					width="100%"
 				>
-					{validData.map((comic: ComicVine) => {
+					{validData?.map((comic: ComicVine) => {
 						const plainDescription = htmlToText(
 							comic.description || "",
 							{

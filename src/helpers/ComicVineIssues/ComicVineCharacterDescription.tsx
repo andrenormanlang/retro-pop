@@ -2,12 +2,17 @@ import React from "react";
 import parse from "html-react-parser";
 import { Box, Heading, Text, useBreakpointValue } from "@chakra-ui/react";
 import { LazyLoadImage, trackWindowScroll, ScrollPosition } from "react-lazy-load-image-component";
-import "react-lazy-load-image-component/src/effects/blur.css"; // Import the CSS for blur effect
+import "react-lazy-load-image-component/src/effects/blur.css";
 
 interface ComicVineCharacterDescriptionProps {
-	content: string; // Replace 'any' with 'string' if 'content' is expected to be a string
-	scrollPosition: ScrollPosition; // Replace 'any' with 'number' or the correct type for scrollPosition
+	content: string;
+	scrollPosition: ScrollPosition;
 }
+
+interface ImageLinkWrapperProps {
+	href: string;
+	children: React.ReactNode;
+  }
 
 interface DomNodeChild {
 	type: string;
@@ -24,12 +29,13 @@ interface DomNodeChild {
 interface DomNode {
 	name: string;
 	attribs: {
-		[key: string]: string | undefined; // Allow for undefined values
+		[key: string]: string | undefined;
 		src?: string;
 		alt?: string;
 		"data-src"?: string;
 		"data-placeholder"?: string;
 		"data-srcset"?: string;
+		"data-ref"?: string;
 	};
 	children: DomNodeChild[];
 }
@@ -44,53 +50,70 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 			content: '"• "',
 			color: "red",
 		},
-		ml: 2, // Add margin if you want spacing between bullet and text
+		ml: 2,
 	};
 	const b = {
 		fontWeight: "bold",
 		fontSize: "sm",
 		color: "teal",
-		ml: 2, // Add margin if you want spacing between bullet and text
+		ml: 2,
 	};
 	const maxWidth = useBreakpointValue({ base: "300px", objectFit: "contain" });
 
+	const ImageLinkWrapper: React.FC<ImageLinkWrapperProps> = ({ href, children }) => (
+		<a href={href} target="_blank" rel="noopener noreferrer">
+		  {children}
+		</a>
+	  );
+
+
 	const options = {
 		replace: (domNode: DomNode) => {
+
+			if (domNode.name === "a" && domNode.attribs.href && domNode.attribs['data-ref-id']) {
+				const newHref = `https://comicvine.gamespot.com/images/${domNode.attribs['data-ref-id']}`;
+				domNode.attribs.href = newHref; // Update the href attribute to point to the custom URL
+			  }
 			if (domNode.name === "img" && domNode.attribs["data-src"]) {
 				const {
 					alt,
 					"data-src": dataSrc,
 					"data-placeholder": dataPlaceholder,
 					"data-srcset": dataSrcset,
+					"data-ref-id": dataRefId,
 				} = domNode.attribs; // Since these values could be undefined, provide a default or handle the undefined case
 				const src = dataSrc || ""; // Provide a default empty string if undefined
 				const placeholder = dataPlaceholder || "path_to_your_placeholder_image"; // Provide a default placeholder image
 				const srcSet = dataSrcset || ""; // Provide a default empty string if undefined
+				const imageUrl = dataRefId ? `https://comicvine.gamespot.com/images/${dataRefId}` : "#";
 				return (
-					<LazyLoadImage
-						alt={alt || ""}
-						src={src}
-						effect="blur"
-						placeholderSrc={placeholder}
-						scrollPosition={scrollPosition}
-						style={{
-							height: "auto",
-							width: "100%",
-							maxWidth: maxWidth,
-						}}
+					<ImageLinkWrapper href={src}>
 
-						srcSet={srcSet}
-						// borderRadius="md"
-						// 	boxSize={{ base: "100%", md: "600px" }}
-						// 	objectFit="contain"
-						// 	p={2}
-						// 	src={imageUrl}
-						// 	alt={`Cover of ${comic.name}`}
-						// 	mb={{ base: 4, md: 0 }}
-						// 	alignSelf={{ base: "center", md: "auto" }}
-						// 	justifySelf={{ base: "center", md: "auto" }}
-						// 	mx={{ base: "auto", md: 0 }}
-					/>
+						<LazyLoadImage
+							alt={alt || ""}
+							src={imageUrl}
+							effect="blur"
+							placeholderSrc={placeholder}
+							scrollPosition={scrollPosition}
+							style={{
+								height: "auto",
+								width: "100%",
+								maxWidth: maxWidth,
+							}}
+
+							srcSet={srcSet}
+							// borderRadius="md"
+							// 	boxSize={{ base: "100%", md: "600px" }}
+							// 	objectFit="contain"
+							// 	p={2}
+
+							// 	alt={`Cover of ${comic.name}`}
+							// 	mb={{ base: 4, md: 0 }}
+							// 	alignSelf={{ base: "center", md: "auto" }}
+							// 	justifySelf={{ base: "center", md: "auto" }}
+							// 	mx={{ base: "auto", md: 0 }}
+						/>
+					</ImageLinkWrapper>
 				);
 			} else if (domNode.name === "h2") {
 				return (

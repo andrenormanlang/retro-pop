@@ -223,8 +223,12 @@ const ComicVineCharacter: NextPage = () => {
 								<Text fontWeight="bold" fontSize={{ base: "1rem", md: "lg" }}textAlign="initial" mt={4}>
 									REAL NAME: {comic.results.real_name}
 								</Text>
+								<Text fontWeight="bold" color="green" fontSize={{ base: "1rem", md: "lg" }}textAlign="initial" mt={4}>
+									BIRTH: {comic.results.birth}
+								</Text>
 								<Text fontWeight="bold" color="red.200" fontSize={{ base: "1rem" }}textAlign="initial" mt={4}>
-									PUBLISHER: {comic.results.publisher.name}
+									PUBLISHER:   {comic.publisher ? comic.publisher.name : 'Unknown Publisher'}
+
 								</Text>
 							</Box>
 

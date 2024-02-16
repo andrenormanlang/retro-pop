@@ -9,12 +9,9 @@ import SearchBox from "@/components/SearchBox";
 import ComicsPagination from "@/components/ComicsPagination";
 import { useDebouncedCallback } from "use-debounce";
 import { htmlToText } from "html-to-text";
-import { useGetComicVineIssues } from "@/hooks/comic-vine/useComicVine";
-import { getCurrentPage } from "@/helpers/ComicVineIssues/getCurrentPage";
 import { ComicVine, SearchQuery } from "@/types/comic.types";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useSearchParameters } from "@/hooks/useSearchParameters";
-import MarvelPagination from "@/components/MarvelPagination";
 import { useGetComicVineCharacters } from "@/hooks/comic-vine/useGetComicVineCharacters";
 
 // Function to format the date as "21, Jan, 2024"
@@ -144,7 +141,7 @@ const ComicVineCharacters: NextPage = () => {
 					</Box>
 				)}
 				<SimpleGrid columns={{ base: 1, md: 3 }} spacing={10} width="100%">
-					{validData.map((comic: ComicVine) => {
+					{validData?.map((comic: ComicVine) => {
 						const plainDescription = htmlToText(comic.description || "", {
 							wordwrap: 130,
 						});
@@ -206,6 +203,17 @@ const ComicVineCharacters: NextPage = () => {
 											p={4}
 										>
 											{comic.name}
+											{/* {truncatedDescription} */}
+										</Text>
+										<Text
+											fontSize="md"
+											fontWeight={800}
+											color="red.200"
+											textAlign="left"
+											mt={1}
+											p={4}
+										>
+											 {comic.publisher ? comic.publisher.name : 'Unknown Publisher'}
 											{/* {truncatedDescription} */}
 										</Text>
 									</Box>
