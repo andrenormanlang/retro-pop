@@ -100,6 +100,17 @@ const Navbar = () => {
 	// 	},
 	//   };
 
+	const marvelButtonStyle = {
+		...buttonStyle, // Spread existing button styles to maintain base styles
+		fontFamily: "'Libre Franklin', sans-serif", // Specify the font family (or another if more appropriate)
+		fontWeight: "bold", // Make the font bold
+		textTransform: "uppercase", // Transform text to uppercase
+		bg: "red.500", // Use Chakra's red color scale for consistency or a custom red if necessary
+		color: "white", // Text color
+		padding: "1rem", // Adjust padding as necessary
+		letterSpacing: "-0.15rem", // Adjust letter spacing as necessary
+	  };
+
 	const menuItems: MenuType[]= [
 		{
 			name: "Search",
@@ -125,7 +136,7 @@ const Navbar = () => {
 				]
 				},
 				{
-					name: "Marvel",
+					name: "MARVEL",
 					submenu: [
 						{
 							name: "Comics",
@@ -144,9 +155,9 @@ const Navbar = () => {
 
 	const renderMenuItem =(item: MenuType | SubmenuType, index: number | string) => (
 		<Menu key={index}>
-			<MenuButton as={Button} {...buttonStyle}>
-				{item.name}
-			</MenuButton>
+			 <MenuButton as={Button} {...(item.name === "MARVEL" ? marvelButtonStyle : buttonStyle)}>
+      {item.name}
+    </MenuButton>
 			<MenuList {...customMenuListStyle}>
 				{item.submenu?.map((subItem, subIndex) =>
 					subItem.submenu ? (
