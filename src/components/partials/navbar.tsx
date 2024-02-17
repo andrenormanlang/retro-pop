@@ -103,7 +103,7 @@ const Navbar = () => {
 	const marvelButtonStyle = {
 		...buttonStyle, // Spread existing button styles to maintain base styles
 		fontFamily: "'Libre Franklin', sans-serif", // Specify the font family (or another if more appropriate)
-		fontWeight: "bold", // Make the font bold
+		fontWeight: "900", // Make the font bold
 		textTransform: "uppercase", // Transform text to uppercase
 		bg: "red.500", // Use Chakra's red color scale for consistency or a custom red if necessary
 		color: "white", // Text color

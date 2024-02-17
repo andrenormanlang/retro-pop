@@ -55,7 +55,7 @@ const Superheroes: NextPage = () => {
 		router.push(urlString, undefined);
 	}, [searchTerm, currentPage, router]);
 
-	const isSearchMode = data && data.superheroes && data.superheroes.results;
+	const isSearchMode = data && data.superheroes && data.superheroes.results?.length > 0;
 
 	if (isLoading)
 		return (
@@ -95,10 +95,10 @@ const Superheroes: NextPage = () => {
 				{data && (
 					<Box>
 						<Text fontSize="1.5em" mb={4} textAlign="center">
-							{searchTerm
-								? `You have ${data.superheroes.results.length} results for "${searchTerm}"`
-								: `You have a total of ${data.totalCount} heroes from the Superheroes API in ${data.totalPages} pages`}
-						</Text>
+  {searchTerm
+    ? `You have ${data.superheroes.results?.length || 0} results for "${searchTerm}"`
+    : `You have a total of ${data.totalCount} heroes from the Superheroes API in ${data.totalPages} pages`}
+</Text>
 					</Box>
 				)}
 				<SimpleGrid
