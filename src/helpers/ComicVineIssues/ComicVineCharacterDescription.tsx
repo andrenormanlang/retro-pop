@@ -1,6 +1,6 @@
 import React from "react";
-import parse from "html-react-parser";
-import { Box, Heading, Text, useBreakpointValue } from "@chakra-ui/react";
+import parse, { HTMLReactParserOptions } from "html-react-parser";
+import { Box, Heading, ListItem, Text, UnorderedList, useBreakpointValue } from "@chakra-ui/react";
 import { LazyLoadImage, trackWindowScroll, ScrollPosition } from "react-lazy-load-image-component";
 import "react-lazy-load-image-component/src/effects/blur.css";
 
@@ -14,6 +14,11 @@ interface ImageLinkWrapperProps {
 	children: React.ReactNode;
 }
 
+interface DomNodeAttributes {
+	[key: string]: string | undefined;
+	href?: string;
+  }
+
 interface DomNodeChild {
 	type: string;
 	data?: string;
@@ -26,7 +31,7 @@ interface DomNodeChild {
 	children?: DomNodeChild[];
 }
 
-interface DomNode {
+export interface DomNode {
 	name: string;
 	attribs: {
 		[key: string]: string | undefined;
@@ -66,8 +71,9 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 		</a>
 	);
 
-	const options = {
-		replace: (domNode: DomNode) => {
+	const options : HTMLReactParserOptions  = {
+		// @ts-ignore
+		replace: (domNode: DomNode, index: number)  => {
 			if (domNode.name === "a" && domNode.attribs.href && domNode.attribs["data-ref-id"]) {
 				const newHref = `https://comicvine.gamespot.com/images/${domNode.attribs["data-ref-id"]}`;
 				domNode.attribs.href = newHref; // Update the href attribute to point to the custom URL
@@ -196,7 +202,7 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 										{linkText}
 									</Box>
 								);
-							} else if (child.type === "tag" && child.name === "b" && child.attribs && child.children) {
+							}  else if (child.type === "tag" && child.name === "b" && child.attribs && child.children) {
 								// Ensure that child.children[0].data is a string and that child.attribs.href exists
 								const b = child.children[0] && typeof child.children[0].data === "string" ? child.children[0].data : "";
 								return (
@@ -213,18 +219,43 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 										{b}
 									</Text>
 								);
-							} else if (child.type === "tag" && child.children) {
-								// Recursively parse any other type of tags, ensuring child.children is defined
-								if (child.children.length > 0) {
-									const innerContent = typeof child.children[0].data === "string" ? child.children[0].data : "";
-									// @ts-ignore
-									return parse(innerContent, options);
-								}
 							}
 						})}
 					</Text>
 				);
 			}
+			if (domNode.name === "ul") {
+				return (
+				  <UnorderedList style={{ fontWeight: 'bold', fontSize: '1.2rem', color: 'steelblue' }} mb="1rem">
+					{domNode.children.map((child, index) => {
+					  // Check if 'child' is an object representing an 'li' element and handle it
+					  if (child.type === "tag" && child.name === "li") {
+						// Check if the 'li' element has children that need to be parsed
+						return (
+						  <ListItem key={index}>
+							{child.children?.map((nestedChild, nestedIndex) => {
+							  // If 'nestedChild' has a 'data' property, it is a text node
+							  if (nestedChild.type === "text" && nestedChild.data) {
+								return <React.Fragment key={nestedIndex}>{nestedChild.data}</React.Fragment>;
+							  }
+							  // If 'nestedChild' is another tag, parse its inner HTML
+							  else if (nestedChild && nestedChild.type === "tag") {
+								// Convert the inner HTML of 'nestedChild' back to a string to parse
+								const innerHtml = domNodeToString(nestedChild);
+								return <React.Fragment key={nestedIndex}>{parse(innerHtml, options)}</React.Fragment>;
+							  }
+							  return null;
+							})}
+						  </ListItem>
+						);
+					  }
+					  return null;
+					})}
+				  </UnorderedList>
+				);
+			  }
+
+
 			// If no specific replacement is needed, return undefined to let html-react-parser handle the node as usual
 			return undefined;
 		},
