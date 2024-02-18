@@ -3,6 +3,7 @@ import parse, { HTMLReactParserOptions } from "html-react-parser";
 import { Box, Heading, ListItem, Text, UnorderedList, useBreakpointValue } from "@chakra-ui/react";
 import { LazyLoadImage, trackWindowScroll, ScrollPosition } from "react-lazy-load-image-component";
 import "react-lazy-load-image-component/src/effects/blur.css";
+import domNodeToString, { DomNodeOrChild } from "./domNodeToString";
 
 interface ComicVineCharacterDescriptionProps {
 	content: string;
@@ -226,7 +227,7 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 			}
 			if (domNode.name === "ul") {
 				return (
-				  <UnorderedList style={{ fontWeight: 'bold', fontSize: '1.2rem', color: 'steelblue' }} mb="1rem">
+				  <UnorderedList style={{ fontWeight: 'bold', fontSize: '1.2rem', color: '' }} mb="1rem">
 					{domNode.children.map((child, index) => {
 					  // Check if 'child' is an object representing an 'li' element and handle it
 					  if (child.type === "tag" && child.name === "li") {
@@ -241,7 +242,8 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 							  // If 'nestedChild' is another tag, parse its inner HTML
 							  else if (nestedChild && nestedChild.type === "tag") {
 								// Convert the inner HTML of 'nestedChild' back to a string to parse
-								const innerHtml = domNodeToString(nestedChild);
+								const innerHtml = domNodeToString(nestedChild as DomNodeOrChild); // Type assertion
+								console.log('innerHtml:', innerHtml);
 								return <React.Fragment key={nestedIndex}>{parse(innerHtml, options)}</React.Fragment>;
 							  }
 							  return null;
@@ -260,8 +262,6 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 			return undefined;
 		},
 	};
-
-	// @ts-ignore
 	const parsedContent = parse(content, options);
 
 	return <Box>{parsedContent}</Box>;

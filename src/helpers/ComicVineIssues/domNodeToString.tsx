@@ -3,23 +3,16 @@ interface DomNodeAttributes {
 	href?: string;
   }
 
-  interface DomNodeChild {
+  export interface DomNodeOrChild {
 	type: string;
 	data?: string;
 	name?: string;
 	attribs?: DomNodeAttributes;
-	children?: DomNodeChild[];
+	children?: DomNodeOrChild[];
   }
 
-  interface DomNode {
-	type: string;
-	data?: string;
-	name: string;
-	attribs?: DomNodeAttributes;
-	children: DomNodeChild[];
-  }
 
-  const domNodeToString = (domNode: DomNode | DomNodeChild): string => {
+  const domNodeToString = (domNode: DomNodeOrChild): string => {
 	if (domNode.type === 'text') {
 	  return domNode.data || '';
 	}
@@ -51,3 +44,5 @@ interface DomNodeAttributes {
 
 	return nodeString;
   }
+
+export default domNodeToString;
