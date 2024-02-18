@@ -12,7 +12,7 @@ interface ComicVineCharacterDescriptionProps {
 interface ImageLinkWrapperProps {
 	href: string;
 	children: React.ReactNode;
-  }
+}
 
 interface DomNodeChild {
 	type: string;
@@ -62,18 +62,16 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 
 	const ImageLinkWrapper: React.FC<ImageLinkWrapperProps> = ({ href, children }) => (
 		<a href={href} target="_blank" rel="noopener noreferrer">
-		  {children}
+			{children}
 		</a>
-	  );
-
+	);
 
 	const options = {
 		replace: (domNode: DomNode) => {
-
-			if (domNode.name === "a" && domNode.attribs.href && domNode.attribs['data-ref-id']) {
-				const newHref = `https://comicvine.gamespot.com/images/${domNode.attribs['data-ref-id']}`;
+			if (domNode.name === "a" && domNode.attribs.href && domNode.attribs["data-ref-id"]) {
+				const newHref = `https://comicvine.gamespot.com/images/${domNode.attribs["data-ref-id"]}`;
 				domNode.attribs.href = newHref; // Update the href attribute to point to the custom URL
-			  }
+			}
 			if (domNode.name === "img" && domNode.attribs["data-src"]) {
 				const {
 					alt,
@@ -88,7 +86,6 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 				const imageUrl = dataRefId ? `https://comicvine.gamespot.com/images/${dataRefId}` : "#";
 				return (
 					<ImageLinkWrapper href={src}>
-
 						<LazyLoadImage
 							alt={alt || ""}
 							src={imageUrl}
@@ -100,7 +97,6 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 								width: "100%",
 								maxWidth: maxWidth,
 							}}
-
 							srcSet={srcSet}
 							// borderRadius="md"
 							// 	boxSize={{ base: "100%", md: "600px" }}
@@ -157,7 +153,7 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 			} else if (domNode.name === "figcaption") {
 				return (
 					<Text
-					fontSize={{ base: "0.9rem", md: "md" }}
+						fontSize={{ base: "0.9rem", md: "md" }}
 						fontFamily="Libre Franklin"
 						fontWeight="bold"
 						mt="0.2rem"
@@ -179,14 +175,14 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 							} else if (child.type === "tag" && child.name === "a" && child.attribs && child.children) {
 								// Ensure that child.children[0].data is a string and that child.attribs.href exists
 								const linkText =
-									typeof child.children[0].data === "string" ? child.children[0].data : "";
+									child.children[0] && typeof child.children[0].data === "string" ? child.children[0].data : "";
 								let href = child.attribs.href ? child.attribs.href : "#";
-								if (href.startsWith('/')) {
+								if (href.startsWith("/")) {
 									href = `https://comicvine.gamespot.com${href}`;
-								  }
-								if (href.startsWith('../../')) {
+								}
+								if (href.startsWith("../../")) {
 									href = `https://comicvine.gamespot.com/${href}`;
-								  }
+								}
 								return (
 									<Box
 										as="a"
@@ -202,17 +198,15 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 								);
 							} else if (child.type === "tag" && child.name === "b" && child.attribs && child.children) {
 								// Ensure that child.children[0].data is a string and that child.attribs.href exists
-								const b =
-									typeof child.children[0].data === "string" ? child.children[0].data : "";
+								const b = child.children[0] && typeof child.children[0].data === "string" ? child.children[0].data : "";
 								return (
 									<Text
 										as="b"
 										key={index}
 										style={{
 											fontWeight: "bold",
-		fontSize: "1.2rem",
-		color: "steelblue",
-
+											fontSize: "1.2rem",
+											color: "steelblue",
 										}}
 										mb="1rem"
 									>
@@ -221,10 +215,11 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 								);
 							} else if (child.type === "tag" && child.children) {
 								// Recursively parse any other type of tags, ensuring child.children is defined
-								const innerContent =
-									typeof child.children[0].data === "string" ? child.children[0].data : "";
-								// @ts-ignore
-								return parse(innerContent, options);
+								if (child.children.length > 0) {
+									const innerContent = typeof child.children[0].data === "string" ? child.children[0].data : "";
+									// @ts-ignore
+									return parse(innerContent, options);
+								}
 							}
 						})}
 					</Text>

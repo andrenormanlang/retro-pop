@@ -1,16 +1,7 @@
 "use client";
 
 import { useEffect, Suspense, useState } from "react";
-import {
-	SimpleGrid,
-	Box,
-	Image,
-	Text,
-	Container,
-	Center,
-	Spinner,
-	Button,
-} from "@chakra-ui/react";
+import { SimpleGrid, Box, Image, Text, Container, Center, Spinner, Button } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import NextLink from "next/link";
 import type { NextPage } from "next";
@@ -22,7 +13,6 @@ import MarvelPagination from "@/components/MarvelPagination";
 import { MarvelSeries, MarvelStory } from "@/types/marvel/marvel-comic.type";
 import { useGetMarvelStories } from "@/hooks/marvel/useGetMarvelStories";
 
-
 const MarvelStories: NextPage = () => {
 	const pageSize = 16;
 	const router = useRouter();
@@ -33,11 +23,7 @@ const MarvelStories: NextPage = () => {
 
 	const { searchTerm, setSearchTerm } = useSearchParameters(1, "");
 
-	const { data, isLoading, isError, error } = useGetMarvelStories(
-		searchTerm,
-		currentPage,
-		pageSize
-	);
+	const { data, isLoading, isError, error } = useGetMarvelStories(searchTerm, currentPage, pageSize);
 
 	const handleSearchTerm = useDebouncedCallback((value: string) => {
 		setSearchTerm(value);
@@ -130,8 +116,7 @@ const MarvelStories: NextPage = () => {
 		);
 	}
 
-
-	  const result = data?.data?.results[0];;
+	const result = data?.data?.results[0];
 
 	return (
 		<Suspense fallback={<div>Loading...</div>}>
@@ -141,28 +126,19 @@ const MarvelStories: NextPage = () => {
 					<Box>
 						<Text fontSize="1.5em" mb={4} textAlign="center">
 							{searchTerm
-								? `You have ${
-										data.data.total
-								  } results for "${searchTerm}" in ${Math.ceil(
+								? `You have ${data.data.total} results for "${searchTerm}" in ${Math.ceil(
 										data.data.total / pageSize
 								  )} pages`
-								: `You have a total of ${
-										data.data.total
-								  } Marvel Stories in ${Math.ceil(
+								: `You have a total of ${data.data.total} Marvel Stories in ${Math.ceil(
 										data.data.total / pageSize
 								  )} pages`}
 						</Text>
 					</Box>
 				)}
-				<SimpleGrid
-					columns={{ base: 1, md: 2 }}
-					spacing={30}
-					width="100%"
-				>
+				<SimpleGrid columns={{ base: 1, md: 2 }} spacing={30} width="100%">
 					{data.data &&
 						Array.isArray(data.data.results) &&
 						data.data.results.map((marvelStories: MarvelStory) => (
-
 							<NextLink
 								href={`/search/marvel/marvel-stories/${marvelStories.id}?page=${currentPage}&query=${searchTerm}`}
 								passHref
@@ -176,7 +152,6 @@ const MarvelStories: NextPage = () => {
 										p={4}
 										display="flex"
 										flexDirection="column"
-
 										objectFit="cover"
 										justifyContent=""
 										minH="380px"
@@ -190,13 +165,7 @@ const MarvelStories: NextPage = () => {
 											objectFit="contain"
 										/> */}
 										{/* Render title and type here */}
-										<Text
-											fontWeight="bold"
-											fontSize={"lg"}
-
-											flex={1}
-											textAlign="center"
-										>
+										<Text fontWeight="bold" fontSize={"lg"} flex={1} textAlign="center">
 											{marvelStories.originalIssue.name}
 										</Text>
 										<Text
@@ -208,7 +177,6 @@ const MarvelStories: NextPage = () => {
 											textAlign="initial"
 										>
 											{marvelStories.title}{" "}
-
 										</Text>
 										<Text
 											fontWeight=""
@@ -216,8 +184,9 @@ const MarvelStories: NextPage = () => {
 											letterSpacing="0.08rem"
 											flex={1}
 											textAlign="initial"
-										>	type: {marvelStories.type}
-
+										>
+											{" "}
+											type: {marvelStories.type}
 										</Text>
 										{/* Render name or any other detail here */}
 									</Box>
@@ -226,11 +195,7 @@ const MarvelStories: NextPage = () => {
 						))}
 				</SimpleGrid>
 
-				<MarvelPagination
-					currentPage={currentPage}
-					totalPages={totalPages}
-					onPageChange={onPageChange}
-				/>
+				<MarvelPagination currentPage={currentPage} totalPages={totalPages} onPageChange={onPageChange} />
 			</Container>
 		</Suspense>
 	);

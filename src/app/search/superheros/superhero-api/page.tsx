@@ -1,15 +1,7 @@
 "use client";
 
 import { useEffect, Suspense } from "react";
-import {
-	SimpleGrid,
-	Box,
-	Image,
-	Text,
-	Container,
-	Center,
-	Spinner,
-} from "@chakra-ui/react";
+import { SimpleGrid, Box, Image, Text, Container, Center, Spinner } from "@chakra-ui/react";
 import { SearchIcon } from "@chakra-ui/icons";
 import { motion } from "framer-motion";
 import NextLink from "next/link";
@@ -27,14 +19,9 @@ const Superheroes: NextPage = () => {
 	const pageSize = 16;
 	const router = useRouter();
 
-	const { searchTerm, setSearchTerm, currentPage, setCurrentPage } =
-		useSearchParameters(1, "");
+	const { searchTerm, setSearchTerm, currentPage, setCurrentPage } = useSearchParameters(1, "");
 
-	const { data, isLoading, isError, error } = useGetSuperheroes(
-		searchTerm,
-		currentPage,
-		pageSize
-	);
+	const { data, isLoading, isError, error } = useGetSuperheroes(searchTerm, currentPage, pageSize);
 
 	const handleSearchTerm = useDebouncedCallback((value: string) => {
 		setSearchTerm(value);
@@ -87,7 +74,7 @@ const Superheroes: NextPage = () => {
 		);
 	}
 
-
+	console.log('data', data);
 	return (
 		<Suspense fallback={<div>Loading...</div>}>
 			<Container maxW="container.xl" centerContent p={4}>
@@ -96,97 +83,76 @@ const Superheroes: NextPage = () => {
 					<Box>
 						<Text fontSize="1.5em" mb={4} textAlign="center">
   {searchTerm
-    ? `You have ${data.superheroes.results?.length || 0} results for "${searchTerm}"`
+    ? `You have ${data.superheroes.length} results for "${searchTerm}"`
     : `You have a total of ${data.totalCount} heroes from the Superheroes API in ${data.totalPages} pages`}
 </Text>
 					</Box>
 				)}
-				<SimpleGrid
-					columns={{ base: 1, md: 2 }}
-					spacing={30}
-					width="100%"
-				>
+				<SimpleGrid columns={{ base: 1, md: 2 }} spacing={30} width="100%">
 					{data &&
 						(isSearchMode
 							? data.superheroes.results
-								? data.superheroes.results.map(
-										(hero: Superhero) => (
-											<NextLink
-												href={`/search/superheros/superhero-api/${hero.id}`}
-												passHref
-												key={hero.id}
-											>
-												<Box alignContent="center">
-													<motion.div
-														whileHover={{
-															scale: 1.05,
-														}}
+								? data.superheroes.results.map((hero: Superhero) => (
+										<NextLink
+											href={`/search/superheros/superhero-api/${hero.id}`}
+											passHref
+											key={hero.id}
+										>
+											<Box alignContent="center">
+												<motion.div
+													whileHover={{
+														scale: 1.05,
+													}}
+												>
+													<Box
+														boxShadow="0 4px 8px rgba(0,0,0,0.1)"
+														rounded="sm"
+														overflow="hidden"
+														p={4}
+														display="flex"
+														flexDirection="column"
+														alignItems="center"
+														justifyContent="space-between"
+														minH="500px"
+														minW="300px"
 													>
-														<Box
-															boxShadow="0 4px 8px rgba(0,0,0,0.1)"
-															rounded="sm"
-															overflow="hidden"
-															p={4}
-															display="flex"
-															flexDirection="column"
-															alignItems="center"
-															justifyContent="space-between"
-															minH="500px"
-															minW="300px"
+														<Image
+															src={hero.image.url}
+															alt={hero.name}
+															maxW="300px"
+															maxH="300px"
+															objectFit="contain"
+														/>
+														<Text
+															fontWeight="bold"
+															fontSize="1.5rem"
+															noOfLines={1}
+															textAlign="center"
 														>
-															<Image
-																src={
-																	hero.image
-																		.url
-																}
-																alt={hero.name}
-																maxW="300px"
-																maxH="300px"
-																objectFit="contain"
-															/>
-															<Text
-																fontWeight="bold"
-																fontSize="1.5rem"
-																noOfLines={1}
-																textAlign="center"
-															>
-																{hero.name}
-															</Text>
-															<Text
-																fontWeight="bold"
-																fontSize="1.2rem"
-																noOfLines={1}
-																textAlign="center"
-															>
-																first
-																appearance:{" "}
-																{
-																	hero
-																		.biography[
-																		"first-appearance"
-																	]
-																}
-															</Text>
-															<Text
-																fontWeight="bold"
-																fontSize="1.2rem"
-																noOfLines={1}
-																textAlign="center"
-															>
-																publisher:{" "}
-																{
-																	hero
-																		.biography
-																		.publisher
-																}
-															</Text>
-															{/* Display other hero details as needed */}
-														</Box>
-													</motion.div>
-												</Box>
-											</NextLink>
-										)
-								  )
+															{hero.name}
+														</Text>
+														<Text
+															fontWeight="bold"
+															fontSize="1.2rem"
+															noOfLines={1}
+															textAlign="center"
+														>
+															first appearance: {hero.biography["first-appearance"]}
+														</Text>
+														<Text
+															fontWeight="bold"
+															fontSize="1.2rem"
+															noOfLines={1}
+															textAlign="center"
+														>
+															publisher: {hero.biography.publisher}
+														</Text>
+														{/* Display other hero details as needed */}
+													</Box>
+												</motion.div>
+											</Box>
+										</NextLink>
+								  ))
 								: null
 							: data &&
 							  Array.isArray(data.superheroes) &&
@@ -196,9 +162,7 @@ const Superheroes: NextPage = () => {
 										passHref
 										key={hero.id}
 									>
-										<motion.div
-											whileHover={{ scale: 1.05 }}
-										>
+										<motion.div whileHover={{ scale: 1.05 }}>
 											<Box
 												boxShadow="0 4px 8px rgba(0,0,0,0.1)"
 												rounded="sm"
@@ -232,11 +196,7 @@ const Superheroes: NextPage = () => {
 													noOfLines={1}
 													textAlign="center"
 												>
-													first appearance:{" "}
-													{
-														hero.biography
-															.firstAppearance
-													}
+													first appearance: {hero.biography.firstAppearance}
 												</Text>
 												<Text
 													fontWeight="bold"
@@ -244,8 +204,7 @@ const Superheroes: NextPage = () => {
 													noOfLines={1}
 													textAlign="center"
 												>
-													publisher:{" "}
-													{hero.biography.publisher}
+													publisher: {hero.biography.publisher}
 												</Text>
 												{/* Display other hero details as needed */}
 											</Box>
