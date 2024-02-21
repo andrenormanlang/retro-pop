@@ -66,6 +66,15 @@ export type ComicVine = {
 	  original_url: string;
 	};
   };
+ export type VolumeCredit = {
+	api_detail_url: string;
+	id: number;
+	name: string;
+	site_detail_url: string;
+	image: {
+	  original_url: string;
+	};
+  };
 
  export type ConceptCredit = {
 	api_detail_url: string;
@@ -90,3 +99,43 @@ export type SearchQuery = {
   	page: number;
   	query: string;
 }
+
+export type Publishers = {
+	alias: string | null;
+	api_detail_url: string;
+	date_added: string;
+	date_last_updated: string;
+	deck: string | null;
+	id: number;
+	image: {
+	  icon_url: string;
+	  medium_url: string;
+	  screen_url: string;
+	  screen_large_url: string;
+	  small_url: string;
+	  super_url: string;
+	  thumb_url: string;
+	  tiny_url: string;
+	  original_url: string;
+	  image_tags: string;
+	};
+	location_address: string;
+	location_city: string;
+	location_state: string;
+	name: string;
+	site_detail_url: string;
+}
+
+export type Publisher = {
+	aliases: string;
+	api_detail_url: string;
+	characters: CharacterCredit[];
+	deck: string;
+	description: string;
+	id: number;
+	volumes: VolumeCredit[];
+	location_address: string;
+	location_city: string;
+	location_state: string;
+}
+

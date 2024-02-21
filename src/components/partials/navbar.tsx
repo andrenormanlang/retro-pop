@@ -123,6 +123,9 @@ const Navbar = () => {
 					{	name: "Characters",
 						href: "/search/comic-vine/characters"
 					},
+					{	name: "Publishers",
+						href: "/search/comic-vine/publishers"
+					},
 				]
 				},
 				{ name: "Characters",

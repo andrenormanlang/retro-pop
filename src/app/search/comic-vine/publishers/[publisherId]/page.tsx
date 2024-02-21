@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useState } from "react";
+import React, { Suspense } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
 	Box,
@@ -10,51 +10,91 @@ import {
 	HStack,
 	Tag,
 	Flex,
-	Badge,
 	Container,
 	useColorModeValue,
-	Heading,
 	Button,
 	Center,
 	Spinner,
-	SimpleGrid,
+	Accordion,
+	AccordionItem,
+	AccordionButton,
+	AccordionIcon,
+	AccordionPanel,
 } from "@chakra-ui/react";
-import { CharacterCredit, PersonCredit, SearchQuery } from "@/types/comic.types";
 import { ArrowBackIcon } from "@chakra-ui/icons";
 import { NextPage } from "next";
-import { useGetComicVineIssue } from "@/hooks/comic-vine/useComicVine";
 import { useSearchParams } from "next/navigation";
-
-import { getCurrentPage } from "@/helpers/ComicVineIssues/getCurrentPage";
+import DOMPurify from "dompurify";
 import { useSearchParameters } from "@/hooks/useSearchParameters";
+import { parse } from "node-html-parser";
+import Parser from "html-react-parser";
+import { useGetComicVinePublisher } from "@/hooks/comic-vine/useGetComicVinePublishers";
+import ComicVinePublisherDescription from "@/helpers/ComicVineIssues/ComicVinePublisherDescription";
 
-const IssuePage: NextPage = () => {
+const ComicVineCharacter: NextPage = () => {
 	// const [comic, setComic] = useState<ComicVineIssue | null>(null);
 	const router = useRouter();
 	const { searchTerm, currentPage } = useSearchParameters();
 	const bgColor = useColorModeValue("white", "gray.800");
 	const borderColor = useColorModeValue("gray.200", "gray.700");
 	const pathname = usePathname();
-	const issueId = pathname.split("/").pop() || "";
+	const publisherId = pathname.split("/").pop() || "";
 	const searchParams = useSearchParams();
 
-	const { data: comic, isLoading, isError, error } = useGetComicVineIssue(searchTerm, currentPage, issueId);
+	const {
+		data: publisher,
+		isLoading,
+		isError,
+		error,
+	} = useGetComicVinePublisher(searchTerm, currentPage, publisherId);
 
-	const handleBack = () => {
-		// Read the page number and search term from the search parameters
+	const renderContentWithImages = (htmlContent: string) => {
+		const root = parse(htmlContent);
+		const figures = root.querySelectorAll("figure");
 
-		// Navigate back to the issues page with both the page number and search term
-		router.push(`/search/comic-vine/issues?page=${currentPage}&query=${encodeURIComponent(searchTerm)}`);
+		figures.forEach((figure) => {
+			const imgElement = figure.querySelector("img");
+			if (imgElement) {
+				const src = imgElement.getAttribute("src");
+				// Replace with Chakra UI Image component
+				imgElement.replaceWith(`<Image src="${src}" maxW="100%" height="auto" />`);
+			}
+		});
+
+		return root.toString();
 	};
 
+	const transform = (node: any) => {
+		// If it's an image node
+		if (node.type === "tag" && node.name === "img") {
+			return (
+				<Image
+					src={node.attribs["data-src"] || node.attribs.src} // Ensure you get the correct source attribute
+					alt={node.attribs.alt}
+					maxW="100%"
+					height="auto"
+					// Add any other props you need here
+				/>
+			);
+		}
+	};
 
-	const formatDate = (dateString: string) => {
-		const options: Intl.DateTimeFormatOptions = {
-			day: "numeric",
-			month: "short",
-			year: "numeric",
-		};
-		return new Date(dateString).toLocaleDateString(undefined, options);
+	const contentContainerStyle = {
+		bg: useColorModeValue("white", "gray.800"),
+		borderRadius: "md",
+		borderWidth: "1px",
+		borderColor: useColorModeValue("gray.200", "gray.700"),
+		my: 4, // Margin for y-axis (top and bottom)
+		overflow: "hidden", // In case of overflow, you can adjust this
+		maxWidth: { base: "90vw", sm: "400px", md: "700px", lg: "900px", xl: "1200px" },
+		// You could also use percentage values for maxWidth, for example, base: "100%", sm: "90%", etc.
+		width: "100%", // Ensure the width is always 100% of the parent container
+		px: { base: 1.5, sm: 4, md: 6 }, // Responsive padding on the x-axis (left and right)
+		py: { base: 2, sm: 4 }, // Responsive padding on the y-axis (top and bottom)
+	};
+	const handleBack = () => {
+		// Navigate back to the issues page with both the page number and search term
+		router.push(`/search/comic-vine/publishers?page=${currentPage}&query=${encodeURIComponent(searchTerm)}`);
 	};
 
 	if (isLoading)
@@ -71,15 +111,15 @@ const IssuePage: NextPage = () => {
 					display: "flex",
 					justifyContent: "center",
 					alignItems: "center",
-					height: "100vh", // Full viewport height
-					fontFamily: '"Bangers", cursive', // Assuming "Bangers" font is loaded
-					fontSize: "1.5rem", // Larger font size
-					color: "red", // Red color for the error message
+					height: "100vh",
+					fontFamily: '"Bangers", cursive',
+					fontSize: "1.5rem",
+					color: "red",
 					textAlign: "center",
 					padding: "20px",
-					backgroundColor: "#f0f0f0", // Light background for visibility
+					backgroundColor: "#f0f0f0",
 					borderRadius: "10px",
-					boxShadow: "0 4px 8px rgba(0, 0, 0, 0.15)", // Optional shadow for better appearance
+					boxShadow: "0 4px 8px rgba(0, 0, 0, 0.15)",
 				}}
 			>
 				Error: {error.message}
@@ -87,11 +127,20 @@ const IssuePage: NextPage = () => {
 		);
 	}
 
-	const imageUrl = comic.results?.image?.original_url || "defaultImageUrl";
-	const volumeName = comic.results?.volume?.name || "Unknown Volume";
-	const coverDate = comic.results?.cover_date ? formatDate(comic.results.cover_date) : "Invalid date";
-	const issueNumber = comic.results?.issue_number || "N/A";
-	const description = comic.results?.description || "No description available.";
+	const imageUrl = publisher.results?.image?.medium_url || "defaultImageUrl";
+
+	const deck = publisher.results?.deck || "No description available.";
+
+	const htmlContent = publisher.results?.description || "No description available.";
+
+	const name = publisher.results?.name || "Unknown Publisher";
+
+	// Sanitize the HTML content
+	const sanitizedDescription = publisher ? DOMPurify.sanitize(publisher.results?.description) : "";
+
+	const renderedDescription = publisher ? Parser(sanitizedDescription, { transform }) : "";
+
+	const aliasesArray = publisher.results?.aliases ? publisher.results.aliases.split(/\r\n|\n/) : [];
 
 	return (
 		<Suspense
@@ -101,15 +150,15 @@ const IssuePage: NextPage = () => {
 						display: "flex",
 						justifyContent: "center",
 						alignItems: "center",
-						height: "100vh", // Full viewport height
-						fontFamily: '"Bangers", cursive', // Assuming "Bangers" font is loaded
-						fontSize: "1.5rem", // Larger font size
-						color: "red", // Red color for the error message
+						height: "100vh",
+						fontFamily: '"Bangers", cursive',
+						fontSize: "1.5rem",
+						color: "red",
 						textAlign: "center",
 						padding: "20px",
-						backgroundColor: "#f0f0f0", // Light background for visibility
+						backgroundColor: "#f0f0f0",
 						borderRadius: "10px",
-						boxShadow: "0 4px 8px rgba(0, 0, 0, 0.15)", // Optional shadow for better appearance
+						boxShadow: "0 4px 8px rgba(0, 0, 0, 0.15)",
 					}}
 				>
 					Loading...
@@ -126,109 +175,136 @@ const IssuePage: NextPage = () => {
 					{/* Content Box */}
 					<Flex
 						bg={bgColor}
-						p={4}
+						p={2}
 						borderRadius="md"
 						borderWidth="1px"
 						borderColor={borderColor}
 						direction={{ base: "column", md: "row" }}
-						align="" // Center align items for better responsiveness
+						align=""
 						justify=""
-						width={{ base: "100%", md: "90%", lg: "1100px" }} // Responsive width
+						// maxWidth: { base: "90vw", sm: "500px", md: "800px", lg: "1000px", xl: "1300px" },
+						width={{ base: "90vw", sm: "400px", md: "700px", lg: "900px", xl: "1200px" }}
 					>
-						{/* Image */}
-						<Image
-							borderRadius="md"
-							boxSize={{ base: "100%", md: "600px" }} // Adjust the size as you like
-							objectFit="contain"
-							src={imageUrl}
-							alt={`Cover of ${comic.name}`}
-							// mr={{ md: 1 }}
-							mb={{ base: 4, md: 0 }}
-							alignSelf={{ base: "center", md: "auto" }} // Center on mobile, default alignment on larger screens
-							justifySelf={{ base: "center", md: "auto" }} // Center on mobile, default alignment on larger screens
-							mx={{ base: "auto", md: 0 }}
-						/>
-
 						<VStack spacing={4} align="">
-							<HStack justifyContent="" mt={2}>
-								<Tag
-									fontFamily="Bangers"
-									letterSpacing="0.05em"
-									size="lg"
-									colorScheme="blue"
-								>{`Issue #${issueNumber}`}</Tag>
-								<Tag fontFamily="Bangers" letterSpacing="0.05em" size="lg" colorScheme="green">
-									{coverDate}
-								</Tag>
-							</HStack>
-							<Heading
-								fontFamily="Bangers"
-								letterSpacing="0.05em"
-								color="tomato"
-								textAlign="start"
-								size="lg"
+							{/* Image */}
+							<Box
+								bg={bgColor}
+								p={4}
+								borderRadius="md"
+								shadow="md"
+								color="red.500"
+								// borderWidth="1px"
+								borderColor={borderColor}
+								maxWidth=""
 							>
-								{volumeName}
-							</Heading>
+								<Image
+									borderRadius="md"
+									boxSize={{ base: "100%", md: "300px" }}
+									objectFit="contain"
+									p={2}
+									src={imageUrl}
+									alt={`Cover of ${publisher.name}`}
+									mb={{ base: 2, md: 0 }}
+									mx={{ base: "auto", md: 0 }}
+									maxWidth={{ base: "100%", md: "300px" }}
+								/>
+							</Box>
 
 							<Box
 								bg={bgColor}
 								p={4}
 								borderRadius="md"
 								shadow="md"
-								borderWidth="0px"
+								color="red.500"
+								// borderWidth="1px"
 								borderColor={borderColor}
-								maxWidth="600px"
+								maxWidth=""
 							>
-								{description ? (
-									<div
-										dangerouslySetInnerHTML={{
-											__html: comic.results.description,
-										}}
-									/>
-								) : (
-									<Text fontSize="md" fontStyle="italic">
-										No description available.
-									</Text>
-								)}
+								{/* <Text fontWeight="bold" fontSize={{ base: "1rem", md: "lg" }}textAlign="initial" mt={4}>
+									NAME: {publisher.results.real_name}
+								</Text>
+								<Text fontWeight="bold" color="green" fontSize={{ base: "1rem", md: "lg" }}textAlign="initial" mt={4}>
+									BIRTH: {publisher.results.birth}
+								</Text> */}
+								<Text
+									fontWeight="bold"
+									color="red.200"
+									fontSize={{ base: "1rem" }}
+									textAlign="initial"
+									mt={4}
+								>
+									{name}
+								</Text>
+							</Box>
+
+							<Box
+								bg={bgColor}
+								p={4}
+								borderRadius="md"
+								shadow="md"
+								borderColor={borderColor}
+								maxWidth="full"
+								overflowX="auto"
+								className="alias-container"
+							>
+								<Text fontWeight="bold" fontSize={{ base: "1rem", md: "lg" }} mb={2}>
+									Aliases:
+								</Text>
+								<HStack spacing={2} wrap="wrap">
+									{aliasesArray.map((alias: string, index: React.Key | null | undefined) => (
+										<Tag
+											key={index}
+											borderRadius="full"
+											variant="solid"
+											colorScheme="teal"
+											fontWeight={600}
+											fontSize={{ base: "1rem", md: "md" }}
+											px={3}
+											py={2}
+											m={1}
+											_hover={{ transform: "scale(1.05)", cursor: "pointer" }}
+										>
+											{alias}
+										</Tag>
+									))}
+								</HStack>
+							</Box>
+							<Box
+								bg={bgColor}
+								p={4}
+								borderRadius="md"
+								shadow="md"
+								fontSize={{ base: "0.9rem", md: "md" }}
+								borderColor={borderColor}
+								maxWidth=""
+							>
+								{publisher.results.deck}
 							</Box>
 						</VStack>
 					</Flex>
 				</VStack>
 			</Container>
-			<Container maxW="1100px" p={4}>
-				<Flex direction={{ base: "column", md: "row" }} align="start" justify="space-between" gap={8}>
-					<VStack spacing={4} w="full" align="start">
-						<Heading size="md" fontFamily="Bangers" letterSpacing="0.05em" color="orange">
-							Character Credits:
-						</Heading>
-						<SimpleGrid columns={{ base: 2, md: 3 }} spacing={4}>
-							{comic.results?.character_credits &&
-								comic.results?.character_credits.map((character: CharacterCredit) => (
-									<Box key={character.id} p={2} boxShadow="md" borderRadius="md">
-										<Text textAlign="start">{character.name}</Text>
-									</Box>
-								))}
-						</SimpleGrid>
-					</VStack>
-					<VStack spacing={4} w="full" align="start">
-						<Heading size="md" fontFamily="Bangers" letterSpacing="0.05em" color="lightblue">
-							Person Credits:
-						</Heading>
-						<SimpleGrid columns={{ base: 2, md: 3 }} spacing={4}>
-							{comic.results?.person_credits &&
-								comic.results?.person_credits?.map((person: PersonCredit) => (
-									<Box key={person.id} p={2} boxShadow="md" borderRadius="md">
-										<Text textAlign="start">{person.name}</Text>
-										<Badge colorScheme="blue">{person.role}</Badge>
-									</Box>
-								))}
-						</SimpleGrid>
-					</VStack>
-				</Flex>
+			<Container {...contentContainerStyle}>
+				<Accordion allowToggle>
+					<AccordionItem>
+						<h2>
+							<AccordionButton>
+								<Box as="span" color="red" flex="1" textAlign="left">
+									<Text fontWeight="bold" fontSize={{ base: "1rem", md: "lg" }} mb={2}>
+										FULL DESCRIPTION:
+									</Text>
+								</Box>
+								<AccordionIcon />
+							</AccordionButton>
+						</h2>
+						<AccordionPanel pb={4}>
+							<ComicVinePublisherDescription content={htmlContent} />
+						</AccordionPanel>
+					</AccordionItem>
+				</Accordion>
 			</Container>
 		</Suspense>
 	);
 };
 
-export default IssuePage;
+export default ComicVineCharacter;

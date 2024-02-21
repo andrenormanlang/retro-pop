@@ -18,23 +18,12 @@ import ComicsPagination from "@/components/ComicsPagination";
 import { useDebouncedCallback } from "use-debounce";
 import { htmlToText } from "html-to-text";
 import { useGetComicVineIssues } from "@/hooks/comic-vine/useComicVine";
-import { getCurrentPage } from "@/helpers/ComicVineIssues/getCurrentPage";
-import { ComicVine, SearchQuery } from "@/types/comic.types";
+import {  Publishers, SearchQuery } from "@/types/comic.types";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useSearchParameters } from "@/hooks/useSearchParameters";
-import MarvelPagination from "@/components/MarvelPagination";
+import { useGetComicVinePublishers } from "@/hooks/comic-vine/useGetComicVinePublishers";
 
-// Function to format the date as "21, Jan, 2024"
-const formatDate = (dateString: string) => {
-	const options: Intl.DateTimeFormatOptions = {
-		day: "numeric",
-		month: "short",
-		year: "numeric",
-	};
-	return new Date(dateString).toLocaleDateString(undefined, options);
-};
-
-const Issues: NextPage = () => {
+const Publishers: NextPage = () => {
 	const pageSize = 15;
 	const maxDescriptionLength = 100;
 	const {
@@ -54,7 +43,7 @@ const Issues: NextPage = () => {
 	const pathname = usePathname();
 	const router = useRouter();
 
-	const { data, isLoading, isError, error } = useGetComicVineIssues(
+	const { data, isLoading, isError, error } = useGetComicVinePublishers(
 		searchTerm,
 		currentPage,
 		pageSize
@@ -119,6 +108,8 @@ const Issues: NextPage = () => {
 		);
 	}
 
+	console.log('data', data);
+
 	return (
 		<Suspense
 			fallback={
@@ -156,7 +147,7 @@ const Issues: NextPage = () => {
 								  )} pages`
 								: `You have a total of ${
 										data.number_of_total_results
-								  } issues from Comic Vine in ${Math.ceil(
+								  } publishers in ${Math.ceil(
 										data.number_of_total_results /
 											data.limit
 								  )} pages`}
@@ -168,9 +159,9 @@ const Issues: NextPage = () => {
 					spacing={10}
 					width="100%"
 				>
-					{validData?.map((comic: ComicVine) => {
+					{validData?.map((publishers: Publishers) => {
 						const plainDescription = htmlToText(
-							comic.description || "",
+							publishers.deck || "",
 							{
 								wordwrap: 130,
 							}
@@ -185,9 +176,9 @@ const Issues: NextPage = () => {
 
 						return (
 							<NextLink
-								href={`/search/comic-vine/issues/${comic.id}?page=${currentPage}&query=${searchTerm}`}
+								href={`/search/comic-vine/publishers/${publishers.id}?page=${currentPage}&query=${searchTerm}`}
 								passHref
-								key={comic.id}
+								key={publishers.id}
 							>
 								<motion.div
 									whileHover={{ scale: 1.05 }}
@@ -205,37 +196,30 @@ const Issues: NextPage = () => {
 										flexDirection="column"
 										alignItems="center"
 										justifyContent="space-between" // Distribute space between elements
-										minH="630px" // Set a minimum height for the card
+										minH="350px" // Set a minimum height for the card
 										position="relative"
 									>
 										<Image
-											src={comic.image.original_url}
+											src={publishers.image.thumb_url}
 											alt={
-												comic.name ||
-												`Comic ${comic.id}`
+												publishers.name ||
+												`Publisher ${publishers.id}`
 											}
-											maxW="400px"
-											maxH="400px"
+											maxW="200px"
+											maxH="200px"
 											objectFit="contain"
 										/>
 										<Text
 											fontWeight="bold"
 											fontSize="lg"
+											color="red"
 											noOfLines={1}
 											textAlign="center"
 											mt={4}
 										>
-											{comic.volume.name} #
-											{comic.issue_number}
+											{publishers.name}
 										</Text>
-										<Text
-											fontSize="sm"
-											color="gray.500"
-											textAlign="center"
-										>
-											Release Date:{" "}
-											{formatDate(comic.store_date)}
-										</Text>
+
 										<Text
 											fontSize="sm"
 											color="gray.500"
@@ -259,17 +243,10 @@ const Issues: NextPage = () => {
 						)}
 						onPageChange={handlePageChange}
 					/>
-					{/* <MarvelPagination
-						currentPage={currentPage}
-						totalPages={Math.ceil(
-							data.number_of_total_results / data.limit
-						)}
-						onPageChange={handlePageChange}
-					/> */}
 				</div>
 			</Container>
 		</Suspense>
 	);
 };
 
-export default Issues;
+export default Publishers;
