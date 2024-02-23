@@ -30,12 +30,25 @@ export async function GET(request: NextRequest) {
 	  });
 	} catch (error) {
 	  // Handle any errors that occur during the fetch
-	  console.error('Failed to fetch comics:', error);
-	  return new NextResponse(JSON.stringify({ error: 'Failed to fetch comics' }), {
+	  let errorMessage: string;
+  if (error instanceof Error) {
+    // It's an error object, we can safely access message or stack
+    console.error('Failed to fetch comics:', error.message, error.stack);
+    errorMessage = error.message;
+  } else {
+    // It's something else, handle accordingly
+    console.error('An unexpected error occurred:', error);
+    errorMessage = 'An unexpected error occurred';
+  }
+	  return new NextResponse(JSON.stringify({
+		error: 'Failed to fetch comics',
+		errorMessage : 'An unexpected error occurred',
+	  }), {
 		status: 500,
 		headers: {
-		  'Content-Type': 'application/json',
-		  'Access-Control-Allow-Origin': '*', // Consider specifying domains or removing if not needed
+			'Content-Type': 'application/json',
+			// You might want to specify which domains are allowed or remove this header
+			'Access-Control-Allow-Origin': '*',
 		},
 	  });
 	}
