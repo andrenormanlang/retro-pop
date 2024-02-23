@@ -140,7 +140,7 @@ const Navbar = () => {
 				},
 				{ name: "Comic Books API",
 					submenu: [
-					{	name: "Most Recent & Search",
+					{	name: "Get Some!",
 						href: "/search/comicbooks-api"
 					},
 
