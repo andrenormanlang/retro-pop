@@ -30,6 +30,9 @@ import { parse } from "node-html-parser";
 import Parser from "html-react-parser";
 import { useGetComicVinePublisher } from "@/hooks/comic-vine/useGetComicVinePublishers";
 import ComicVinePublisherDescription from "@/helpers/ComicVineIssues/ComicVinePublisherDescription";
+import CharacterCard from "../../characters/[characterId]/characterCard";
+import { Character } from "../../characters/[characterId]/characterCard";
+import { CharacterCredit } from "@/types/comic.types";
 
 const ComicVineCharacter: NextPage = () => {
 	// const [comic, setComic] = useState<ComicVineIssue | null>(null);
@@ -129,8 +132,6 @@ const ComicVineCharacter: NextPage = () => {
 
 	const imageUrl = publisher.results?.image?.medium_url || "defaultImageUrl";
 
-	const deck = publisher.results?.deck || "No description available.";
-
 	const htmlContent = publisher.results?.description || "No description available.";
 
 	const name = publisher.results?.name || "Unknown Publisher";
@@ -141,6 +142,8 @@ const ComicVineCharacter: NextPage = () => {
 	const renderedDescription = publisher ? Parser(sanitizedDescription, { transform }) : "";
 
 	const aliasesArray = publisher.results?.aliases ? publisher.results.aliases.split(/\r\n|\n/) : [];
+	const sortedCharacters = publisher.results.characters.sort((a: Character, b: Character) => a.name.localeCompare(b.name));
+
 
 	return (
 		<Suspense
@@ -299,6 +302,27 @@ const ComicVineCharacter: NextPage = () => {
 						</h2>
 						<AccordionPanel pb={4}>
 							<ComicVinePublisherDescription content={htmlContent} />
+						</AccordionPanel>
+					</AccordionItem>
+				</Accordion>
+			</Container >
+			<Container {...contentContainerStyle}>
+				<Accordion allowToggle>
+					<AccordionItem>
+						<h2>
+							<AccordionButton>
+								<Box as="span" color="red" flex="1" textAlign="left">
+									<Text fontWeight="bold" fontSize={{ base: "1rem", md: "lg" }} mb={2}>
+										PUBLISHER CHARACTERS:
+									</Text>
+								</Box>
+								<AccordionIcon />
+							</AccordionButton>
+						</h2>
+						<AccordionPanel pb={4}>
+						{sortedCharacters && sortedCharacters.map((character:Character ) => (
+          <CharacterCard key={character.id} character={character} />
+        ))}
 						</AccordionPanel>
 					</AccordionItem>
 				</Accordion>
