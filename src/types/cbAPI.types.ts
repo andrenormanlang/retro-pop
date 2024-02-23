@@ -1,4 +1,4 @@
-export type ComicCover = {
+export type ComicBooksAPI = {
 	title: string;
 	coverPage: string;
 	description: string;
@@ -14,9 +14,4 @@ export type ComicCover = {
 	  UFILE: string;
 	  ZIPPYSHARE: string;
 	};
-  }
-
-  interface HomePageState {
-	cover: ComicCover | null;
-	isLoading: boolean;
   }

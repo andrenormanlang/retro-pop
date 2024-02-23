@@ -32,7 +32,7 @@ import { useGetComicVinePublisher } from "@/hooks/comic-vine/useGetComicVinePubl
 import ComicVinePublisherDescription from "@/helpers/ComicVineIssues/ComicVinePublisherDescription";
 import CharacterCard from "../../characters/[characterId]/characterCard";
 import { Character } from "../../characters/[characterId]/characterCard";
-import { CharacterCredit } from "@/types/comic.types";
+
 
 const ComicVineCharacter: NextPage = () => {
 	// const [comic, setComic] = useState<ComicVineIssue | null>(null);

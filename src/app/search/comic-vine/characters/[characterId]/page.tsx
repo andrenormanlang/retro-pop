@@ -89,7 +89,7 @@ const ComicVineCharacter: NextPage = () => {
 		width: "100%", // Ensure the width is always 100% of the parent container
 		px: { base: 1.5, sm: 4, md: 6 }, // Responsive padding on the x-axis (left and right)
 		py: { base: 2, sm: 4 }, // Responsive padding on the y-axis (top and bottom)
-	  };;
+	};
 	const handleBack = () => {
 		// Navigate back to the issues page with both the page number and search term
 		router.push(`/search/comic-vine/characters?page=${currentPage}&query=${encodeURIComponent(searchTerm)}`);
@@ -126,20 +126,10 @@ const ComicVineCharacter: NextPage = () => {
 	}
 
 	const imageUrl = comic.results?.image?.original_url || "defaultImageUrl";
-
-	const deck = comic.results?.deck || "No description available.";
-
+	
 	const htmlContent = comic.results?.description || "No description available.";
 
-
-	// Sanitize the HTML content
-	const sanitizedDescription = comic ? DOMPurify.sanitize(comic.results?.description) : "";
-
-	const renderedDescription = comic ? Parser(sanitizedDescription, { transform }) : "";
-
 	const aliasesArray = comic.results?.aliases ? comic.results.aliases.split(/\r\n|\n/) : [];
-
-
 
 	return (
 		<Suspense
@@ -182,11 +172,11 @@ const ComicVineCharacter: NextPage = () => {
 						align=""
 						justify=""
 						// maxWidth: { base: "90vw", sm: "500px", md: "800px", lg: "1000px", xl: "1300px" },
-						width={{  base: "90vw", sm: "400px", md: "700px", lg: "900px", xl: "1200px" }}
+						width={{ base: "90vw", sm: "400px", md: "700px", lg: "900px", xl: "1200px" }}
 					>
-												<VStack spacing={4} align="">
-						{/* Image */}
-						<Box
+						<VStack spacing={4} align="">
+							{/* Image */}
+							<Box
 								bg={bgColor}
 								p={4}
 								borderRadius="md"
@@ -196,19 +186,17 @@ const ComicVineCharacter: NextPage = () => {
 								borderColor={borderColor}
 								maxWidth=""
 							>
-
-						<Image
-							borderRadius="md"
-							boxSize={{ base: "100%", md: "600px" }}
-							objectFit="contain"
-							p={2}
-							src={imageUrl}
-							alt={`Cover of ${comic.name}`}
-							mb={{ base: 2, md: 0 }}
-							mx={{ base: "auto", md: 0 }}
-						/>
+								<Image
+									borderRadius="md"
+									boxSize={{ base: "100%", md: "600px" }}
+									objectFit="contain"
+									p={2}
+									src={imageUrl}
+									alt={`Cover of ${comic.name}`}
+									mb={{ base: 2, md: 0 }}
+									mx={{ base: "auto", md: 0 }}
+								/>
 							</Box>
-
 
 							<Box
 								bg={bgColor}
@@ -220,15 +208,31 @@ const ComicVineCharacter: NextPage = () => {
 								borderColor={borderColor}
 								maxWidth=""
 							>
-								<Text fontWeight="bold" fontSize={{ base: "1rem", md: "lg" }}textAlign="initial" mt={4}>
+								<Text
+									fontWeight="bold"
+									fontSize={{ base: "1rem", md: "lg" }}
+									textAlign="initial"
+									mt={4}
+								>
 									REAL NAME: {comic.results.real_name}
 								</Text>
-								<Text fontWeight="bold" color="green" fontSize={{ base: "1rem", md: "lg" }}textAlign="initial" mt={4}>
+								<Text
+									fontWeight="bold"
+									color="green"
+									fontSize={{ base: "1rem", md: "lg" }}
+									textAlign="initial"
+									mt={4}
+								>
 									BIRTH: {comic.results.birth}
 								</Text>
-								<Text fontWeight="bold" color="red.200" fontSize={{ base: "1rem" }}textAlign="initial" mt={4}>
-									PUBLISHER:   {comic.publisher ? comic.publisher.name : 'Unknown Publisher'}
-
+								<Text
+									fontWeight="bold"
+									color="red.200"
+									fontSize={{ base: "1rem" }}
+									textAlign="initial"
+									mt={4}
+								>
+									PUBLISHER: {comic.publisher ? comic.publisher.name : "Unknown Publisher"}
 								</Text>
 							</Box>
 
@@ -242,7 +246,7 @@ const ComicVineCharacter: NextPage = () => {
 								overflowX="auto"
 								className="alias-container"
 							>
-								<Text fontWeight="bold"  fontSize={{ base: "1rem", md: "lg" }} mb={2}>
+								<Text fontWeight="bold" fontSize={{ base: "1rem", md: "lg" }} mb={2}>
 									Aliases:
 								</Text>
 								<HStack spacing={2} wrap="wrap">
@@ -272,35 +276,31 @@ const ComicVineCharacter: NextPage = () => {
 								fontSize={{ base: "0.9rem", md: "md" }}
 								borderColor={borderColor}
 								maxWidth=""
-
 							>
-									{comic.results.deck}
+								{comic.results.deck}
 							</Box>
 						</VStack>
 					</Flex>
 				</VStack>
 			</Container>
 			<Container {...contentContainerStyle}>
-			<Accordion allowToggle>
-  <AccordionItem>
-    <h2>
-      <AccordionButton>
-        <Box as="span" color="red" flex='1' textAlign='left'>
-		<Text fontWeight="bold"  fontSize={{ base: "1rem", md: "lg" }} mb={2}>
-									FULL DESCRIPTION:
-								</Text>
-        </Box>
-        <AccordionIcon />
-      </AccordionButton>
-    </h2>
-    <AccordionPanel pb={4}>
-	<ComicVineCharacterDescription content={htmlContent} />
-    </AccordionPanel>
-  </AccordionItem>
-
-
-</Accordion>
-
+				<Accordion allowToggle>
+					<AccordionItem>
+						<h2>
+							<AccordionButton>
+								<Box as="span" color="red" flex="1" textAlign="left">
+									<Text fontWeight="bold" fontSize={{ base: "1rem", md: "lg" }} mb={2}>
+										FULL DESCRIPTION:
+									</Text>
+								</Box>
+								<AccordionIcon />
+							</AccordionButton>
+						</h2>
+						<AccordionPanel pb={4}>
+							<ComicVineCharacterDescription content={htmlContent} />
+						</AccordionPanel>
+					</AccordionItem>
+				</Accordion>
 			</Container>
 		</Suspense>
 	);

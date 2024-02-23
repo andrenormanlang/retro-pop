@@ -138,6 +138,14 @@ const Navbar = () => {
 					},
 				]
 				},
+				{ name: "Comic Books API",
+					submenu: [
+					{	name: "Most Recent & Search",
+						href: "/search/comicbooks-api"
+					},
+
+				]
+				},
 				{
 					name: "MARVEL",
 					submenu: [
