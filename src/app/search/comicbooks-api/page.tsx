@@ -178,7 +178,7 @@ const CBAPI: NextPage = () => {
 										{<Text fontSize="sm" color="gray.500" textAlign="left" mt={1} p={2}>
 											{comic.description}
 										</Text>}
-										{/* <VStack spacing={4} align="stretch" mt={'1rem'}>
+										<VStack spacing={4} align="stretch" mt={'1rem'}>
 											{Object.entries(comic.downloadLinks)
 												.filter(([key]) => desiredButtons.includes(key))
 												.map(([key, value]) => (
@@ -197,7 +197,7 @@ const CBAPI: NextPage = () => {
 														{key}
 													</Button>
 												))}
-										</VStack> */}
+										</VStack>
 									</Box>
 								</motion.div>
 							</>
