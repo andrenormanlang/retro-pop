@@ -24,7 +24,7 @@ export default function RootLayout({
 			<ChakraProvider>
 			<ColorModeProvider
 				options={{
-					initialColorMode: "light",
+					initialColorMode: "dark",
 					useSystemColorMode: true,
 				}}
 			>
