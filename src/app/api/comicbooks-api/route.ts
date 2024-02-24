@@ -1,80 +1,55 @@
+// pages/api/comics/index.js
 import { NextRequest, NextResponse } from 'next/server';
 const comicsApi = require('comicbooks-api');
 
-const allowedOrigins = ['https://matilha.vercel.app', 'https://another-allowed-site.com'];
-
-export async function middleware(request: NextRequest) {
-    const requestOrigin = request.headers.get('origin');
-
-    if (request.method === 'OPTIONS') {
-        // Prepare the headers
-const headers: HeadersInit = {
-	'Access-Control-Allow-Methods': 'GET, OPTIONS',
-	'Access-Control-Allow-Headers': 'X-Requested-With, Content-Type, Accept, Origin',
-	'Access-Control-Allow-Credentials': 'true',
-	'Access-Control-Allow-Origin': requestOrigin ?? '',
-};
-
-        // Create the response for the preflight request
-        return new NextResponse(null, { headers });
-    }
-}
-
 export async function GET(request: NextRequest) {
-    const urlParams = new URL(request.url).searchParams;
-    const searchTerm = urlParams.get('query');
-    const page = parseInt(urlParams.get('page') || '1', 10);
+	// Correctly parse URL parameters
+	const urlParams = new URL(request.url).searchParams;
+	const searchTerm = urlParams.get('query'); // Search term may or may not be present
+	const page = parseInt(urlParams.get('page') || '1', 10); // Correct radix parameter
 
-    try {
-        let comics;
-        if (searchTerm) {
-            comics = await comicsApi.getComicsThroughSearch(searchTerm, page);
-        } else {
-            comics = await comicsApi.getLatestComics(page);
-        }
+	try {
+	  let comics;
 
-        const requestOrigin = request.headers.get('origin');
-        const isOriginAllowed = allowedOrigins.includes(requestOrigin ?? "");
+	  // Determine action based on the presence of a search term
+	  if (searchTerm) {
+		// Search for comics using the provided term
+		comics = await comicsApi.getComicsThroughSearch(searchTerm, page);
+	  } else {
+		// Fetch the latest comics if no search term is provided
+		comics = await comicsApi.getLatestComics(page);
+	  }
 
-        // Initialize headers with properties that are always set
-        const headers: HeadersInit = {
-            'Content-Type': 'application/json',
-        };
+	  // Return comics data as JSON
+	  return new NextResponse(JSON.stringify(comics), {
+		status: 200,
+		headers: {
+		  'Content-Type': 'application/json',
 
-		if (isOriginAllowed) {
-			//@ts-ignore
-		//@eslint-disable-next-line
-			headers['Access-Control-Allow-Origin'] = requestOrigin;
-		}
-
-
-        return new NextResponse(JSON.stringify(comics), { status: 200, headers });
-    } catch (error) {
-        let errorMessage = 'An unexpected error occurred';
-        if (error instanceof Error) {
-            console.error('Failed to fetch comics:', error.message, error.stack);
-            errorMessage = error.message;
-        } else {
-            console.error('An unexpected error occurred:', error);
-        }
-
-        // Initialize headers, conditionally adding 'Access-Control-Allow-Origin'
-        const headers: HeadersInit = {
-            'Content-Type': 'application/json',
-        };
-
-        const requestOrigin = request.headers.get('origin');
-        if (allowedOrigins.includes(requestOrigin ?? "")) {
-			//@ts-ignore
-		//@eslint-disable-next-line
-            headers['Access-Control-Allow-Origin'] = requestOrigin;
-        }
-        return new NextResponse(JSON.stringify({
-            error: 'Failed to fetch comics',
-            errorMessage,
-        }), {
-            status: 500,
-            headers,
-        });
-    }
-}
+		},
+	  });
+	} catch (error) {
+	  // Handle any errors that occur during the fetch
+	  let errorMessage: string;
+  if (error instanceof Error) {
+    // It's an error object, we can safely access message or stack
+    console.error('Failed to fetch comics:', error.message, error.stack);
+    errorMessage = error.message;
+  } else {
+    // It's something else, handle accordingly
+    console.error('An unexpected error occurred:', error);
+    errorMessage = 'An unexpected error occurred';
+  }
+	  return new NextResponse(JSON.stringify({
+		error: 'Failed to fetch comics',
+		errorMessage : 'An unexpected error occurred',
+	  }), {
+		status: 500,
+		headers: {
+			'Content-Type': 'application/json',
+			// You might want to specify which domains are allowed or remove this header
+			
+		},
+	  });
+	}
+  }
