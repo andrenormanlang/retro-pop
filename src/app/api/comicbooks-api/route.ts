@@ -25,7 +25,6 @@ export async function GET(request: NextRequest) {
 		status: 200,
 		headers: {
 		  'Content-Type': 'application/json',
-
 		},
 	  });
 	} catch (error) {
@@ -47,8 +46,7 @@ export async function GET(request: NextRequest) {
 		status: 500,
 		headers: {
 			'Content-Type': 'application/json',
-			// You might want to specify which domains are allowed or remove this header
-			
+
 		},
 	  });
 	}
