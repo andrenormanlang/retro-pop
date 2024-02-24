@@ -69,7 +69,6 @@ export async function GET(request: NextRequest) {
 		//@eslint-disable-next-line
             headers['Access-Control-Allow-Origin'] = requestOrigin;
         }
-
         return new NextResponse(JSON.stringify({
             error: 'Failed to fetch comics',
             errorMessage,
