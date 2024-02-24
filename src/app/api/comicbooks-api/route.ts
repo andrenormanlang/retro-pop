@@ -25,6 +25,7 @@ export async function GET(request: NextRequest) {
 		status: 200,
 		headers: {
 		  'Content-Type': 'application/json',
+		  'Access-Control-Allow-Origin': '*',
 		},
 	  });
 	} catch (error) {
@@ -46,7 +47,7 @@ export async function GET(request: NextRequest) {
 		status: 500,
 		headers: {
 			'Content-Type': 'application/json',
-
+			'Access-Control-Allow-Origin': '*',
 		},
 	  });
 	}
