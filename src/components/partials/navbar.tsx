@@ -138,7 +138,7 @@ const Navbar = () => {
 					},
 				]
 				},
-				{ name: "Comic Books API",
+				{ name: "getcomics.org",
 					submenu: [
 					{	name: "Get Some!",
 						href: "/search/comicbooks-api"
