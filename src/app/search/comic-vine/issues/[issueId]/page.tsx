@@ -122,7 +122,7 @@ const IssuePage: NextPage = () => {
 						Back to Grid
 					</Button>
 				</Box>
-				<VStack spacing={2}>
+				<Box>
 					{/* Content Box */}
 					<Flex
 						bg={bgColor}
@@ -130,26 +130,24 @@ const IssuePage: NextPage = () => {
 						borderRadius="md"
 						borderWidth="1px"
 						borderColor={borderColor}
-						direction={{ base: "column", md: "row" }}
+						direction={{ base: "column"}}
 						align="" // Center align items for better responsiveness
 						justify=""
+
 						width={{ base: "100%", md: "90%", lg: "1100px" }} // Responsive width
 					>
 						{/* Image */}
 						<Image
 							borderRadius="md"
-							boxSize={{ base: "100%", md: "600px" }} // Adjust the size as you like
+							boxSize={{ base: "100%", md: "600" }} // Adjust the size as you like
 							objectFit="contain"
+							sx={{marginBottom: "5", }}
+							width={{ base: "100%", md: "100%" }}
 							src={imageUrl}
 							alt={`Cover of ${comic.name}`}
-							// mr={{ md: 1 }}
-							mb={{ base: 4, md: 0 }}
-							alignSelf={{ base: "center", md: "auto" }} // Center on mobile, default alignment on larger screens
-							justifySelf={{ base: "center", md: "auto" }} // Center on mobile, default alignment on larger screens
-							mx={{ base: "auto", md: 0 }}
 						/>
 
-						<VStack spacing={4} align="">
+						<Box>
 							<HStack justifyContent="" mt={2}>
 								<Tag
 									fontFamily="Bangers"
@@ -161,15 +159,7 @@ const IssuePage: NextPage = () => {
 									{coverDate}
 								</Tag>
 							</HStack>
-							<Heading
-								fontFamily="Bangers"
-								letterSpacing="0.05em"
-								color="tomato"
-								textAlign="start"
-								size="lg"
-							>
-								{volumeName}
-							</Heading>
+
 
 							<Box
 								bg={bgColor}
@@ -178,8 +168,17 @@ const IssuePage: NextPage = () => {
 								shadow="md"
 								borderWidth="0px"
 								borderColor={borderColor}
-								maxWidth="600px"
+								width={{ base: "100%", md: "100%" }}
 							>
+								<Heading
+								fontFamily="Bangers"
+								letterSpacing="0.05em"
+								color="tomato"
+								textAlign="start"
+								size="lg"
+							>
+								{volumeName}
+							</Heading>
 								{description ? (
 									<div
 										dangerouslySetInnerHTML={{
@@ -192,9 +191,9 @@ const IssuePage: NextPage = () => {
 									</Text>
 								)}
 							</Box>
-						</VStack>
+						</Box>
 					</Flex>
-				</VStack>
+				</Box>
 			</Container>
 			<Container maxW="1100px" p={4}>
 				<Flex direction={{ base: "column", md: "row" }} align="start" justify="space-between" gap={8}>
