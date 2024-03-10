@@ -176,6 +176,8 @@ const IssuePage: NextPage = () => {
 								color="tomato"
 								textAlign="start"
 								size="lg"
+								mt={2}
+								mb={2}
 							>
 								{volumeName}
 							</Heading>
@@ -196,8 +198,8 @@ const IssuePage: NextPage = () => {
 				</Box>
 			</Container>
 			<Container maxW="1100px" p={4}>
-				<Flex direction={{ base: "column", md: "row" }} align="start" justify="space-between" gap={8}>
-					<VStack spacing={4} w="full" align="start">
+				<Flex direction={{ base: "column"}} align="start" justify="space-between" gap={8}>
+					<Box  w="full">
 						<Heading size="md" fontFamily="Bangers" letterSpacing="0.05em" color="orange">
 							Character Credits:
 						</Heading>
@@ -209,8 +211,8 @@ const IssuePage: NextPage = () => {
 									</Box>
 								))}
 						</SimpleGrid>
-					</VStack>
-					<VStack spacing={4} w="full" align="start">
+					</Box>
+					<Box w="full">
 						<Heading size="md" fontFamily="Bangers" letterSpacing="0.05em" color="lightblue">
 							Person Credits:
 						</Heading>
@@ -223,7 +225,7 @@ const IssuePage: NextPage = () => {
 									</Box>
 								))}
 						</SimpleGrid>
-					</VStack>
+					</Box>
 				</Flex>
 			</Container>
 		</Suspense>
