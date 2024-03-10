@@ -103,8 +103,9 @@ const MarvelComic: NextPage = () => {
 
 	const result = data?.data?.results?.[0];
 
+
 	const solicitationText =
-		result?.textObjects?.[0]?.text || "No description available.";
+		result?.description || "No description available.";
 
 	return (
 		<Suspense
@@ -149,7 +150,7 @@ const MarvelComic: NextPage = () => {
 						borderRadius="md"
 						borderWidth="1px"
 						borderColor={borderColor}
-						direction={{ base: "column", md: "row" }}
+						direction={{ base: "column" }}
 						align="" // Center align items for better responsiveness
 						justify=""
 						width={{ base: "100%", md: "90%", lg: "1100px" }} // Responsive width
@@ -172,12 +173,16 @@ const MarvelComic: NextPage = () => {
 							align="start"
 							maxW="1000px"
 							marginLeft={4}
+
 						>
+							<Flex>
 							<Tag
 								size="lg"
 								colorScheme="blue"
+								mt={4}
+								mr={4}
 							>{`Issue #${result?.issueNumber}`}</Tag>
-							<Tag size="lg" colorScheme="green">
+							<Tag size="lg" colorScheme="green" mt={4}>
 								{formatDate(
 									result?.dates?.find(
 										(date: { type: string }) =>
@@ -185,6 +190,8 @@ const MarvelComic: NextPage = () => {
 									)?.date || new Date()
 								)}
 							</Tag>
+
+							</Flex>
 							<Heading
 								fontFamily="Bangers"
 								letterSpacing="0.05em"
@@ -194,7 +201,7 @@ const MarvelComic: NextPage = () => {
 								{result?.series?.name || "Unknown Series"}
 							</Heading>
 							<Text
-								p={4}
+								
 								bg={bgColor}
 								borderRadius="md"
 								// borderWidth="1px"
