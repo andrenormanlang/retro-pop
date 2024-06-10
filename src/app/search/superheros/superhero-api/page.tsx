@@ -11,7 +11,7 @@ import { useDebouncedCallback } from "use-debounce";
 import { useRouter } from "next/navigation";
 import { useGetSuperheroes } from "@/hooks/superhero-api/useGetSuperhero";
 import { useSearchParameters } from "@/hooks/useSearchParameters";
-import { Superheroes } from "@/types/superheroes.types";
+import type { Superheroes } from "@/types/superheroes.types";
 import ComicsPagination from "@/components/ComicsPagination";
 import { Superhero } from "@/types/superhero.types";
 

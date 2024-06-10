@@ -80,26 +80,6 @@ const Navbar = () => {
 		},
 	};
 
-	// const customMenuListStyle = {
-	//     // ... [existing styles]
-	//     color: "gray.800", // Darker text for readability
-	//     _hover: {
-	//         bg: "blue.600", // Consistent with button hover style
-	//     },
-	//     _focus: {
-	//         bg: "blue.700", // Slightly darker on focus
-	//         outline: "none", // Remove default outline
-	//     },
-	// };
-
-	// const searchButtonStyle = {
-	// 	...buttonStyle, // Include existing button styles
-	// 	_hover: {
-	// 	  bg: colorMode === 'light' ? '#0069d9' : 'desiredDarkModeHoverColor', // Change 'desiredDarkModeHoverColor' to your preferred color for dark mode
-	// 	  color: '#ffffff',
-	// 	},
-	//   };
-
 	const marvelButtonStyle = {
 		...buttonStyle, // Spread existing button styles to maintain base styles
 		fontFamily: "'Libre Franklin', sans-serif", // Specify the font family (or another if more appropriate)
@@ -109,66 +89,58 @@ const Navbar = () => {
 		color: "white", // Text color
 		padding: "1rem", // Adjust padding as necessary
 		letterSpacing: "-0.15rem", // Adjust letter spacing as necessary
-	  };
+	};
 
-	const menuItems: MenuType[]= [
+	const menuItems: MenuType[] = [
 		{
 			name: "Search",
 			submenu: [
-				{ name: "Comic Vine",
+				{
+					name: "Comic Vine",
 					submenu: [
-					{	name: "Issues",
-						href: "/search/comic-vine/issues"
-					},
-					{	name: "Characters",
-						href: "/search/comic-vine/characters"
-					},
-					{	name: "Publishers",
-						href: "/search/comic-vine/publishers"
-					},
-				]
+						{ name: "Issues", href: "/search/comic-vine/issues" },
+						{ name: "Characters", href: "/search/comic-vine/characters" },
+						{ name: "Publishers", href: "/search/comic-vine/publishers" },
+					],
 				},
-				{ name: "Characters",
+				{
+					name: "Characters",
 					submenu: [
-					{	name: "Superheros API",
-						href: "/search/superheros/superhero-api"
-					},
-					{	name: "Superheros List",
-						href: "/search/superheros/superheros-list"
-					},
-				]
+						{ name: "Superheros API", href: "/search/superheros/superhero-api" },
+						{ name: "Superheros List", href: "/search/superheros/superheros-list" },
+					],
 				},
-				{ name: "getcomics.org",
-					submenu: [
-					{	name: "Get Some!",
-						href: "/search/comicbooks-api"
-					},
-
-				]
+				{
+					name: "getcomics.org",
+					submenu: [{ name: "Get Some!", href: "/search/comicbooks-api" }],
 				},
 				{
 					name: "MARVEL",
 					submenu: [
-						{
-							name: "Comics",
-							href: "/search/marvel/marvel-comics",
-						},
-						{name: "Characters",href: "/search/marvel/marvel-characters"},
-						{name: "Creators",href: "/search/marvel/marvel-creators"},
-						{name: "Events",href: "/search/marvel/marvel-events"},
-						{name: "Series",href: "/search/marvel/marvel-series"},
-						{name: "Stories",href: "/search/marvel/marvel-stories"},
+						{ name: "Comics", href: "/search/marvel/marvel-comics" },
+						{ name: "Characters", href: "/search/marvel/marvel-characters" },
+						{ name: "Creators", href: "/search/marvel/marvel-creators" },
+						{ name: "Events", href: "/search/marvel/marvel-events" },
+						{ name: "Series", href: "/search/marvel/marvel-series" },
+						{ name: "Stories", href: "/search/marvel/marvel-stories" },
 					],
 				},
 			],
 		},
+		{
+			name: "Store",
+			submenu: [
+				{ name: "Buy", href: "/store/buy" },
+				{ name: "Sell", href: "/store/sell" },
+			],
+		},
 	];
 
-	const renderMenuItem =(item: MenuType | SubmenuType, index: number | string) => (
+	const renderMenuItem = (item: MenuType | SubmenuType, index: number | string) => (
 		<Menu key={index}>
-			 <MenuButton as={Button} {...(item.name === "MARVEL" ? marvelButtonStyle : buttonStyle)}>
-      {item.name}
-    </MenuButton>
+			<MenuButton as={Button} {...(item.name === "MARVEL" ? marvelButtonStyle : buttonStyle)}>
+				{item.name}
+			</MenuButton>
 			<MenuList {...customMenuListStyle}>
 				{item.submenu?.map((subItem, subIndex) =>
 					subItem.submenu ? (
@@ -284,9 +256,7 @@ const Navbar = () => {
 							// pt="5rem"
 						>
 							{menuItems.map((item, index) =>
-								item.submenu
-									? renderMenuItem(item, index)
-									: null
+								item.submenu ? renderMenuItem(item, index) : null
 							)}
 						</Stack>
 					</Stack>
