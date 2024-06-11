@@ -26,7 +26,7 @@ import AvatarNav from "../../helpers/AvatarNav";
 
 const Navbar = () => {
   const supabase = createClient();
-  const { isOpen, onToggle } = useDisclosure();
+  const { isOpen, onToggle, onClose } = useDisclosure();
   const { colorMode, toggleColorMode } = useColorMode();
   const [user, setUser] = useState<User | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -35,11 +35,7 @@ const Navbar = () => {
   const fetchUserProfile = useCallback(
     async (userId: string) => {
       try {
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("avatar_url")
-          .eq("id", userId)
-          .single();
+        const { data, error } = await supabase.from("profiles").select("avatar_url").eq("id", userId).single();
         if (error) {
           throw error;
         }
@@ -82,7 +78,8 @@ const Navbar = () => {
   };
 
   const buttonStyle = {
-    width: "200px",
+    width: "100%",
+    maxWidth: "300px",
     fontWeight: "700",
     fontFamily: "Bangers",
     fontSize: "1.3rem",
@@ -220,30 +217,24 @@ const Navbar = () => {
 
         <Flex align="center">
           {/* Theme Toggle Button */}
-          <Button
+          <IconButton
+            aria-label="Toggle theme"
+            icon={colorMode === "dark" ? <SunIcon /> : <MoonIcon />}
             onClick={toggleColorMode}
-            leftIcon={colorMode === "dark" ? <SunIcon boxSize={4} /> : <MoonIcon boxSize={4} />}
-            display={{ base: "block", md: "block"}}
-            _hover={{
-              bg: colorMode === "light" ? "gray.200" : "gray.600",
-              color: colorMode === "light" ? "gray.800" : "white",
-            }}
-          >
-            {colorMode === "dark" ? "Sun" : "Moon"}
-          </Button>
+            mr={4}
+          />
 
           {/* Hamburger Icon */}
           <IconButton
             onClick={onToggle}
             aria-label={isOpen ? "Close menu" : "Open menu"}
             icon={isOpen ? <CloseIcon boxSize={5} /> : <HamburgerIcon boxSize={10} />}
-            display={{ base: "block", md: "" }}
+            display={{ base: "block" }}
             zIndex="tooltip"
             mr={4}
           />
 
-
-          {user ? (
+          {user && (
             <Flex align="center" ml={4}>
               <Menu>
                 <MenuButton as={Button} p={1} borderRadius="full">
@@ -257,28 +248,10 @@ const Navbar = () => {
                 </MenuList>
               </Menu>
             </Flex>
-          ) : (
-            <>
-              <Button as={Link} href="/login" ml={4} {...buttonStyle}>
-                Login
-              </Button>
-              <Button as={Link} href="/signup" ml={4} {...buttonStyle}>
-                Sign Up
-              </Button>
-            </>
           )}
         </Flex>
 
-        <Box
-          display={{ base: isOpen ? "block" : "none", md: "none" }}
-          position="fixed"
-          top="0"
-          bottom="0"
-          left="0"
-          right="0"
-          bg="blackAlpha.600"
-        />
-
+        {/* Motion div for the Hamburger Menu */}
         <motion.div
           variants={variants}
           initial="closed"
@@ -297,6 +270,16 @@ const Navbar = () => {
         >
           <Stack spacing={4} align="center" justify="center" pt="5rem">
             {menuItems.map((item, index) => (item.submenu ? renderMenuItem(item, index) : null))}
+            {!user && (
+              <>
+                <Button as={Link} href="/login" {...buttonStyle}>
+                  Login
+                </Button>
+                <Button as={Link} href="/signup" {...buttonStyle}>
+                  Sign Up
+                </Button>
+              </>
+            )}
           </Stack>
         </motion.div>
       </Flex>
@@ -305,5 +288,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-
-
