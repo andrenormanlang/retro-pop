@@ -1,269 +1,309 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
-	Box,
-	Flex,
-	Button,
-	IconButton,
-	Link,
-	useDisclosure,
-	useColorMode,
-	Menu,
-	MenuButton,
-	MenuList,
-	MenuItem,
-	Stack,
+  Box,
+  Flex,
+  Button,
+  IconButton,
+  Link,
+  useDisclosure,
+  useColorMode,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  Stack,
 } from "@chakra-ui/react";
 import { HamburgerIcon, CloseIcon, MoonIcon, SunIcon } from "@chakra-ui/icons";
 import { motion } from "framer-motion";
-import RetroPopLogo from "./logo"; // Changed this line
+import { createClient } from "@/utils/supabase/client";
+import RetroPopLogo from "./logo";
 import { MenuType, SubmenuType } from "@/types/navbar/nav.types";
+import { useRouter } from "next/navigation";
+import { User } from "@supabase/supabase-js";
+import AvatarNav from "../../helpers/AvatarNav";
 
 const Navbar = () => {
-	const { isOpen, onToggle } = useDisclosure();
-	const { colorMode, toggleColorMode } = useColorMode();
+  const supabase = createClient();
+  const { isOpen, onToggle } = useDisclosure();
+  const { colorMode, toggleColorMode } = useColorMode();
+  const [user, setUser] = useState<User | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const router = useRouter();
 
-	const variants = {
-		open: { opacity: 1, x: 0 },
-		closed: { opacity: 0, x: "-100%" },
-	};
+  const fetchUserProfile = useCallback(
+    async (userId: string) => {
+      try {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("avatar_url")
+          .eq("id", userId)
+          .single();
+        if (error) {
+          throw error;
+        }
+        if (data && data.avatar_url) {
+          setAvatarUrl(data.avatar_url);
+          console.log("Fetched avatar_url", data.avatar_url);
+        } else {
+          console.log("No avatar URL found");
+        }
+      } catch (error) {
+        console.error("Error fetching profile data:", error);
+      }
+    },
+    [supabase]
+  );
 
-	const buttonStyle = {
-		width: "200px", // Existing style
-		fontWeight: "700", // Existing style
-		fontFamily: "Bangers", // Existing style
-		fontSize: "1.3rem", // Existing style
-		letterSpacing: "0.2rem", // Existing style
-		color: "white", // Existing style
+  useEffect(() => {
+    const fetchUser = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      setUser(session?.user || null);
+      if (session?.user) {
+        fetchUserProfile(session.user.id);
+      }
+    };
 
-		justifyContent: "center", // Center horizontally
-		alignItems: "center", // Center vertically
-		display: "flex", // Ensure the button uses flexbox
-		height: "2rem",
-		my: "0.5rem", // Add vertical margin to each menu item
-		// w: "full",
-		bg: "blue.500", // A more standard blue
-		borderRadius: "md", // Rounded corners
-		outline: "none", // Remove default outline
-		_hover: {
-			bg: "blue.500", // Change the background color on hover
-			color: "white", // Change the text color on hover
-		},
-		_active: {
-			bg: "blue.700", // Change the background color when active/pressed
-			color: "white", // Text color when active/pressed
-		},
-		_focus: {
-			bg: "blue.600", // Background color when focused
-			boxShadow: "outline", // Outline when focused
-		},
-	};
+    fetchUser();
+  }, [supabase, fetchUserProfile]);
 
-	const customMenuListStyle = {
-		borderColor: "gray.600", // Border color
-		borderWidth: "1px", // Border width
-		borderRadius: "md", // Border radius
-		boxShadow: "lg", // Box shadow
-		minWidth: "200px", // Minimum width
-		// Add other styles as needed
-		fontSize: "10px", // Font size
-		color: "gray.800", // Darker text for readability
-		outline: "none", // Remove default outline
-		margin: "1",
-		_hover: {
-			bg: "blue.600", // Consistent with button hover style
-		},
-		_focus: {
-			bg: "blue.700", // Slightly darker on focus
-			outline: "none", // Remove default outline
-		},
-	};
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    router.push("/");
+  };
 
-	const marvelButtonStyle = {
-		...buttonStyle, // Spread existing button styles to maintain base styles
-		fontFamily: "'Libre Franklin', sans-serif", // Specify the font family (or another if more appropriate)
-		fontWeight: "900", // Make the font bold
-		textTransform: "uppercase", // Transform text to uppercase
-		bg: "red.500", // Use Chakra's red color scale for consistency or a custom red if necessary
-		color: "white", // Text color
-		padding: "1rem", // Adjust padding as necessary
-		letterSpacing: "-0.15rem", // Adjust letter spacing as necessary
-	};
+  const variants = {
+    open: { opacity: 1, x: 0 },
+    closed: { opacity: 0, x: "-100%" },
+  };
 
-	const menuItems: MenuType[] = [
-		{
-			name: "Search",
-			submenu: [
-				{
-					name: "Comic Vine",
-					submenu: [
-						{ name: "Issues", href: "/search/comic-vine/issues" },
-						{ name: "Characters", href: "/search/comic-vine/characters" },
-						{ name: "Publishers", href: "/search/comic-vine/publishers" },
-					],
-				},
-				{
-					name: "Characters",
-					submenu: [
-						{ name: "Superheros API", href: "/search/superheros/superhero-api" },
-						{ name: "Superheros List", href: "/search/superheros/superheros-list" },
-					],
-				},
-				{
-					name: "getcomics.org",
-					submenu: [{ name: "Get Some!", href: "/search/comicbooks-api" }],
-				},
-				{
-					name: "MARVEL",
-					submenu: [
-						{ name: "Comics", href: "/search/marvel/marvel-comics" },
-						{ name: "Characters", href: "/search/marvel/marvel-characters" },
-						{ name: "Creators", href: "/search/marvel/marvel-creators" },
-						{ name: "Events", href: "/search/marvel/marvel-events" },
-						{ name: "Series", href: "/search/marvel/marvel-series" },
-						{ name: "Stories", href: "/search/marvel/marvel-stories" },
-					],
-				},
-			],
-		},
-		{
-			name: "Store",
-			submenu: [
-				{ name: "Buy", href: "/store/buy" },
-				{ name: "Sell", href: "/store/sell" },
-			],
-		},
-	];
+  const buttonStyle = {
+    width: "200px",
+    fontWeight: "700",
+    fontFamily: "Bangers",
+    fontSize: "1.3rem",
+    letterSpacing: "0.2rem",
+    color: "white",
+    justifyContent: "center",
+    alignItems: "center",
+    display: "flex",
+    height: "2rem",
+    my: "0.5rem",
+    bg: "blue.500",
+    borderRadius: "md",
+    outline: "none",
+    _hover: {
+      bg: "blue.500",
+      color: "white",
+    },
+    _active: {
+      bg: "blue.700",
+      color: "white",
+    },
+    _focus: {
+      bg: "blue.600",
+      boxShadow: "outline",
+    },
+  };
 
-	const renderMenuItem = (item: MenuType | SubmenuType, index: number | string) => (
-		<Menu key={index}>
-			<MenuButton as={Button} {...(item.name === "MARVEL" ? marvelButtonStyle : buttonStyle)}>
-				{item.name}
-			</MenuButton>
-			<MenuList {...customMenuListStyle}>
-				{item.submenu?.map((subItem, subIndex) =>
-					subItem.submenu ? (
-						// For items with further nested submenus (recursive call for deeper levels)
-						renderMenuItem(subItem, `${index}-${subIndex}`)
-					) : (
-						<MenuItem
-							as={Link}
-							key={subIndex}
-							href={subItem.href}
-							{...buttonStyle}
-						>
-							{subItem.name}
-						</MenuItem>
-					)
-				)}
-			</MenuList>
-		</Menu>
-	);
+  const customMenuListStyle = {
+    borderColor: "gray.600",
+    borderWidth: "1px",
+    borderRadius: "md",
+    boxShadow: "lg",
+    minWidth: "200px",
+    fontSize: "10px",
+    color: "gray.800",
+    outline: "none",
+    margin: "1",
+    _hover: {
+      bg: "blue.600",
+    },
+    _focus: {
+      bg: "blue.700",
+      outline: "none",
+    },
+  };
 
-	return (
-		<Box as="nav" position="fixed" top="0" width={"100%"} zIndex={10}>
-			<Flex
-				justify="space-between"
-				wrap="wrap"
-				padding="1.5rem"
-				bg="gray.800"
-				color="white"
-			>
-				<Flex align="center" mr={5}>
-					<Link href="/">
-						<RetroPopLogo />
-					</Link>
-				</Flex>
+  const marvelButtonStyle = {
+    ...buttonStyle,
+    fontFamily: "'Libre Franklin', sans-serif",
+    fontWeight: "900",
+    textTransform: "uppercase",
+    bg: "red.500",
+    color: "white",
+    padding: "1rem",
+    letterSpacing: "-0.15rem",
+  };
 
-				<Flex align="">
-					{/* Hamburger Icon */}
-					<IconButton
-						onClick={onToggle}
-						aria-label={isOpen ? "Close menu" : "Open menu"}
-						icon={
-							isOpen ? (
-								<CloseIcon boxSize={5} />
-							) : (
-								<HamburgerIcon boxSize={10} />
-							)
-						}
-						display={{ base: "block", md: "" }}
-						zIndex="tooltip"
-						mr={4}
-					></IconButton>
+  const menuItems: MenuType[] = [
+    {
+      name: "Search",
+      submenu: [
+        {
+          name: "Comic Vine",
+          submenu: [
+            { name: "Issues", href: "/search/comic-vine/issues" },
+            { name: "Characters", href: "/search/comic-vine/characters" },
+            { name: "Publishers", href: "/search/comic-vine/publishers" },
+          ],
+        },
+        {
+          name: "Characters",
+          submenu: [
+            { name: "Superheros API", href: "/search/superheros/superhero-api" },
+            { name: "Superheros List", href: "/search/superheros/superheros-list" },
+          ],
+        },
+        {
+          name: "getcomics.org",
+          submenu: [{ name: "Get Some!", href: "/search/comicbooks-api" }],
+        },
+        {
+          name: "MARVEL",
+          submenu: [
+            { name: "Comics", href: "/search/marvel/marvel-comics" },
+            { name: "Characters", href: "/search/marvel/marvel-characters" },
+            { name: "Creators", href: "/search/marvel/marvel-creators" },
+            { name: "Events", href: "/search/marvel/marvel-events" },
+            { name: "Series", href: "/search/marvel/marvel-series" },
+            { name: "Stories", href: "/search/marvel/marvel-stories" },
+          ],
+        },
+      ],
+    },
+    {
+      name: "Store",
+      submenu: [
+        { name: "Buy", href: "/store/buy" },
+        { name: "Sell", href: "/store/sell" },
+      ],
+    },
+  ];
 
-					{/* Theme Toggle Button */}
-					<Button
-						onClick={toggleColorMode}
-						leftIcon={
-							colorMode === "dark" ? (
-								<SunIcon boxSize={4} />
-							) : (
-								<MoonIcon boxSize={4} />
-							)
-						}
-						display={{ base: "block", md: "block" }}
-						_hover={{
-							bg: colorMode === "light" ? "gray.200" : "gray.600",
-							color: colorMode === "light" ? "gray.800" : "white",
-						}}
-					>
-						{/* Show only the sun and moon icons */}
-						{colorMode === "dark" ? "Sun" : "Moon"}
-					</Button>
-				</Flex>
+  const renderMenuItem = (item: MenuType | SubmenuType, index: number | string) => (
+    <Menu key={index}>
+      <MenuButton as={Button} {...(item.name === "MARVEL" ? marvelButtonStyle : buttonStyle)}>
+        {item.name}
+      </MenuButton>
+      <MenuList {...customMenuListStyle}>
+        {item.submenu?.map((subItem, subIndex) =>
+          subItem.submenu ? (
+            // For items with further nested submenus (recursive call for deeper levels)
+            renderMenuItem(subItem, `${index}-${subIndex}`)
+          ) : (
+            <MenuItem as={Link} key={subIndex} href={subItem.href} {...buttonStyle}>
+              {subItem.name}
+            </MenuItem>
+          )
+        )}
+      </MenuList>
+    </Menu>
+  );
 
-				<Box
-					display={{ base: isOpen ? "block" : "none", md: "none" }}
-					position="fixed"
-					top="0"
-					bottom="0"
-					left="0"
-					right="0"
-					bg="blackAlpha.600"
-				/>
+  console.log("user", user);
+  console.log("colorMode", colorMode);
+  console.log("avatar_url", avatarUrl);
 
-				<motion.div
-					variants={variants}
-					initial="closed"
-					animate={isOpen ? "open" : "closed"}
-					transition={{ duration: 0.2 }}
-					style={{
-						display: isOpen ? "block" : "none",
-						position: "fixed",
-						top: 0,
-						left: 0,
-						zIndex: 1000,
-						width: "100%",
-						height: "100%",
-						backgroundColor: "black",
-					}}
-				>
-					<Stack
-						spacing={4}
-						align="center"
-						alignContent="center"
-						justify="center"
-						// minHeight="100vh"
-						pt="5rem"
-					>
-						<Stack
-							spacing={4}
-							align="center"
-							justify="center"
-							// minHeight="100vh"
-							// pt="5rem"
-						>
-							{menuItems.map((item, index) =>
-								item.submenu ? renderMenuItem(item, index) : null
-							)}
-						</Stack>
-					</Stack>
-				</motion.div>
-			</Flex>
-		</Box>
-	);
+  return (
+    <Box as="nav" position="fixed" top="0" width={"100%"} zIndex={10}>
+      <Flex justify="space-between" wrap="wrap" padding="1.5rem" bg="gray.800" color="white">
+        <Flex align="center" mr={5}>
+          <Link href="/">
+            <RetroPopLogo />
+          </Link>
+        </Flex>
+
+        <Flex align="center">
+          {/* Theme Toggle Button */}
+          <Button
+            onClick={toggleColorMode}
+            leftIcon={colorMode === "dark" ? <SunIcon boxSize={4} /> : <MoonIcon boxSize={4} />}
+            display={{ base: "block", md: "block"}}
+            _hover={{
+              bg: colorMode === "light" ? "gray.200" : "gray.600",
+              color: colorMode === "light" ? "gray.800" : "white",
+            }}
+          >
+            {colorMode === "dark" ? "Sun" : "Moon"}
+          </Button>
+
+          {/* Hamburger Icon */}
+          <IconButton
+            onClick={onToggle}
+            aria-label={isOpen ? "Close menu" : "Open menu"}
+            icon={isOpen ? <CloseIcon boxSize={5} /> : <HamburgerIcon boxSize={10} />}
+            display={{ base: "block", md: "" }}
+            zIndex="tooltip"
+            mr={4}
+          />
+
+
+          {user ? (
+            <Flex align="center" ml={4}>
+              <Menu>
+                <MenuButton as={Button} p={1} borderRadius="full">
+                  <AvatarNav uid={user.id} url={avatarUrl} size={50} />
+                </MenuButton>
+                <MenuList>
+                  <MenuItem as={Link} href="/account">
+                    Profile
+                  </MenuItem>
+                  <MenuItem onClick={handleSignOut}>Sign Out</MenuItem>
+                </MenuList>
+              </Menu>
+            </Flex>
+          ) : (
+            <>
+              <Button as={Link} href="/login" ml={4} {...buttonStyle}>
+                Login
+              </Button>
+              <Button as={Link} href="/signup" ml={4} {...buttonStyle}>
+                Sign Up
+              </Button>
+            </>
+          )}
+        </Flex>
+
+        <Box
+          display={{ base: isOpen ? "block" : "none", md: "none" }}
+          position="fixed"
+          top="0"
+          bottom="0"
+          left="0"
+          right="0"
+          bg="blackAlpha.600"
+        />
+
+        <motion.div
+          variants={variants}
+          initial="closed"
+          animate={isOpen ? "open" : "closed"}
+          transition={{ duration: 0.2 }}
+          style={{
+            display: isOpen ? "block" : "none",
+            position: "fixed",
+            top: 0,
+            left: 0,
+            zIndex: 1000,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "black",
+          }}
+        >
+          <Stack spacing={4} align="center" justify="center" pt="5rem">
+            {menuItems.map((item, index) => (item.submenu ? renderMenuItem(item, index) : null))}
+          </Stack>
+        </motion.div>
+      </Flex>
+    </Box>
+  );
 };
 
 export default Navbar;
+
+

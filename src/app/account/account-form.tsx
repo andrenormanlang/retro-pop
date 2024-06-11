@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { type User } from "@supabase/supabase-js";
 import Avatar from "./avatar";
-import { Box, Button, FormControl, FormLabel, Input, VStack, Heading, Spinner, Alert, AlertIcon } from "@chakra-ui/react";
+import { Box, Button, FormControl, FormLabel, Input, VStack, Heading, Spinner, Alert, AlertIcon, Center, useColorModeValue } from "@chakra-ui/react";
 
 export default function AccountForm({ user }: { user: User | null }) {
   const supabase = createClient();
@@ -12,6 +12,7 @@ export default function AccountForm({ user }: { user: User | null }) {
   const [username, setUsername] = useState<string | null>(null);
   const [website, setWebsite] = useState<string | null>(null);
   const [avatar_url, setAvatarUrl] = useState<string | null>(null);
+  const [is_admin, setIsAdmin] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const getProfile = useCallback(async () => {
@@ -20,7 +21,7 @@ export default function AccountForm({ user }: { user: User | null }) {
 
       const { data, error, status } = await supabase
         .from("profiles")
-        .select(`full_name, username, website, avatar_url`)
+        .select(`full_name, username, website, avatar_url, is_admin`)
         .eq("id", user?.id)
         .single();
 
@@ -34,6 +35,7 @@ export default function AccountForm({ user }: { user: User | null }) {
         setUsername(data.username);
         setWebsite(data.website);
         setAvatarUrl(data.avatar_url);
+        setIsAdmin(data.is_admin);
       }
     } catch (error) {
       setError("Error loading user data!");
@@ -47,12 +49,13 @@ export default function AccountForm({ user }: { user: User | null }) {
   }, [user, getProfile]);
 
   async function updateProfile({
+    fullname,
     username,
     website,
     avatar_url,
   }: {
-    username: string | null;
     fullname: string | null;
+    username: string | null;
     website: string | null;
     avatar_url: string | null;
   }) {
@@ -78,22 +81,16 @@ export default function AccountForm({ user }: { user: User | null }) {
   }
 
   return (
-    <Box
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      minH="100vh"
-      bg="gray.50"
-      p={6}
-    >
+    <Center minH="100vh" bg={useColorModeValue("gray.50", "gray.800")}>
       <Box
-        w={{ base: "100%", md: "400px" }}
         p={8}
-        bg="white"
+        maxWidth="400px"
+        width="full"
+        bg={useColorModeValue("white", "gray.700")}
         boxShadow="md"
         borderRadius="md"
       >
-        <Heading as="h1" size="lg" textAlign="center" mb={6}>
+        <Heading as="h1" size="lg" mb={6} textAlign="center">
           Account
         </Heading>
         {error && (
@@ -143,8 +140,16 @@ export default function AccountForm({ user }: { user: User | null }) {
                 onChange={(e) => setWebsite(e.target.value)}
               />
             </FormControl>
+            <FormControl id="isAdmin">
+              <FormLabel>Admin Status</FormLabel>
+              <Input
+                type="text"
+                value={is_admin ? 'Admin' : 'User'}
+                isDisabled
+              />
+            </FormControl>
             <Button
-              colorScheme="blue"
+              colorScheme="teal"
               width="full"
               onClick={() => updateProfile({ fullname, username, website, avatar_url })}
               isDisabled={loading}
@@ -159,6 +164,6 @@ export default function AccountForm({ user }: { user: User | null }) {
           </VStack>
         )}
       </Box>
-    </Box>
+    </Center>
   );
 }

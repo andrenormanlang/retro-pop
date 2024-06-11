@@ -1,4 +1,4 @@
-// src/pages/login.tsx
+// src/pages/forgot-password.tsx
 
 "use client";
 
@@ -18,24 +18,27 @@ import {
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 
-export default function Login() {
+export default function ForgotPassword() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const message = searchParams.get("message");
 
-  const signIn = async (event: React.FormEvent<HTMLFormElement>) => {
+  const confirmReset = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
     const supabase = createClient();
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
 
     if (error) {
-      router.push("/login?message=Could not authenticate user");
+      router.push("/forgot-password?message=Could not authenticate user");
     } else {
-      router.push("/");
+      router.push(
+        "/confirm?message=Password Reset link has been sent to your email address"
+      );
     }
   };
 
@@ -50,19 +53,15 @@ export default function Login() {
         borderRadius="md"
       >
         <Heading as="h1" size="lg" mb={6} textAlign="center">
-          Sign In
+          Reset Password
         </Heading>
-        <form onSubmit={signIn}>
+        <form onSubmit={confirmReset}>
           <FormControl id="email" mb={4}>
-            <FormLabel>Email</FormLabel>
+            <FormLabel>Enter Email Address</FormLabel>
             <Input type="email" name="email" required />
           </FormControl>
-          <FormControl id="password" mb={4}>
-            <FormLabel>Password</FormLabel>
-            <Input type="password" name="password" required />
-          </FormControl>
           <Button type="submit" colorScheme="teal" width="full" mb={4}>
-            Sign In
+            Confirm
           </Button>
           {message && (
             <Text color="red.500" textAlign="center" mb={4}>
@@ -70,14 +69,9 @@ export default function Login() {
             </Text>
           )}
         </form>
-        <Link href="/forgot-password" passHref>
-          <Button variant="link" colorScheme="teal" width="full" mb={2}>
-            Forgotten Password?
-          </Button>
-        </Link>
-        <Link href="/signup" passHref>
+        <Link href="/login" passHref>
           <Button variant="link" colorScheme="teal" width="full">
-            Don’t have an Account? Sign Up
+            Remember your password? Sign in
           </Button>
         </Link>
       </Box>

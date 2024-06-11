@@ -5,11 +5,11 @@ const nextConfig = {
 	},
 	images: {
 		remotePatterns: [
-			{
-				protocol: "https",
-				hostname: "okepievzdelqzjwhsueu.supabase.co",
-				pathname: "/storage/v1/object/sign/avatars/**",
-			},
+			// {
+			// 	protocol: "https",
+			// 	hostname: "okepievzdelqzjwhsueu.supabase.co",
+			// 	pathname: "/storage/v1/object/sign/avatars/**",
+			// },
 			{
 				protocol: "https",
 				hostname: "www.superherodb.com",

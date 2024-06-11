@@ -20,12 +20,28 @@ export async function login(formData: FormData): Promise<AuthResponse> {
 export async function signup(formData: FormData): Promise<AuthResponse> {
   const supabase = createClient();
 
-  const data = {
-    email: formData.get('email') as string,
-    password: formData.get('password') as string,
-  };
+  const email = formData.get('email') as string;
+  const password = formData.get('password') as string;
 
-  const { error } = await supabase.auth.signUp(data);
+  // Sign up the user and send confirmation email
+  const { error, data } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: '/welcome', //
+    },
+  });
+
+  if (!error && data.user) {
+    // Insert a profile with is_admin set to FALSE
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .insert({ id: data.user.id });
+
+    if (profileError) {
+      return { error: profileError };
+    }
+  }
 
   return { error };
 }
