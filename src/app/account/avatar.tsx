@@ -1,7 +1,4 @@
-// USEREDUX
-// src/components/Avatar.tsx
 import React, { useEffect, useState } from 'react';
-import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 import { useDispatch } from 'react-redux';
 import { createClient } from '@supabase/supabase-js';
 import { Image, Box, Button, Spinner } from "@chakra-ui/react";
@@ -25,46 +22,15 @@ const Avatar: React.FC<AvatarProps> = ({ uid, url, size, onUpload }) => {
   const dispatch = useDispatch();
 
   const fetchImage = async (path: string) => {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data } = supabase.storage.from('avatars').getPublicUrl(path);
 
-    if (!session) {
-      console.error('User session not found');
-      return;
-    }
 
-    const s3Client = new S3Client({
-      forcePathStyle: true,
-      region: 'eu-central-1',
-      endpoint: `${SUPABASE_URL}/storage/v1/s3`,
-      credentials: {
-        accessKeyId: 'okepievzdelqzjwhsueu',
-        secretAccessKey: SUPABASE_ANON_KEY,
-        sessionToken: session.access_token,
-      },
-    });
 
-    try {
-      const command = new GetObjectCommand({
-        Bucket: 'avatars',
-        Key: path,
-      });
-      const response = await s3Client.send(command);
-
-      if (!response.Body) {
-        throw new Error('No response body');
-      }
-
-      const url = URL.createObjectURL(await new Response(response.Body as ReadableStream).blob());
-      setAvatarUrl(url);
-      dispatch(setAvatarUrlRedux(url));
-    } catch (error) {
-      console.error('Error downloading image:', error);
+    if (data) {
+      setAvatarUrl(data.publicUrl);
+      dispatch(setAvatarUrlRedux(data.publicUrl));
     }
   };
-
-  useEffect(() => {
-    if (url) fetchImage(url);
-  }, [url]);
 
   const uploadAvatar: React.ChangeEventHandler<HTMLInputElement> = async (event) => {
     try {
@@ -84,21 +50,14 @@ const Avatar: React.FC<AvatarProps> = ({ uid, url, size, onUpload }) => {
         throw uploadError;
       }
 
-      const { data: signedUrlData, error: signedUrlError } = await supabase
-        .storage
-        .from('avatars')
-        .createSignedUrl(filePath, 60);
+      const { data: publicUrlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
 
-      if (signedUrlError) {
-        throw signedUrlError;
-      }
+      const publicUrl = publicUrlData.publicUrl;
+      console.log('Public URL:', publicUrl);
 
-      const signedUrl = signedUrlData.signedUrl;
-      console.log('Signed URL:', signedUrl);
-
-      setAvatarUrl(signedUrl);
-      onUpload(signedUrl);
-      dispatch(setAvatarUrlRedux(signedUrl));
+      setAvatarUrl(publicUrl);
+      onUpload(publicUrl);
+      dispatch(setAvatarUrlRedux(publicUrl));
     } catch (error) {
       alert('Error uploading avatar!');
     } finally {
@@ -156,7 +115,6 @@ const Avatar: React.FC<AvatarProps> = ({ uid, url, size, onUpload }) => {
 };
 
 export default Avatar;
-
 
 
 
