@@ -32,6 +32,10 @@ const Avatar: React.FC<AvatarProps> = ({ uid, url, size, onUpload }) => {
     }
   };
 
+  useEffect(() => {
+    if (url) fetchImage(url);
+  }, [url]);
+
   const uploadAvatar: React.ChangeEventHandler<HTMLInputElement> = async (event) => {
     try {
       setUploading(true);
@@ -51,6 +55,8 @@ const Avatar: React.FC<AvatarProps> = ({ uid, url, size, onUpload }) => {
       }
 
       const { data: publicUrlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
+
+      
 
       const publicUrl = publicUrlData.publicUrl;
       console.log('Public URL:', publicUrl);
