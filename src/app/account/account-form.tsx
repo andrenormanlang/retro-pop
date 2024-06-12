@@ -108,7 +108,9 @@ export default function AccountForm({ user }: { user: User | null }) {
           </Alert>
         )}
         {loading ? (
-          <Spinner />
+          <Center height="100%">
+            <Spinner />
+          </Center>
         ) : (
           <VStack spacing={4}>
             <FormControl id="email">
@@ -177,6 +179,7 @@ export default function AccountForm({ user }: { user: User | null }) {
     </Center>
   );
 }
+
 
 // WITH CONTEXT!
 // 'use client';
