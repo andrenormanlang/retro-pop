@@ -1,7 +1,10 @@
-// components/Avatar.tsx
-import React, { useEffect, useState } from 'react'
-import { createClient } from '@/utils/supabase/client'
-import { Image, Box, Button, Spinner, useColorModeValue } from "@chakra-ui/react";
+// USEREDUX
+// src/components/Avatar.tsx
+import React, { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { createClient } from '@/utils/supabase/client';
+import { Image, Box, Button, Spinner } from "@chakra-ui/react";
+import { setAvatarUrl as setAvatarUrlRedux } from '@/store/avatarSlice';
 
 export default function Avatar({
   uid,
@@ -14,63 +17,66 @@ export default function Avatar({
   size: number
   onUpload: (url: string) => void
 }) {
-  const supabase = createClient()
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(url)
-  const [uploading, setUploading] = useState(false)
+  const supabase = createClient();
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(url);
+  const [uploading, setUploading] = useState(false);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     async function downloadImage(path: string) {
       try {
-        const { data, error } = await supabase.storage.from('avatars').download(path)
+        const { data, error } = await supabase.storage.from('avatars').download(path);
         if (error) {
-          throw error
+          throw error;
         }
 
-        const url = URL.createObjectURL(data)
-        setAvatarUrl(url)
+        const url = URL.createObjectURL(data);
+        setAvatarUrl(url);
+        dispatch(setAvatarUrlRedux(url));
       } catch (error) {
-        console.log('Error downloading image: ', error)
+        console.log('Error downloading image: ', error);
       }
     }
 
-    if (url) downloadImage(url)
-  }, [url, supabase])
+    if (url) downloadImage(url);
+  }, [url, supabase, dispatch]);
 
   const uploadAvatar: React.ChangeEventHandler<HTMLInputElement> = async (event) => {
     try {
-      setUploading(true)
+        setUploading(true);
 
-      if (!event.target.files || event.target.files.length === 0) {
-        throw new Error('You must select an image to upload.')
-      }
+        if (!event.target.files || event.target.files.length === 0) {
+            throw new Error('You must select an image to upload.');
+        }
 
-      const file = event.target.files[0]
-      const fileExt = file.name.split('.').pop()
-      const filePath = `${uid}-${Math.random()}.${fileExt}`
+        const file = event.target.files[0];
+        const fileExt = file.name.split('.').pop();
+        const filePath = `${uid}-${Math.random()}.${fileExt}`;
 
-      const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file)
+        const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file);
 
-      if (uploadError) {
-        throw uploadError
-      }
+        if (uploadError) {
+            throw uploadError;
+        }
 
-      const { data: publicURLData } = await supabase
-        .storage
-        .from('avatars')
-        .getPublicUrl(filePath)
+        // Generate signed URL if using private bucket
+        const { data: signedUrlData } = await supabase
+            .storage
+            .from('avatars')
+            .createSignedUrl(filePath, 60); // URL valid for 60 seconds
 
+        const signedUrl = signedUrlData!.signedUrl;
+        console.log('signedUrl:', signedUrl);
 
-      const publicUrl = publicURLData.publicUrl
-
-      setAvatarUrl(publicUrl)
-      onUpload(publicUrl)
+        setAvatarUrl(signedUrl);
+        onUpload(signedUrl);
+        dispatch(setAvatarUrlRedux(signedUrl));
     } catch (error) {
-      alert('Error uploading avatar!')
+        alert('Error uploading avatar!');
     } finally {
-      setUploading(false)
+        setUploading(false);
     }
-  }
-
+};
   return (
     <Box textAlign="center" mb={4}>
       {avatarUrl ? (
@@ -117,6 +123,128 @@ export default function Avatar({
         />
       </Box>
     </Box>
-  )
+  );
 }
 
+// CONTEXT!
+// components/Avatar.tsx
+// import React, { useEffect, useState } from 'react'
+// import { createClient } from '@/utils/supabase/client'
+// import { Image, Box, Button, Spinner, useColorModeValue } from "@chakra-ui/react";
+
+// export default function Avatar({
+//   uid,
+//   url,
+//   size,
+//   onUpload,
+// }: {
+//   uid: string | null
+//   url: string | null
+//   size: number
+//   onUpload: (url: string) => void
+// }) {
+//   const supabase = createClient()
+//   const [avatarUrl, setAvatarUrl] = useState<string | null>(url)
+//   const [uploading, setUploading] = useState(false)
+
+//   useEffect(() => {
+//     async function downloadImage(path: string) {
+//       try {
+//         const { data, error } = await supabase.storage.from('avatars').download(path)
+//         if (error) {
+//           throw error
+//         }
+
+//         const url = URL.createObjectURL(data)
+//         setAvatarUrl(url)
+//       } catch (error) {
+//         console.log('Error downloading image: ', error)
+//       }
+//     }
+
+//     if (url) downloadImage(url)
+//   }, [url, supabase])
+
+//   const uploadAvatar: React.ChangeEventHandler<HTMLInputElement> = async (event) => {
+//     try {
+//       setUploading(true)
+
+//       if (!event.target.files || event.target.files.length === 0) {
+//         throw new Error('You must select an image to upload.')
+//       }
+
+//       const file = event.target.files[0]
+//       const fileExt = file.name.split('.').pop()
+//       const filePath = `${uid}-${Math.random()}.${fileExt}`
+
+//       const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file)
+
+//       if (uploadError) {
+//         throw uploadError
+//       }
+
+//       const { data: publicURLData } = await supabase
+//         .storage
+//         .from('avatars')
+//         .getPublicUrl(filePath)
+
+
+//       const publicUrl = publicURLData.publicUrl
+
+//       setAvatarUrl(publicUrl)
+//       onUpload(publicUrl)
+//     } catch (error) {
+//       alert('Error uploading avatar!')
+//     } finally {
+//       setUploading(false)
+//     }
+//   }
+
+//   return (
+//     <Box textAlign="center" mb={4}>
+//       {avatarUrl ? (
+//         <Image
+//           width={size}
+//           height={size}
+//           src={avatarUrl}
+//           alt="Avatar"
+//           style={{ height: size, width: size, borderRadius: '50%' }}
+//         />
+//       ) : (
+//         <Box
+//           height={size}
+//           width={size}
+//           borderRadius="50%"
+//           bg="gray.200"
+//           display="flex"
+//           alignItems="center"
+//           justifyContent="center"
+//         >
+//           {uploading ? <Spinner /> : 'No image'}
+//         </Box>
+//       )}
+//       <Box mt={4}>
+//         <Button
+//           as="label"
+//           htmlFor="single"
+//           colorScheme="teal"
+//           isLoading={uploading}
+//           loadingText="Uploading"
+//         >
+//           Upload
+//         </Button>
+//         <input
+//           style={{
+//             visibility: 'hidden',
+//             position: 'absolute',
+//           }}
+//           type="file"
+//           id="single"
+//           accept="image/*"
+//           onChange={uploadAvatar}
+//           disabled={uploading}
+//         />
+//       </Box>
+//     </Box>
+//   )
+// }

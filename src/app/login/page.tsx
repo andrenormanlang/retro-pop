@@ -1,5 +1,3 @@
-// src/pages/login.tsx
-
 "use client";
 
 import React from "react";
