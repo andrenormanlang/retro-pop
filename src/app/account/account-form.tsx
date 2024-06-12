@@ -1,9 +1,11 @@
-"use client";
+'use client';
+// components/AccountForm.tsx
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { type User } from "@supabase/supabase-js";
 import Avatar from "./avatar";
 import { Box, Button, FormControl, FormLabel, Input, VStack, Heading, Spinner, Alert, AlertIcon, Center, useColorModeValue } from "@chakra-ui/react";
+import { useAvatar } from "@/contexts/AvatarContext";
 
 export default function AccountForm({ user }: { user: User | null }) {
   const supabase = createClient();
@@ -11,7 +13,7 @@ export default function AccountForm({ user }: { user: User | null }) {
   const [fullname, setFullname] = useState<string | null>(null);
   const [username, setUsername] = useState<string | null>(null);
   const [website, setWebsite] = useState<string | null>(null);
-  const [avatar_url, setAvatarUrl] = useState<string | null>(null);
+  const { avatarUrl, setAvatarUrl } = useAvatar();
   const [is_admin, setIsAdmin] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,7 +44,7 @@ export default function AccountForm({ user }: { user: User | null }) {
     } finally {
       setLoading(false);
     }
-  }, [user, supabase]);
+  }, [user, setAvatarUrl, supabase]);
 
   useEffect(() => {
     getProfile();
@@ -52,12 +54,12 @@ export default function AccountForm({ user }: { user: User | null }) {
     fullname,
     username,
     website,
-    avatar_url,
+    avatarUrl,
   }: {
     fullname: string | null;
     username: string | null;
     website: string | null;
-    avatar_url: string | null;
+    avatarUrl: string | null;
   }) {
     try {
       setLoading(true);
@@ -68,7 +70,7 @@ export default function AccountForm({ user }: { user: User | null }) {
         full_name: fullname,
         username,
         website,
-        avatar_url,
+        avatar_url: avatarUrl,
         updated_at: new Date().toISOString(),
       });
       if (error) throw error;
@@ -109,11 +111,11 @@ export default function AccountForm({ user }: { user: User | null }) {
             </FormControl>
             <Avatar
               uid={user?.id ?? null}
-              url={avatar_url}
+              url={avatarUrl}
               size={150}
               onUpload={(url) => {
                 setAvatarUrl(url);
-                updateProfile({ fullname, username, website, avatar_url: url });
+                updateProfile({ fullname, username, website, avatarUrl: url });
               }}
             />
             <FormControl id="fullName">
@@ -151,7 +153,7 @@ export default function AccountForm({ user }: { user: User | null }) {
             <Button
               colorScheme="teal"
               width="full"
-              onClick={() => updateProfile({ fullname, username, website, avatar_url })}
+              onClick={() => updateProfile({ fullname, username, website, avatarUrl })}
               isDisabled={loading}
             >
               {loading ? 'Loading ...' : 'Update'}

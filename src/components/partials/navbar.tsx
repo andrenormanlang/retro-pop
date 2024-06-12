@@ -1,5 +1,5 @@
-"use client";
-
+'use client';
+// components/Navbar.tsx
 import React, { useEffect, useState, useCallback } from "react";
 import {
   Box,
@@ -23,13 +23,14 @@ import { MenuType, SubmenuType } from "@/types/navbar/nav.types";
 import { useRouter } from "next/navigation";
 import { User } from "@supabase/supabase-js";
 import AvatarNav from "../../helpers/AvatarNav";
+import { useAvatar } from "@/contexts/AvatarContext";
 
 const Navbar = () => {
   const supabase = createClient();
   const { isOpen, onToggle, onClose } = useDisclosure();
   const { colorMode, toggleColorMode } = useColorMode();
   const [user, setUser] = useState<User | null>(null);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const { avatarUrl, setAvatarUrl } = useAvatar();
   const router = useRouter();
 
   const fetchUserProfile = useCallback(
@@ -49,7 +50,7 @@ const Navbar = () => {
         console.error("Error fetching profile data:", error);
       }
     },
-    [supabase]
+    [supabase, setAvatarUrl]
   );
 
   useEffect(() => {
@@ -204,7 +205,7 @@ const Navbar = () => {
 
   console.log("user", user);
   console.log("colorMode", colorMode);
-  console.log("avatar_url", avatarUrl);
+  console.log("avatarUrl", avatarUrl);
 
   return (
     <Box as="nav" position="fixed" top="0" width={"100%"} zIndex={10}>
@@ -238,7 +239,7 @@ const Navbar = () => {
             <Flex align="center" ml={4}>
               <Menu>
                 <MenuButton as={Button} p={1} borderRadius="full">
-                  <AvatarNav uid={user.id} url={avatarUrl} size={50} />
+                  <AvatarNav uid={user.id} size={50} />
                 </MenuButton>
                 <MenuList>
                   <MenuItem as={Link} href="/account">
@@ -288,3 +289,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+

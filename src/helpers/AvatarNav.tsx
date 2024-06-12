@@ -1,19 +1,18 @@
-'use client'
-import React, { useEffect, useState } from 'react'
+// components/AvatarNav.tsx
+import { useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { Image, Box, Spinner } from "@chakra-ui/react";
+import { useAvatar } from '@/contexts/AvatarContext';
 
 export default function AvatarNav({
   uid,
-  url,
   size,
 }: {
   uid: string | null
-  url: string | null
   size: number
 }) {
   const supabase = createClient()
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(url)
+  const { avatarUrl, setAvatarUrl } = useAvatar();
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -34,8 +33,8 @@ export default function AvatarNav({
       }
     }
 
-    if (url) downloadImage(url)
-  }, [url, supabase])
+    if (avatarUrl) downloadImage(avatarUrl)
+  }, [avatarUrl, supabase, setAvatarUrl])
 
   return (
     <Box textAlign="center">
