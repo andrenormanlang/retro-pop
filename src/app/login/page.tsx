@@ -27,7 +27,6 @@ export default function Login() {
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_IN") {
         router.push("/");
-        window.location.reload(); // Refresh the browser
       }
     });
 
@@ -95,3 +94,4 @@ export default function Login() {
     </Center>
   );
 }
+
