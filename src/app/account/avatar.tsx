@@ -1,82 +1,111 @@
 // USEREDUX
 // src/components/Avatar.tsx
 import React, { useEffect, useState } from 'react';
+import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 import { useDispatch } from 'react-redux';
-import { createClient } from '@/utils/supabase/client';
+import { createClient } from '@supabase/supabase-js';
 import { Image, Box, Button, Spinner } from "@chakra-ui/react";
 import { setAvatarUrl as setAvatarUrlRedux } from '@/store/avatarSlice';
 
-export default function Avatar({
-  uid,
-  url,
-  size,
-  onUpload,
-}: {
-  uid: string | null
-  url: string | null
-  size: number
-  onUpload: (url: string) => void
-}) {
-  const supabase = createClient();
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+interface AvatarProps {
+  uid: string;
+  url: string | null;
+  size: number;
+  onUpload: (url: string) => void;
+}
+
+const Avatar: React.FC<AvatarProps> = ({ uid, url, size, onUpload }) => {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(url);
   const [uploading, setUploading] = useState(false);
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    async function downloadImage(path: string) {
-      try {
-        const { data, error } = await supabase.storage.from('avatars').download(path);
-        if (error) {
-          throw error;
-        }
+  const fetchImage = async (path: string) => {
+    const { data: { session } } = await supabase.auth.getSession();
 
-        const url = URL.createObjectURL(data);
-        setAvatarUrl(url);
-        dispatch(setAvatarUrlRedux(url));
-      } catch (error) {
-        console.log('Error downloading image: ', error);
-      }
+    if (!session) {
+      console.error('User session not found');
+      return;
     }
 
-    if (url) downloadImage(url);
-  }, [url, supabase, dispatch]);
+    const s3Client = new S3Client({
+      forcePathStyle: true,
+      region: 'eu-central-1',
+      endpoint: `${SUPABASE_URL}/storage/v1/s3`,
+      credentials: {
+        accessKeyId: 'okepievzdelqzjwhsueu',
+        secretAccessKey: SUPABASE_ANON_KEY,
+        sessionToken: session.access_token,
+      },
+    });
+
+    try {
+      const command = new GetObjectCommand({
+        Bucket: 'avatars',
+        Key: path,
+      });
+      const response = await s3Client.send(command);
+
+      if (!response.Body) {
+        throw new Error('No response body');
+      }
+
+      const url = URL.createObjectURL(await new Response(response.Body as ReadableStream).blob());
+      setAvatarUrl(url);
+      dispatch(setAvatarUrlRedux(url));
+    } catch (error) {
+      console.error('Error downloading image:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (url) fetchImage(url);
+  }, [url]);
 
   const uploadAvatar: React.ChangeEventHandler<HTMLInputElement> = async (event) => {
     try {
-        setUploading(true);
+      setUploading(true);
 
-        if (!event.target.files || event.target.files.length === 0) {
-            throw new Error('You must select an image to upload.');
-        }
+      if (!event.target.files || event.target.files.length === 0) {
+        throw new Error('You must select an image to upload.');
+      }
 
-        const file = event.target.files[0];
-        const fileExt = file.name.split('.').pop();
-        const filePath = `${uid}-${Math.random()}.${fileExt}`;
+      const file = event.target.files[0];
+      const fileExt = file.name.split('.').pop();
+      const filePath = `${uid}-${Math.random()}.${fileExt}`;
 
-        const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file);
+      const { data: uploadData, error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file);
 
-        if (uploadError) {
-            throw uploadError;
-        }
+      if (uploadError) {
+        throw uploadError;
+      }
 
-        // Generate signed URL if using private bucket
-        const { data: signedUrlData } = await supabase
-            .storage
-            .from('avatars')
-            .createSignedUrl(filePath, 60); // URL valid for 60 seconds
+      const { data: signedUrlData, error: signedUrlError } = await supabase
+        .storage
+        .from('avatars')
+        .createSignedUrl(filePath, 60);
 
-        const signedUrl = signedUrlData!.signedUrl;
-        console.log('signedUrl:', signedUrl);
+      if (signedUrlError) {
+        throw signedUrlError;
+      }
 
-        setAvatarUrl(signedUrl);
-        onUpload(signedUrl);
-        dispatch(setAvatarUrlRedux(signedUrl));
+      const signedUrl = signedUrlData.signedUrl;
+      console.log('Signed URL:', signedUrl);
+
+      setAvatarUrl(signedUrl);
+      onUpload(signedUrl);
+      dispatch(setAvatarUrlRedux(signedUrl));
     } catch (error) {
-        alert('Error uploading avatar!');
+      alert('Error uploading avatar!');
     } finally {
-        setUploading(false);
+      setUploading(false);
     }
-};
+  };
+
   return (
     <Box textAlign="center" mb={4}>
       {avatarUrl ? (
@@ -84,7 +113,7 @@ export default function Avatar({
           width={size}
           height={size}
           src={avatarUrl}
-          alt="Avatar"
+          alt="Upload an Image"
           style={{ height: size, width: size, borderRadius: '50%' }}
         />
       ) : (
@@ -124,7 +153,12 @@ export default function Avatar({
       </Box>
     </Box>
   );
-}
+};
+
+export default Avatar;
+
+
+
 
 // CONTEXT!
 // components/Avatar.tsx

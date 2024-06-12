@@ -40,13 +40,13 @@ export default function AvatarNav({
   }, [avatarUrl, supabase, dispatch]);
 
   return (
-    <Box textAlign="center" borderRadius="full" borderWidth={2} borderColor={borderColor}>
+    <Box textAlign="center" borderRadius="full" borderWidth={1} borderColor={borderColor}>
       {avatarUrl ? (
         <Image
           width={size}
           height={size}
           src={avatarUrl}
-          alt="Avatar"
+          alt="X"
           style={{ height: size, width: size, borderRadius: '100%' }}
         />
       ) : (

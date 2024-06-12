@@ -1,3 +1,4 @@
+// REDUX
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
@@ -111,7 +112,7 @@ const Navbar = () => {
 
   const buttonStyle = {
     width: "100%",
-    maxWidth: "300px",
+    maxWidth: "310px",
     fontWeight: "700",
     fontFamily: "Bangers",
     fontSize: "1.3rem",
@@ -139,6 +140,35 @@ const Navbar = () => {
     },
   };
 
+  const buttonAvatarStyle = {
+    width: "100%",
+    maxWidth: "310px",
+    fontWeight: "400",
+    fontFamily: "'Libre Franklin', sans-serif",
+    fontSize: "1rem",
+    color: "white",
+    justifyContent: "center",
+    alignItems: "center",
+    display: "flex",
+    height: "1.5rem",
+    my: "0.5rem",
+    bg: "blue.500",
+    borderRadius: "md",
+    outline: "none",
+    _hover: {
+      bg: "blue.500",
+      color: "white",
+    },
+    _active: {
+      bg: "blue.700",
+      color: "white",
+    },
+    _focus: {
+      bg: "blue.600",
+      boxShadow: "outline",
+    },
+  };
+
   const menuBgColor = useColorModeValue("white", "gray.800");
   const menuColor = useColorModeValue("black", "white");
   const menuItemHoverBg = useColorModeValue("gray.200", "gray.600");
@@ -146,11 +176,11 @@ const Navbar = () => {
 
   const customMenuListStyle = {
     borderColor: "gray.600",
-    borderWidth: "1px",
+    borderWidth: "0.5px",
     borderRadius: "md",
     boxShadow: "lg",
     minWidth: "5rem",
-    width: "300px",
+    width: "310px",
     bg: menuBgColor,
     color: menuColor,
     outline: "none",
@@ -166,7 +196,7 @@ const Navbar = () => {
 
   const avatarMenuListStyle = {
     ...customMenuListStyle,
-    width: "5.5rem",
+    width: "6rem",
   };
 
   const marvelButtonStyle = {
@@ -236,15 +266,19 @@ const Navbar = () => {
             // For items with further nested submenus (recursive call for deeper levels)
             renderMenuItem(subItem, `${index}-${subIndex}`)
           ) : (
-            <Link key={subIndex} href={subItem.href} style={{ textDecoration: 'none', width: '100%' }}>
-              <MenuItem {...buttonStyle}>
-                {subItem.name}
-              </MenuItem>
+            <Link key={subIndex} href={subItem.href} style={{ textDecoration: "none", width: "100%" }}>
+              <MenuItem {...buttonStyle}>{subItem.name}</MenuItem>
             </Link>
           )
         )}
       </MenuList>
     </Menu>
+  );
+
+  const renderAvatarItem = (name: string, href?: string, onClick?: () => void) => (
+    <Link href={href} onClick={onClick} style={{ textDecoration: "none", width: "100%" }}>
+      <MenuItem {...buttonAvatarStyle}>{name}</MenuItem>
+    </Link>
   );
 
   return (
@@ -255,7 +289,7 @@ const Navbar = () => {
         padding="1.5rem"
         bg="gray.800"
         color="white"
-        px={{ base: "1rem", md: "6rem", lg: "10rem" }}
+        px={{ base: "1rem", md: "6rem", lg: "8rem" }}
       >
         <Flex align="center" mr={5}>
           <Link href="/">
@@ -264,12 +298,7 @@ const Navbar = () => {
         </Flex>
         <Flex align="center">
           {/* Theme Toggle Button */}
-          <IconButton
-            aria-label="Toggle theme"
-            icon={colorMode === "dark" ? <SunIcon /> : <MoonIcon />}
-            onClick={toggleColorMode}
-            mr={4}
-          />
+          <IconButton aria-label="Toggle theme" icon={colorMode === "dark" ? <SunIcon /> : <MoonIcon />} onClick={toggleColorMode} mr={4} />
 
           {/* Hamburger Icon */}
           {!isMainMenuOpen && (
@@ -293,12 +322,8 @@ const Navbar = () => {
                   </Box>
                 </MenuButton>
                 <MenuList {...avatarMenuListStyle}>
-                  <MenuItem as={Link} href="/account" style={{ width: "100%" }}>
-                    Profile
-                  </MenuItem>
-                  <MenuItem onClick={handleSignOut} style={{ width: "100%" }}>
-                    Sign Out
-                  </MenuItem>
+                  {renderAvatarItem("profile", "/account")}
+                  {renderAvatarItem("sign out", undefined, handleSignOut)}
                 </MenuList>
               </Menu>
             </Flex>
@@ -352,6 +377,7 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
 
 // WITH CONTEXT!
 // 'use client';

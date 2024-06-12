@@ -33,7 +33,8 @@ export default function Login() {
     if (error) {
       router.push("/login?message=Could not authenticate user");
     } else {
-      router.push("/");
+      router.push("/"); // Navigate to home page
+      window.location.reload(); // Refresh the browser
     }
   };
 

@@ -113,17 +113,19 @@ export default function AccountForm({ user }: { user: User | null }) {
           <VStack spacing={4}>
             <FormControl id="email">
               <FormLabel>Email</FormLabel>
-              <Input type="text" value={user?.email} isDisabled />
+              <Input type="text" value={user?.email || ''} isDisabled />
             </FormControl>
-            <Avatar
-              uid={user?.id ?? null}
-              url={avatarUrl}
-              size={150}
-              onUpload={(url) => {
-                dispatch(setAvatarUrl(url));
-                updateProfile({ fullname, username, website, avatarUrl: url });
-              }}
-            />
+            {user && (
+              <Avatar
+                uid={user.id}
+                url={avatarUrl}
+                size={150}
+                onUpload={(url) => {
+                  dispatch(setAvatarUrl(url));
+                  updateProfile({ fullname, username, website, avatarUrl: url });
+                }}
+              />
+            )}
             <FormControl id="fullName">
               <FormLabel>Full Name</FormLabel>
               <Input
@@ -158,14 +160,14 @@ export default function AccountForm({ user }: { user: User | null }) {
             </FormControl>
             <Button
               colorScheme="teal"
-              width="full"
+              width="320px"
               onClick={() => updateProfile({ fullname, username, website, avatarUrl })}
               isDisabled={loading}
             >
               {loading ? 'Loading ...' : 'Update'}
             </Button>
             <form action="/auth/signout" method="post">
-              <Button colorScheme="red" width="full" type="submit">
+              <Button colorScheme="red" width="320px" type="submit">
                 Sign out
               </Button>
             </form>
