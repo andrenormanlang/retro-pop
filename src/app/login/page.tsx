@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Box,
@@ -21,20 +21,32 @@ export default function Login() {
   const searchParams = useSearchParams();
   const message = searchParams.get("message");
 
+  const supabase = createClient();
+
+  useEffect(() => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN") {
+        router.push("/");
+        window.location.reload(); // Refresh the browser
+      }
+    });
+
+    // Cleanup subscription on unmount
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [router, supabase.auth]);
+
   const signIn = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
-    const supabase = createClient();
 
     const { error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
       router.push("/login?message=Could not authenticate user");
-    } else {
-      router.push("/"); // Navigate to home page
-      window.location.reload(); // Refresh the browser
     }
   };
 
