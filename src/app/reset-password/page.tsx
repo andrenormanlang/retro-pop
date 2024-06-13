@@ -20,7 +20,6 @@ export default async function ResetPassword({
 }) {
   const supabase = createClient();
 
-
   const {
     data: { session },
   } = await supabase.auth.getSession();
@@ -35,14 +34,11 @@ export default async function ResetPassword({
     const password = formData.get('password') as string;
     const confirmPassword = formData.get('confirmPassword') as string;
 
-
     if (password !== confirmPassword) {
       return redirect(
         `/reset-password?message=Passwords do not match.`
       );
     }
-
-    const supabase = createClient();
 
     if (searchParams.code) {
       const { error } = await supabase.auth.exchangeCodeForSession(
@@ -72,9 +68,8 @@ export default async function ResetPassword({
     );
   };
 
-
   return (
-    <Center >
+    <Center>
       <Box
         p={8}
         maxWidth="400px"
@@ -82,12 +77,6 @@ export default async function ResetPassword({
         boxShadow="md"
         borderRadius="md"
       >
-        {/* <Link href="/" passHref>
-          <Button variant="link" colorScheme="teal" mb={4}>
-            Home
-          </Button>
-        </Link> */}
-
         <Heading as="h1" size="lg" mb={6} textAlign="center">
           Reset Password
         </Heading>
