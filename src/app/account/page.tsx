@@ -7,7 +7,7 @@ export default async function Account() {
 
   const { data, error } = await supabase.auth.getUser()
   if (error || !data?.user) {
-    redirect('/auth-error') // Redirect to an error page if the user is not authenticated
+    redirect('/account') // Redirect to an error page if the user is not authenticated
   }
 
   return <AccountForm user={data.user} />
