@@ -26,7 +26,9 @@ export default function Login() {
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_IN") {
+        router.refresh(); // Refresh the browser
         router.push("/");
+		window.location.reload();
       }
     });
 
@@ -46,6 +48,10 @@ export default function Login() {
 
     if (error) {
       router.push("/login?message=Could not authenticate user");
+    } else {
+      router.refresh(); // Refresh the browser
+      router.push("/");
+	  window.location.reload(); 
     }
   };
 
@@ -94,4 +100,3 @@ export default function Login() {
     </Center>
   );
 }
-
