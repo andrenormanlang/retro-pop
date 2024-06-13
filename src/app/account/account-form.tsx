@@ -1,4 +1,3 @@
-// WITH REDUX!
 // src/components/AccountForm.tsx
 'use client';
 import { useCallback, useEffect, useState } from "react";
@@ -92,7 +91,7 @@ export default function AccountForm({ user }: { user: User | null }) {
     <Center minH="100vh" bg={useColorModeValue("gray.50", "gray.800")}>
       <Box
         p={8}
-        maxWidth="400px"
+        maxWidth={{ base: "90%", md: "400px" }}
         width="full"
         bg={useColorModeValue("white", "gray.700")}
         boxShadow="md"
@@ -162,14 +161,14 @@ export default function AccountForm({ user }: { user: User | null }) {
             </FormControl>
             <Button
               colorScheme="teal"
-              width="320px"
+              width="full"
               onClick={() => updateProfile({ fullname, username, website, avatarUrl })}
               isDisabled={loading}
             >
               {loading ? 'Loading ...' : 'Update'}
             </Button>
             <form action="/auth/signout" method="post">
-              <Button colorScheme="red" width="320px" type="submit">
+              <Button colorScheme="red" width="full" type="submit">
                 Sign out
               </Button>
             </form>
@@ -179,6 +178,7 @@ export default function AccountForm({ user }: { user: User | null }) {
     </Center>
   );
 }
+
 
 
 // WITH CONTEXT!

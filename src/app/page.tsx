@@ -55,7 +55,7 @@ export default function HomePage() {
                     <Image
                         src={cover.image}
                         alt={`Random Comic Book Cover: ${cover.issue}`}
-                        boxSize="400px"
+                        boxSize={{ base: "300px", md: "400px" }}
                         objectFit="contain"
                     />
                 </Flex>

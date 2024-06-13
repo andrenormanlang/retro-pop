@@ -12,7 +12,7 @@ export default function AuthError() {
   const textColor = useColorModeValue("black", "white");
 
   return (
-    <Center minH="100vh" bg={bgCenter}>
+    <Center bg={bgCenter}>
       <Box
         p={8}
         maxWidth="400px"
