@@ -48,8 +48,8 @@ export default function Login() {
       if (event === "SIGNED_IN") {
         setIsAuthenticated(true);
         router.refresh(); // Refresh the browser
-        router.push("/");
-        window.location.reload();
+        // router.push("/");
+        // window.location.reload();
       }
     });
 
