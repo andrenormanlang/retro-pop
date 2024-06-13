@@ -1,18 +1,23 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Center, Box, Heading, Text, Button } from "@chakra-ui/react";
+import { Center, Box, Heading, Text, Button, useColorModeValue } from "@chakra-ui/react";
 
 export default function AuthError() {
   const router = useRouter();
 
+  // Use useColorModeValue to set colors based on the current theme
+  const bgCenter = useColorModeValue("gray.50", "gray.900");
+  const bgBox = useColorModeValue("white", "gray.700");
+  const textColor = useColorModeValue("black", "white");
+
   return (
-    <Center minH="100vh" bg="gray.50">
+    <Center minH="100vh" bg={bgCenter}>
       <Box
         p={8}
         maxWidth="400px"
         width="full"
-        bg="white"
+        bg={bgBox}
         boxShadow="md"
         borderRadius="md"
         textAlign="center"
@@ -20,7 +25,9 @@ export default function AuthError() {
         <Heading as="h1" size="lg" mb={6} color="red.500">
           Session Expired
         </Heading>
-        <Text mb={4}>Your session has expired. Please sign up again to continue.</Text>
+        <Text mb={4} color={textColor}>
+          Your session has expired. Please sign up again to continue.
+        </Text>
         <Button colorScheme="teal" onClick={() => router.push("/signup")}>
           Sign Up
         </Button>
@@ -28,3 +35,4 @@ export default function AuthError() {
     </Center>
   );
 }
+
