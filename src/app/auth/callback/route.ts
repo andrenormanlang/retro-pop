@@ -26,7 +26,15 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = createClient();
-    await supabase.auth.exchangeCodeForSession(code);
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+    if (error) {
+      // Redirect to an error page if there is an error exchanging the code
+      return NextResponse.redirect(`${requestUrl.origin}/auth-error`);
+    }
+  } else {
+    // Redirect to an error page if no code is provided
+    return NextResponse.redirect(`${requestUrl.origin}/auth-error`);
   }
 
   // Redirect to the account form page after successful authentication
