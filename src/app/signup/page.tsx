@@ -1,8 +1,6 @@
-// src/pages/signup.tsx
-
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Box,
@@ -14,6 +12,7 @@ import {
   Text,
   Center,
   useColorModeValue,
+  Spinner,
 } from "@chakra-ui/react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
@@ -22,6 +21,43 @@ export default function Signup() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const message = searchParams.get("message");
+
+  const supabase = createClient();
+
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const bgCenter = useColorModeValue("gray.50", "gray.800");
+  const bgBox = useColorModeValue("white", "gray.700");
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (user) {
+        setIsAuthenticated(true);
+        router.push("/");
+      } else {
+        setLoading(false);
+      }
+    };
+
+    checkUser();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN") {
+        setIsAuthenticated(true);
+        router.refresh(); // Refresh the browser
+        router.push("/");
+        window.location.reload();
+      }
+    });
+
+    // Cleanup subscription on unmount
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [router, supabase.auth]);
 
   const signUp = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -34,8 +70,6 @@ export default function Signup() {
       router.push("/signup?message=Passwords do not match");
       return;
     }
-
-    const supabase = createClient();
 
     const { error } = await supabase.auth.signUp({
       email,
@@ -52,13 +86,25 @@ export default function Signup() {
     }
   };
 
+  if (loading) {
+    return (
+      <Center minH="100vh" bg={bgCenter}>
+        <Spinner size="xl" />
+      </Center>
+    );
+  }
+
+  if (isAuthenticated) {
+    return null; // Do not render anything if the user is authenticated
+  }
+
   return (
-    <Center minH="100vh" bg={useColorModeValue("gray.50", "gray.800")}>
+    <Center minH="100vh" bg={bgCenter}>
       <Box
         p={8}
         maxWidth="400px"
         width="full"
-        bg={useColorModeValue("white", "gray.700")}
+        bg={bgBox}
         boxShadow="md"
         borderRadius="md"
       >
