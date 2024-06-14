@@ -90,12 +90,11 @@ export default function Login() {
   }
 
   return (
-    <Center minH="100vh" bg={bgCenter}>
+    <Center>
       <Box
         p={8}
         maxWidth="400px"
         width="full"
-        bg={bgBox}
         boxShadow="md"
         borderRadius="md"
       >
