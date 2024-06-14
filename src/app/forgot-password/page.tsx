@@ -1,9 +1,5 @@
-// src/pages/forgot-password.tsx
-
-"use client";
-
-import React from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
 import {
   Box,
   Heading,
@@ -16,46 +12,63 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import Link from "next/link";
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/utils/supabase/server"; // Make sure this points to the server supabase client
 
-export default function ForgotPassword() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const message = searchParams.get("message");
+export default async function ForgotPassword({
+  searchParams,
+}: {
+  searchParams: { message: string };
+}) {
+  const supabase = createClient();
 
-  const confirmReset = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const email = formData.get("email") as string;
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (session) {
+    return redirect('/');
+  }
+
+  const confirmReset = async (formData: FormData) => {
+    'use server';
+
+    const email = formData.get('email') as string;
     const supabase = createClient();
 
+    const headersList = headers();
+    const origin = headersList.get('origin');
+
+    if (!origin) {
+      return redirect('/forgot-password?message=Could not determine origin');
+    }
+
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: `${origin}/reset-password`,
     });
 
     if (error) {
-      router.push("/forgot-password?message=Could not authenticate user");
-    } else {
-      router.push(
-        "/confirm?message=Password Reset link has been sent to your email address"
-      );
+      return redirect('/forgot-password?message=Could not authenticate user');
     }
+
+    return redirect(
+      '/confirm?message=Password Reset link has been sent to your email address'
+    );
   };
 
+
   return (
-    <Center minH="100vh" bg={useColorModeValue("gray.50", "gray.800")}>
+    <Center>
       <Box
         p={8}
         maxWidth="400px"
         width="full"
-        bg={useColorModeValue("white", "gray.700")}
         boxShadow="md"
         borderRadius="md"
       >
         <Heading as="h1" size="lg" mb={6} textAlign="center">
           Reset Password
         </Heading>
-        <form onSubmit={confirmReset}>
+        <form action={confirmReset}>
           <FormControl id="email" mb={4}>
             <FormLabel>Enter Email Address</FormLabel>
             <Input type="email" name="email" required />
@@ -63,9 +76,9 @@ export default function ForgotPassword() {
           <Button type="submit" colorScheme="teal" width="full" mb={4}>
             Confirm
           </Button>
-          {message && (
+          {searchParams?.message && (
             <Text color="red.500" textAlign="center" mb={4}>
-              {message}
+              {searchParams.message}
             </Text>
           )}
         </form>
@@ -78,3 +91,4 @@ export default function ForgotPassword() {
     </Center>
   );
 }
+
