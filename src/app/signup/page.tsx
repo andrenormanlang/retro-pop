@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { z } from 'zod';
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Box,
   Heading,
@@ -16,11 +18,41 @@ import {
 } from "@chakra-ui/react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
+import { useForm, SubmitHandler } from "react-hook-form";
+
+const passwordValidation = new RegExp(
+  /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/
+);
+
+const validationSchema = z.object({
+  email: z
+    .string()
+    .min(1, { message: 'Must have at least 1 character' })
+    .email({ message: 'Must be a valid email' }),
+  password: z
+    .string()
+    .min(1, { message: 'Must have at least 1 character' })
+    .regex(passwordValidation, { message: 'Your password is not valid' }),
+  confirmPassword: z.string().min(1, { message: 'Must have at least 1 character' }),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords must match",
+  path: ["confirmPassword"], // Set the path of the error
+});
+
+type SchemaProps = z.infer<typeof validationSchema>;
 
 export default function Signup() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const message = searchParams.get("message");
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<SchemaProps>({
+    resolver: zodResolver(validationSchema)
+  });
 
   const supabase = createClient();
 
@@ -57,17 +89,10 @@ export default function Signup() {
     };
   }, [router, supabase.auth]);
 
-  const signUp = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
-    const confirmPassword = formData.get("confirmPassword") as string;
+  const signUp: SubmitHandler<SchemaProps> = async (data) => {
+    const { email, password } = data;
 
-    if (password !== confirmPassword) {
-      router.push("/signup?message=Passwords do not match");
-      return;
-    }
+    console.log('Signing up with email:', email);
 
     const { error } = await supabase.auth.signUp({
       email,
@@ -78,6 +103,7 @@ export default function Signup() {
     });
 
     if (error) {
+      console.error('Sign up error:', error);
       router.push("/signup?message=Could not authenticate user");
     } else {
       router.push(`/confirm?message=Check email(${email}) to continue sign in process`);
@@ -104,22 +130,26 @@ export default function Signup() {
         width="full"
         boxShadow="md"
         borderRadius="md"
+        bg={bgBox}
       >
         <Heading as="h1" size="lg" mb={6} textAlign="center">
           Sign Up
         </Heading>
-        <form onSubmit={signUp}>
-          <FormControl id="email" mb={4}>
+        <form onSubmit={handleSubmit(signUp)}>
+          <FormControl id="email" mb={4} isInvalid={!!errors.email}>
             <FormLabel>Email</FormLabel>
-            <Input type="email" name="email" required />
+            <Input type="email" {...register('email', { required: true })} />
+            {errors.email && <Text color="red.500">{errors.email.message}</Text>}
           </FormControl>
-          <FormControl id="password" mb={4}>
+          <FormControl id="password" mb={4} isInvalid={!!errors.password}>
             <FormLabel>Password</FormLabel>
-            <Input type="password" name="password" required />
+            <Input type="password" {...register('password')} name="password" required />
+            {errors.password && <Text color="red.500">{errors.password.message}</Text>}
           </FormControl>
-          <FormControl id="confirmPassword" mb={4}>
+          <FormControl id="confirmPassword" mb={4} isInvalid={!!errors.confirmPassword}>
             <FormLabel>Confirm Password</FormLabel>
-            <Input type="password" name="confirmPassword" required />
+            <Input type="password" {...register('confirmPassword')} name="confirmPassword" required />
+            {errors.confirmPassword && <Text color="red.500">{errors.confirmPassword.message}</Text>}
           </FormControl>
           <Button type="submit" colorScheme="teal" width="full" mb={4}>
             Sign Up
@@ -131,7 +161,7 @@ export default function Signup() {
           )}
         </form>
         <Link href="/login" passHref>
-          <Button variant="link" colorScheme="teal" width="full">
+          <Button type="button" variant="link" colorScheme="teal" width="full">
             Already have an account? Sign In
           </Button>
         </Link>
