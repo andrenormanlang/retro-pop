@@ -1,5 +1,4 @@
 import { redirect } from 'next/navigation';
-import { headers } from 'next/headers';
 import {
   Box,
   Heading,
@@ -9,21 +8,18 @@ import {
   Button,
   Text,
   Center,
-  useColorModeValue,
 } from "@chakra-ui/react";
 import Link from "next/link";
-import { createClient } from "@/utils/supabase/server"; // Make sure this points to the server supabase client
+import { createClient } from "@/utils/supabase/client";
 
 export default async function ForgotPassword({
-  searchParams,
-}: {
-  searchParams: { message: string };
-}) {
+	searchParams,
+  }: {
+	searchParams: { message: string };
+  }){
   const supabase = createClient();
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const { data: { session } } = await supabase.auth.getSession();
 
   if (session) {
     return redirect('/');
@@ -33,17 +29,9 @@ export default async function ForgotPassword({
     'use server';
 
     const email = formData.get('email') as string;
-    const supabase = createClient();
-
-    const headersList = headers();
-    const origin = headersList.get('origin');
-
-    if (!origin) {
-      return redirect('/forgot-password?message=Could not determine origin');
-    }
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${origin}/reset-password`,
+      redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/reset-password`,
     });
 
     if (error) {
@@ -54,7 +42,6 @@ export default async function ForgotPassword({
       '/confirm?message=Password Reset link has been sent to your email address'
     );
   };
-
 
   return (
     <Center>
@@ -91,4 +78,3 @@ export default async function ForgotPassword({
     </Center>
   );
 }
-
