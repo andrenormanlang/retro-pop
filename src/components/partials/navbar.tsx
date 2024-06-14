@@ -248,8 +248,8 @@ const Navbar = () => {
     {
       name: "Store",
       submenu: [
-        { name: "Buy", href: "/store/buy" },
-        { name: "Sell", href: "/store/sell" },
+        { name: "Buy", href: "/comics-store/buy" },
+        { name: "Sell", href: "/comics-store/sell" },
       ],
     },
   ];

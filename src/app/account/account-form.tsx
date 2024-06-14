@@ -157,10 +157,9 @@ export default function AccountForm({ user }: { user: User | null }) {
               {errors.username && <Text color="red.500">{errors.username.message}</Text>}
             </FormControl>
             <FormControl id="website">
-              <FormLabel>Website</FormLabel>
+              <FormLabel>Website (Optional)</FormLabel>
               <Input
                 type="url"
-                
               />
               {errors.website && <Text color="red.500">{errors.website.message}</Text>}
             </FormControl>
