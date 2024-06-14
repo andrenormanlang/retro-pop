@@ -1,24 +1,48 @@
-// src/components/AccountForm.tsx
 'use client';
+
 import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from 'react-redux';
 import { createClient } from "@/utils/supabase/client";
 import { type User } from "@supabase/supabase-js";
 import Avatar from "./avatar";
-import { Box, Button, FormControl, FormLabel, Input, VStack, Heading, Spinner, Alert, AlertIcon, Center, useColorModeValue } from "@chakra-ui/react";
+import { Box, Button, FormControl, FormLabel, Input, VStack, Heading, Spinner, Alert, AlertIcon, Center, useColorModeValue, Text } from "@chakra-ui/react";
 import { RootState } from '@/store/store';
 import { setAvatarUrl } from '@/store/avatarSlice';
+import { useForm, SubmitHandler } from "react-hook-form";
+import { z } from 'zod';
+import { zodResolver } from "@hookform/resolvers/zod";
+
+// Define validation schema
+const validationSchema = z.object({
+  fullname: z.string()
+    .min(1, { message: 'Full name is required' })
+    .refine(name => {
+      const names = name.trim().split(" ");
+      return names.length >= 2 && names.every(n => n.length >= 2);
+    }, { message: 'Full name must be at least two names with 2 characters each' }),
+  username: z.string().min(1, { message: 'Username is required' }),
+  website: z.string().url({ message: 'Website is required' }),
+  avatarUrl: z.string().url({ message: '' }).optional(),
+});
+
+type FormData = z.infer<typeof validationSchema>;
 
 export default function AccountForm({ user }: { user: User | null }) {
   const supabase = createClient();
   const [loading, setLoading] = useState(true);
-  const [fullname, setFullname] = useState<string | null>(null);
-  const [username, setUsername] = useState<string | null>(null);
-  const [website, setWebsite] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const avatarUrl = useSelector((state: RootState) => state.avatar.url);
   const dispatch = useDispatch();
-  const [is_admin, setIsAdmin] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+
+  const { register, handleSubmit, formState: { errors }, setValue } = useForm<FormData>({
+    resolver: zodResolver(validationSchema),
+    defaultValues: {
+      fullname: '',
+      username: '',
+      website: '',
+      avatarUrl: '',
+    }
+  });
 
   const getProfile = useCallback(async () => {
     try {
@@ -36,18 +60,18 @@ export default function AccountForm({ user }: { user: User | null }) {
       }
 
       if (data) {
-        setFullname(data.full_name);
-        setUsername(data.username);
-        setWebsite(data.website);
+        setValue("fullname", data.full_name || '');
+        setValue("username", data.username || '');
+        setValue("website", data.website || '');
+        setValue("avatarUrl", data.avatar_url || '');
         dispatch(setAvatarUrl(data.avatar_url));
-        setIsAdmin(data.is_admin);
       }
     } catch (error) {
       setError("Error loading user data!");
     } finally {
       setLoading(false);
     }
-  }, [user, supabase, dispatch]);
+  }, [user, supabase, dispatch, setValue]);
 
   useEffect(() => {
     if (user) {
@@ -55,17 +79,7 @@ export default function AccountForm({ user }: { user: User | null }) {
     }
   }, [user, getProfile]);
 
-  async function updateProfile({
-    fullname,
-    username,
-    website,
-    avatarUrl,
-  }: {
-    fullname: string | null;
-    username: string | null;
-    website: string | null;
-    avatarUrl: string | null;
-  }) {
+  const updateProfile: SubmitHandler<FormData> = async ({ fullname, username, website, avatarUrl }) => {
     try {
       setLoading(true);
       setError(null);
@@ -110,7 +124,7 @@ export default function AccountForm({ user }: { user: User | null }) {
             <Spinner />
           </Center>
         ) : (
-          <VStack spacing={4}>
+          <VStack spacing={4} as="form" onSubmit={handleSubmit(updateProfile)}>
             <FormControl id="email">
               <FormLabel>Email</FormLabel>
               <Input type="text" value={user?.email || ''} isDisabled />
@@ -122,46 +136,39 @@ export default function AccountForm({ user }: { user: User | null }) {
                 size={150}
                 onUpload={(url) => {
                   dispatch(setAvatarUrl(url));
-                  updateProfile({ fullname, username, website, avatarUrl: url });
+                  setValue("avatarUrl", url);
                 }}
               />
             )}
-            <FormControl id="fullName">
+            <FormControl id="fullname" isInvalid={!!errors.fullname}>
               <FormLabel>Full Name</FormLabel>
               <Input
                 type="text"
-                value={fullname || ''}
-                onChange={(e) => setFullname(e.target.value)}
+                {...register("fullname")}
               />
+              {errors.fullname && <Text color="red.500">{errors.fullname.message}</Text>}
             </FormControl>
-            <FormControl id="username">
+            <FormControl id="username" isInvalid={!!errors.username}>
               <FormLabel>Username</FormLabel>
               <Input
                 type="text"
-                value={username || ''}
-                onChange={(e) => setUsername(e.target.value)}
+                {...register("username")}
               />
+              {errors.username && <Text color="red.500">{errors.username.message}</Text>}
             </FormControl>
             <FormControl id="website">
               <FormLabel>Website</FormLabel>
               <Input
                 type="url"
-                value={website || ''}
-                onChange={(e) => setWebsite(e.target.value)}
+                
               />
+              {errors.website && <Text color="red.500">{errors.website.message}</Text>}
             </FormControl>
-            <FormControl id="isAdmin">
-              <FormLabel>Admin Status</FormLabel>
-              <Input
-                type="text"
-                value={is_admin ? 'Admin' : 'User'}
-                isDisabled
-              />
-            </FormControl>
+            {errors.avatarUrl && <Text color="red.500">{errors.avatarUrl.message}</Text>}
             <Button
               colorScheme="teal"
               width="300px"
-              onClick={() => updateProfile({ fullname, username, website, avatarUrl })}
+              type="submit"
               isDisabled={loading}
             >
               {loading ? 'Loading ...' : 'Update'}
@@ -177,6 +184,7 @@ export default function AccountForm({ user }: { user: User | null }) {
     </Center>
   );
 }
+
 
 
 

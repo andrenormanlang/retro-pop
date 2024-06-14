@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { createClient } from '@/utils/supabase/client';
-import { Image, Box, Spinner, useColorModeValue } from "@chakra-ui/react";
+import { Image, Box, Spinner, useColorModeValue, Text } from "@chakra-ui/react";
 import { RootState } from '@/store/store';
 import { setAvatarUrl } from '@/store/avatarSlice';
 
@@ -59,12 +59,13 @@ export default function AvatarNav({
           alignItems="center"
           justifyContent="center"
         >
-          {loading ? <Spinner /> : 'No image'}
+          {loading ? <Spinner /> : <Text fontSize="11px" color="red.500">Add Image</Text>}
         </Box>
       )}
     </Box>
   );
 }
+
 
 
 

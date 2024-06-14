@@ -91,7 +91,7 @@ const Avatar: React.FC<AvatarProps> = ({ uid, url, size, onUpload }) => {
           alignItems="center"
           justifyContent="center"
         >
-          {uploading ? <Spinner /> : 'No image'}
+          {uploading ? <Spinner /> : ''}
         </Box>
       )}
       <Box mt={4}>
