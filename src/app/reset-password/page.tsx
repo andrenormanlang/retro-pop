@@ -1,9 +1,8 @@
 import { createClient } from '@/utils/supabase/server';
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
 import {
-  Box,
-  Heading,
+	Box,
+	Heading,
   FormControl,
   FormLabel,
   Input,
@@ -11,49 +10,57 @@ import {
   Text,
   Center,
 } from "@chakra-ui/react";
+import { redirect } from 'next/navigation';
 
 export default async function ResetPassword({
-  searchParams,
-}: {
-  searchParams: { message?: string; code?: string };
-}) {
-  const supabase = createClient();
+	searchParams,
+  }: {
+	searchParams: { message: string; code: string };
+  }) {
+	const supabase = createClient();
 
-  const { data: { session } } = await supabase.auth.getSession();
+	const {
+	  data: { session },
+	} = await supabase.auth.getSession();
 
-  if (session) {
-    return redirect('/');
-  }
+	if (session) {
+	  return redirect('/');
+	}
 
-  const resetPassword = async (formData: FormData) => {
-    'use server';
+	const resetPassword = async (formData: FormData) => {
+	  'use server';
 
-    const password = formData.get('password') as string;
-    const confirmPassword = formData.get('confirmPassword') as string;
+	  const password = formData.get('password') as string;
+	  const supabase = createClient();
 
-    if (password !== confirmPassword) {
-      return redirect(`/reset-password?message=Passwords do not match.`);
-    }
+	  if (searchParams.code) {
+		const supabase = createClient();
+		const { error } = await supabase.auth.exchangeCodeForSession(
+		  searchParams.code
+		);
 
-    const supabase = createClient();
+		if (error) {
+		  return redirect(
+			`/reset-password?message=Unable to reset Password. Link expired!`
+		  );
+		}
+	  }
 
-    if (searchParams.code) {
-      const { error } = await supabase.auth.exchangeCodeForSession(searchParams.code);
+	  const { error } = await supabase.auth.updateUser({
+		password,
+	  });
 
-      if (error) {
-        return redirect(`/reset-password?message=Unable to reset Password. Link expired!`);
-      }
-    }
+	  if (error) {
+		console.log(error);
+		return redirect(
+		  `/reset-password?message=Unable to reset Password. Try again!`
+		);
+	  }
 
-    const { error } = await supabase.auth.updateUser({ password });
-
-    if (error) {
-      console.log(error);
-      return redirect(`/reset-password?message=Unable to reset Password. Try again!`);
-    }
-
-    return redirect(`/login?message=Your Password has been reset successfully. Sign in.`);
-  };
+	  redirect(
+		`/login?message=Your Password has been reset successfully. Sign in.`
+	  );
+	};
 
   return (
     <Center>
