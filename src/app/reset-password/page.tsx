@@ -50,22 +50,26 @@ export default async function ResetPassword({
           `/reset-password?message=Unable to reset Password. Link expired!`
         );
       }
-    }
 
-    const { error } = await supabase.auth.updateUser({
-      password,
-    });
+      const { error: updateError } = await supabase.auth.updateUser({
+        password,
+      });
 
-    if (error) {
-      console.log(error);
+      if (updateError) {
+        console.log(updateError);
+        return redirect(
+          `/reset-password?message=Unable to reset Password. Try again!`
+        );
+      }
+
       return redirect(
-        `/reset-password?message=Unable to reset Password. Try again!`
+        `/login?message=Your Password has been reset successfully. Sign in.`
+      );
+    } else {
+      return redirect(
+        `/reset-password?message=Reset code is missing.`
       );
     }
-
-    return redirect(
-      `/login?message=Your Password has been reset successfully. Sign in.`
-    );
   };
 
   return (
