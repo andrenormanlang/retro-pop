@@ -65,11 +65,14 @@ export default function Login() {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
       router.push("/login?message=Could not authenticate user");
     } else {
+		if (data.session) {
+			localStorage.setItem('supabase_token', data.session.access_token);
+		  }
       setIsAuthenticated(true);
       router.refresh(); // Refresh the browser
       router.push("/");
