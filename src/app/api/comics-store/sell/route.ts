@@ -10,6 +10,7 @@ export async function POST(request: NextRequest) {
   const {
     image,
     title,
+	genre,
     publisher,
     release_date,
     price,
@@ -23,7 +24,7 @@ export async function POST(request: NextRequest) {
   const user_id = request.headers.get('x-user-id');
   const bearerToken = request.headers.get('Authorization');
 
-  if (!user_id || !title || !publisher || !release_date || !price || !pages || !main_artist || !main_writer || !description || !currency) {
+  if (!user_id || !title || !genre || !publisher || !release_date || !price || !pages || !main_artist || !main_writer || !description || !currency) {
     return new NextResponse('Missing required fields', { status: 400 });
   }
 
@@ -43,6 +44,7 @@ export async function POST(request: NextRequest) {
         id, // Use the generated UUID
         image,
         title,
+		genre,
         publisher,
         release_date,
         price,

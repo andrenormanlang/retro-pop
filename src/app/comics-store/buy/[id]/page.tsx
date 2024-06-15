@@ -129,7 +129,7 @@ const ComicDetail = () => {
 						<Image
 							borderRadius="md"
 							objectFit="contain"
-							src={comic.image || "/path/to/default-image.jpg"}
+							src={comic.image || "../../public/default-image.jpg"}
 							alt={`Cover of ${comic.title}`}
 							width="100%"
 						/>

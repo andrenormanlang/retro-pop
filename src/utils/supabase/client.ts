@@ -11,4 +11,5 @@ export const createClient = () =>
     supabaseAnonKey,
   );
 
-export const supabase = createSupabaseClient(supabaseUrl, supabaseAnonKey);
+// export const supabase = createSupabaseClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient();

@@ -5,6 +5,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import Providers from "@/lib/query-provider";
 import ReduxProvider from '../contexts/ReduxProvider'; // Import the new ReduxProvider component
+import { UserProvider } from "@/contexts/UserContext";
 
 export const metadata: Metadata = {
 	title: "Retro-Pop Comics",
@@ -25,8 +26,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 					>
 						<Providers>
 							<ReduxProvider> {/* Use the ReduxProvider here */}
+								<UserProvider>
 								<Navbar />
 								<Box mt="8rem">{children}</Box>
+
+								</UserProvider>
 							</ReduxProvider>
 						</Providers>
 					</ColorModeProvider>
