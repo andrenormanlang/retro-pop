@@ -209,6 +209,14 @@ const Navbar = () => {
     letterSpacing: "-0.15rem",
   };
 
+  const storeSubmenu: SubmenuType[] = [
+    { name: "Buy", href: "/comics-store/buy" },
+  ];
+
+  if (user) {
+    storeSubmenu.push({ name: "Sell", href: "/comics-store/sell" });
+  }
+
   const menuItems: MenuType[] = [
     {
       name: "Search",
@@ -247,10 +255,7 @@ const Navbar = () => {
     },
     {
       name: "Store",
-      submenu: [
-        { name: "Buy", href: "/comics-store/buy" },
-        { name: "Sell", href: "/comics-store/sell" },
-      ],
+      submenu: storeSubmenu,
     },
   ];
 

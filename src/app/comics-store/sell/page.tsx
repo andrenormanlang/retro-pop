@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from 'next/navigation';
 import { useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -48,6 +49,7 @@ export default function ComicForm() {
 	const [imageURL, setImageURL] = useState<string | null>(null);
 	const [user, setUser] = useState<User | null>(null);
 	const toast = useToast();
+	const router = useRouter();
 
 	const {
 		register,
@@ -77,10 +79,15 @@ export default function ComicForm() {
 				data: { user },
 			} = await supabase.auth.getUser();
 			setUser(user);
+
+			// Redirect to login page if the user is not authenticated
+			if (!user) {
+				router.push('/login');
+			}
 		};
 
 		fetchUser();
-	}, []);
+	}, [router, supabase]);
 
 	const onSubmit: SubmitHandler<FormData> = async (data) => {
 		if (!user) {
@@ -148,7 +155,6 @@ export default function ComicForm() {
 		{ value: "EUR", label: "Euro (EUR)" },
 	];
 
-	
 	return (
 		<Center>
 			<Box p={8} maxWidth={{ base: "90%", md: "400px" }} width="full" boxShadow="md" borderRadius="md">
@@ -238,3 +244,4 @@ export default function ComicForm() {
 		</Center>
 	);
 }
+
