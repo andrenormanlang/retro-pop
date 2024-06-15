@@ -76,3 +76,100 @@ export async function POST(request: NextRequest) {
     });
   }
 }
+
+
+// import { NextRequest, NextResponse } from 'next/server';
+// import { supabase } from '@/utils/supabase/client';
+// import multer from 'multer';
+// import { v4 as uuidv4 } from 'uuid';
+
+// // Initialize Multer storage
+// const storage = multer.memoryStorage();
+// const upload = multer({ storage: storage });
+
+// export const config = {
+//   api: {
+//     bodyParser: false, // Disallow body parsing so `multer` can handle it
+//   },
+// };
+
+// // Middleware to handle multipart form data
+// const uploadMiddleware = upload.single('image');
+
+// // Helper to run middleware in Next.js API routes
+// function runMiddleware(req: any, res: any, fn: Function) {
+//   return new Promise((resolve, reject) => {
+//     fn(req, res, (result: any) => {
+//       if (result instanceof Error) {
+//         return reject(result);
+//       }
+//       return resolve(result);
+//     });
+//   });
+// }
+
+// export async function POST(request: NextRequest, res: NextRequest) {
+//   await runMiddleware(request, res, uploadMiddleware);
+
+//   // Extract fields from the request body
+//   const { title, publisher, release_date, price, pages, main_artist, main_writer, description, currency } = request.body;
+//   // Extract the uploaded file
+//   const image = request.file;
+
+//   // Ensure headers are present
+//   const user_id = request.headers['x-user-id'];
+//   const bearerToken = request.headers['authorization'];
+
+//   if (!user_id || !title || !publisher || !release_date || !price || !pages || !main_artist || !main_writer || !description || !currency || !image) {
+//     return new NextResponse('Missing required fields', { status: 400 });
+//   }
+
+//   try {
+//     const id = uuidv4();
+//     const { data: uploadData, error: uploadError } = await supabase.storage.from('images').upload(`public/${id}/${image.originalname}`, image.buffer, {
+//       cacheControl: '3600',
+//       upsert: false,
+//     });
+
+//     if (uploadError) throw uploadError;
+
+//     const imageUrl = uploadData?.path ? supabase.storage.from('images').getPublicUrl(uploadData.path).data.publicUrl : null;
+
+//     const { error } = await supabase.from('comics-sell').insert([
+//       {
+//         id,
+//         image: imageUrl,
+//         title,
+//         publisher,
+//         release_date,
+//         price,
+//         pages,
+//         main_artist,
+//         main_writer,
+//         description,
+//         currency,
+//         created_at: new Date().toISOString(),
+//         updated_at: new Date().toISOString(),
+//         user_id,
+//       },
+//     ]);
+
+//     if (error) throw error;
+
+//     return new NextResponse(JSON.stringify({ message: 'Comic book posted for sale successfully', id }), {
+//       status: 201,
+//       headers: {
+//         'Content-Type': 'application/json',
+//         'Access-Control-Allow-Origin': '*',
+//       },
+//     });
+//   } catch (err: any) {
+//     return new NextResponse(JSON.stringify({ error: err.message }), {
+//       status: 500,
+//       headers: {
+//         'Content-Type': 'application/json',
+//         'Access-Control-Allow-Origin': '*',
+//       },
+//     });
+//   }
+// }
