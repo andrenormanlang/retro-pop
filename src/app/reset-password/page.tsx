@@ -78,7 +78,7 @@ export default async function ResetPassword({
           </Button>
 
           {searchParams?.message && (
-            <Text mt={4} p={4} bg="gray.100" textAlign="center" borderRadius="md">
+           <Text mt={4} p={4} bg="red.500" textAlign="center" fontWeight={600} borderRadius="md">
               {searchParams.message}
             </Text>
           )}
