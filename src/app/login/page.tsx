@@ -1,7 +1,7 @@
 "use client";
 
 // import { supabase } from "@/utils/supabaseClient";
-import { supabaseReset } from "@/utils/supabaseClient";
+import { supabase } from "@/utils/supabaseReset";
 import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -39,7 +39,7 @@ export default function Login() {
 	const [success, setSuccess] = useState(false);
 	const toast = useToast();
 
-	const supabase = createClient();
+	const supabaseLogin = createClient();
 
 	// const supabase = createClient();
 
@@ -53,7 +53,7 @@ export default function Login() {
 		const checkUser = async () => {
 			const {
 				data: { user },
-			} = await supabase.auth.getUser();
+			} = await supabaseLogin.auth.getUser();
 
 			if (user) {
 				setIsAuthenticated(true);
@@ -65,7 +65,7 @@ export default function Login() {
 
 		checkUser();
 
-		const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+		const { data: authListener } = supabaseLogin.auth.onAuthStateChange((event, session) => {
 			if (event === "SIGNED_IN") {
 				setIsAuthenticated(true);
 				router.refresh(); // Refresh the browser
@@ -78,7 +78,7 @@ export default function Login() {
 		return () => {
 			authListener.subscription.unsubscribe();
 		};
-	}, [router, supabase.auth]);
+	}, [router, supabaseLogin.auth]);
 
 	const signIn = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
@@ -86,7 +86,7 @@ export default function Login() {
 		const email = formData.get("email") as string;
 		const password = formData.get("password") as string;
 
-		const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+		const { data, error } = await supabaseLogin.auth.signInWithPassword({ email, password });
 
 		if (error) {
 			router.push("/login?message=Could not authenticate user");
@@ -115,7 +115,7 @@ export default function Login() {
 
 	const sendResetPassword = async () => {
 		try {
-			const { data: resetData, error } = await supabaseReset.auth.resetPasswordForEmail(data.email, {
+			const { data: resetData, error } = await supabase.auth.resetPasswordForEmail(data.email, {
 				redirectTo: `${window.location.href}reset`,
 			});
 
