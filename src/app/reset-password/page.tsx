@@ -4,27 +4,25 @@ import { supabase } from '@/utils/supabaseClient';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Box, FormControl, FormLabel, Input, Button, Text, useColorModeValue } from "@chakra-ui/react";
 import Link from 'next/link';
-
-import { useState } from 'react';
+import { useState, FormEvent } from 'react';
 
 export default function ResetPassword() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [message, setMessage] = useState(searchParams.get('message') || '');
+  const [message, setMessage] = useState<string>(searchParams.get('message') || '');
   const code = searchParams.get('code');
 
-  const resetPassword = async (event) => {
+  const resetPassword = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const formData = new FormData(event.target);
-    const password = formData.get('password');
-    const confirmPassword = formData.get('confirmPassword');
+    const formData = new FormData(event.currentTarget);
+    const password = formData.get('password') as string;
+    const confirmPassword = formData.get('confirmPassword') as string;
 
     if (password !== confirmPassword) {
       setMessage('Passwords do not match');
       return;
     }
-
 
     if (code) {
       const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
@@ -51,9 +49,7 @@ export default function ResetPassword() {
   const formBgColor = useColorModeValue("white", "gray.700");
 
   return (
-    <Box  p={4}>
-
-
+    <Box bg={bgColor} minH="100vh" p={4}>
       <Link href="/" passHref>
         <Button as="a" colorScheme="teal" variant="outline" mb={4}>
           Home
