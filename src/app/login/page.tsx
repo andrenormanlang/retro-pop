@@ -1,6 +1,7 @@
 "use client";
 
 // import { supabase } from "@/utils/supabaseClient";
+import { supabaseReset } from "@/utils/supabaseClient";
 import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -39,6 +40,8 @@ export default function Login() {
 	const toast = useToast();
 
 	const supabase = createClient();
+
+	// const supabase = createClient();
 
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
 	const [loading, setLoading] = useState(true);
@@ -100,7 +103,7 @@ export default function Login() {
 
 	if (loading) {
 		return (
-			<Center minH="100vh">
+			<Center minH="">
 				<Spinner size="xl" />
 			</Center>
 		);
@@ -112,14 +115,12 @@ export default function Login() {
 
 	const sendResetPassword = async () => {
 		try {
-			const { data: resetData, error } = await supabase.auth.resetPasswordForEmail(data.email, {
+			const { data: resetData, error } = await supabaseReset.auth.resetPasswordForEmail(data.email, {
 				redirectTo: `${window.location.href}reset`,
-				//   redirectTo: `/reset`
 			});
 
-			if (error) {
-				throw error;
-			}
+			console.log(resetData);
+			console.log(error);
 
 			setSuccess(true);
 			toast({
@@ -197,12 +198,13 @@ export default function Login() {
 				) : null}
 				<Button
 					mt={4}
-					variant="link" colorScheme="teal"
+					variant="link"
+					colorScheme="teal"
 					cursor="pointer"
 					width="full"
 					onClick={() => setResetPassword(!resetPassword)}
 				>
-					{resetPassword ? 'Login' : 'Reset my password'}
+					{resetPassword ? "Login" : "Reset my password"}
 				</Button>
 				<Link href="/signup" passHref>
 					<Button variant="link" colorScheme="teal" width="full">

@@ -286,7 +286,7 @@ const Navbar = () => {
   );
 
   return (
-	<Box as="nav" position="sticky" top="0" width="100%" zIndex={10} bg="gray.800">
+	<Box as="nav" position="fixed" top="0" width="100%" zIndex={10} bg="gray.800">
 	  <Flex
 		justify="space-between"
 		wrap="wrap"
