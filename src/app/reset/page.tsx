@@ -1,8 +1,8 @@
 'use client';
 
 import { supabase } from "@/utils/supabaseClient";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -11,6 +11,7 @@ import {
   Input,
   Text,
   VStack,
+  useToast,
 } from "@chakra-ui/react";
 
 interface ResetData {
@@ -25,20 +26,43 @@ export default function Reset() {
   });
 
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const toast = useToast();
+  const [loading, setLoading] = useState(true);
   const [showPassword, setShowPassword] = useState<boolean>(false);
+
+  const token = searchParams.get("access_token"); // Assuming the token is named access_token
+
+  useEffect(() => {
+    const verifyToken = async () => {
+      if (!token) {
+        toast({
+          title: "Error",
+          description: "No token found in URL.",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+        router.push('/'); // Redirect to home or login if no token is found
+      } else {
+        setLoading(false);
+      }
+    };
+
+    verifyToken();
+  }, [token, router, toast]);
 
   const confirmPasswords = async () => {
     const { password, confirmPassword } = data;
-    if (password !== confirmPassword) return alert(`Your passwords are incorrect`);
+    if (password !== confirmPassword) return alert(`Your passwords do not match`);
 
-    const { data: resetData, error } = await supabase
-      .auth
-      .updateUser({
-        password: data.password
-      });
+    const { data: resetData, error } = await supabase.auth.updateUser({
+      password: data.password,
+      
+    });
 
     if (resetData) {
-      router.push('/')
+      router.push('/');
     }
     if (error) console.log(error);
   };
@@ -50,6 +74,14 @@ export default function Reset() {
       [name]: value,
     }));
   };
+
+  if (loading) {
+    return (
+      <Box maxW="400px" mx="auto" p={4}>
+        <Text>Loading...</Text>
+      </Box>
+    );
+  }
 
   return (
     <Box maxW="400px" mx="auto" p={4}>

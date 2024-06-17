@@ -193,7 +193,7 @@ export default function ForgotPassword() {
         textDecoration="underline"
         onClick={() => setResetPassword(!resetPassword)}
       >
-        {resetPassword ? 'Login' : 'Reset my password'}
+        {/* {resetPassword ? 'Login' : 'Reset my password'} */}
       </Text>
     </Box>
   );
