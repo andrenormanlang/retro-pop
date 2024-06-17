@@ -1,34 +1,35 @@
 import { supabase } from '@/utils/supabaseClient';
-import { redirect } from 'next/navigation';
+import { useRouter } from 'next/router';
 import { Box, FormControl, FormLabel, Input, Button, Text, useColorModeValue } from "@chakra-ui/react";
 import Link from 'next/link';
+import { ReactHTMLElement } from 'react';
+
 
 export default async function ResetPassword({
-  searchParams,
-}: {
-  searchParams: { message: string; code: string };
-}) {
-//   const supabase = createClient();
+	searchParams,
+  }: {
+	searchParams: { message: string; code: string };
+  }) {
+  const router = useRouter();
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const resetPassword = async (event) => {
+    event!.preventDefault();
 
-  if (session) {
-    return redirect('/');
-  }
+    const formData = new FormData(event.target);
+    const password = formData.get('password');
+    const confirmPassword = formData.get('confirmPassword');
 
-  const resetPassword = async (formData: FormData) => {
-    'use server';
-
-    const password = formData.get('password') as string;
-    // const supabase = createClient();
+    if (password !== confirmPassword) {
+      alert('Passwords do not match');
+      return;
+    }
 
     if (searchParams.code) {
       const { error } = await supabase.auth.exchangeCodeForSession(searchParams.code);
 
       if (error) {
-        return redirect(`/reset-password?message=Unable to reset Password. Link expired!`);
+        router.push(`/reset-password?message=Unable to reset Password. Link expired!`);
+        return;
       }
     }
 
@@ -36,27 +37,36 @@ export default async function ResetPassword({
 
     if (error) {
       console.log(error);
-      return redirect(`/reset-password?message=Unable to reset Password. Try again!`);
+      router.push(`/reset-password?message=Unable to reset Password. Try again!`);
+      return;
     }
 
-    redirect(`/login?message=Your Password has been reset successfully. Sign in.`);
+    router.push(`/login?message=Your Password has been reset successfully. Sign in.`);
   };
 
+  const bgColor = useColorModeValue("gray.50", "gray.800");
+  const formBgColor = useColorModeValue("white", "gray.700");
 
   return (
-    <Box  p={4}>
+    <Box bg={bgColor} minH="100vh" p={4}>
+      <Header />
 
+      <Link href="/" passHref>
+        <Button as="a" colorScheme="teal" variant="outline" mb={4}>
+          Home
+        </Button>
+      </Link>
 
-      <Box w="full" maxW="md" mx="auto" mt={4}  p={8} rounded="md" boxShadow="lg">
-        <form action={resetPassword}>
+      <Box w="full" maxW="md" mx="auto" mt={4} bg={formBgColor} p={8} rounded="md" boxShadow="lg">
+        <form onSubmit={resetPassword}>
           <FormControl id="password" mb={6}>
             <FormLabel>New Password</FormLabel>
             <Input
               type="password"
               name="password"
-            //   placeholder="••••••••"
+              placeholder="••••••••"
               required
-              bg="grey.200"
+              bg="white"
               _placeholder={{ color: 'gray.500' }}
             />
           </FormControl>
@@ -66,9 +76,9 @@ export default async function ResetPassword({
             <Input
               type="password"
               name="confirmPassword"
-            //   placeholder="••••••••"
+              placeholder="••••••••"
               required
-              bg="grey.200"
+              bg="white"
               _placeholder={{ color: 'gray.500' }}
             />
           </FormControl>
@@ -78,7 +88,7 @@ export default async function ResetPassword({
           </Button>
 
           {searchParams?.message && (
-           <Text mt={4} p={4} bg="red.500" textAlign="center" fontWeight={600} borderRadius="md">
+            <Text mt={4} p={4} bg="red.500" textAlign="center" fontWeight={600} borderRadius="md">
               {searchParams.message}
             </Text>
           )}
@@ -88,4 +98,25 @@ export default async function ResetPassword({
   );
 }
 
+export async function getServerSideProps(context) {
+  const { searchParams } = context.query;
+  const supabase = createClient();
+
+  const { data: { session } } = await supabase.auth.getSession();
+
+  if (session) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {
+      searchParams: searchParams || {},
+    },
+  };
+}
 
