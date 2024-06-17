@@ -52,32 +52,32 @@ body, p {
   font-family: "Libre Franklin", sans-serif;
 }/*# sourceMappingURL=globals.css.map */
 
-.image-responsive {
+/* .image-responsive {
 	height: auto;
 	width: 100%;
-  }
+  } */
 
   /* Medium devices (tablets, 768px and up) */
-  @media (min-width: 768px) {
+  /* @media (min-width: 768px) {
 	.image-responsive {
 	  max-width: "300px";
 	}
-  }
+  } */
 
   /* Large devices (desktops, 992px and up) */
-  @media (min-width: 992px) {
+  /* @media (min-width: 992px) {
 	.image-responsive {
-	 max-width: "600px";
+	 max-width: "300px";
 	}
-  }
+  } */
 
-  .container {
+  /* .container {
 	max-width: 100%;
 	padding: 0 1rem;
 	margin: 0 auto;
-  }
+  } */
 
-  @media (min-width: 640px) {
+  /* @media (min-width: 640px) {
 	.container {
 	  padding: 0 2rem;
 	}
@@ -93,5 +93,5 @@ body, p {
 	.container {
 	  padding: 0 6rem;
 	}
-  }
+  } */
 

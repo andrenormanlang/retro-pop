@@ -286,102 +286,111 @@ const Navbar = () => {
   );
 
   return (
-    <Box as="nav" position="fixed" top="0" width={"100%"} zIndex={10}>
-      <Flex
-        justify="space-between"
-        wrap="wrap"
-        padding="1.5rem"
-        bg="gray.800"
-        color="white"
-        px={{ base: "1rem", md: "6rem", lg: "8rem" }}
-      >
-        <Flex align="center" mr={5}>
-          <Link href="/">
-            <RetroPopLogo />
-          </Link>
-        </Flex>
-        <Flex align="center">
-          {/* Theme Toggle Button */}
-          <IconButton aria-label="Toggle theme" icon={colorMode === "dark" ? <SunIcon /> : <MoonIcon />} onClick={toggleColorMode} mr={4} />
+	<Box as="nav" position="sticky" top="0" width="100%" zIndex={10} bg="gray.800">
+	  <Flex
+		justify="space-between"
+		wrap="wrap"
+		padding="1.5rem"
+		color="white"
+		px={{ base: "1rem", md: "4rem", lg: "8rem" }}
+	  >
+		<Flex align="center" mr={5}>
+		  <Link href="/">
+			<RetroPopLogo />
+		  </Link>
+		</Flex>
+		<Flex align="center">
+		  {/* Theme Toggle Button */}
+		  <IconButton
+			aria-label="Toggle theme"
+			icon={colorMode === "dark" ? <SunIcon /> : <MoonIcon />}
+			onClick={toggleColorMode}
+			mr={4}
+		  />
 
-          {/* Hamburger Icon */}
-          {!isMainMenuOpen && (
-            <IconButton
-              onClick={handleOpenMainMenu}
-              aria-label="Open menu"
-              icon={<HamburgerIcon boxSize={10} />}
-              display={{ base: "block" }}
-              zIndex="tooltip"
-              mr={4}
-            />
-          )}
+		  {/* Hamburger Icon */}
+		  {!isMainMenuOpen && (
+			<IconButton
+			  onClick={handleOpenMainMenu}
+			  aria-label="Open menu"
+			  icon={<HamburgerIcon boxSize={10} />}
+			  display={{ base: "block" }}
+			  zIndex="tooltip"
+			  mr={4}
+			/>
+		  )}
 
-          {user && (
-            <Flex align="center" ml={4}>
-              <Menu isOpen={isAvatarMenuOpen} onOpen={handleToggleAvatarMenu} onClose={handleToggleAvatarMenu}>
-                <MenuButton as={Box} position="relative" display="flex" alignItems="center">
-                  <AvatarNav uid={user.id} size={50} />
-                  <Box position="absolute" bottom="-15px" left="50%" transform="translateX(-50%)">
-                    {isAvatarMenuOpen ? <ChevronDownIcon /> : <ChevronUpIcon />}
-                  </Box>
-                </MenuButton>
-                <MenuList {...avatarMenuListStyle}>
-                  {renderAvatarItem("profile", "/account")}
-                  {renderAvatarItem("sign out", undefined, handleSignOut)}
-                </MenuList>
-              </Menu>
-            </Flex>
-          )}
-        </Flex>
-        {/* Motion div for the Hamburger Menu */}
-        <motion.div
-          variants={variants}
-          initial="closed"
-          animate={isOpen ? "open" : "closed"}
-          transition={{ duration: 0.2 }}
-          style={{
-            display: isOpen ? "block" : "none",
-            position: "fixed",
-            top: 0,
-            left: 0,
-            zIndex: 1000,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "black",
-          }}
-        >
-          {isOpen && (
-            <IconButton
-              onClick={handleCloseMainMenu}
-              aria-label="Close menu"
-              icon={<CloseIcon boxSize={5} />}
-              position="absolute"
-              top="1rem"
-              right="1rem"
-              zIndex="tooltip"
-            />
-          )}
-          <Stack spacing={4} align="center" justify="center" pt="5rem">
-            {menuItems.map((item, index) => (item.submenu ? renderMenuItem(item, index) : null))}
-            {!user && (
-              <>
-                <Button as={Link} href="/login" {...buttonStyle}>
-                  Login
-                </Button>
-                <Button as={Link} href="/signup" {...buttonStyle}>
-                  Sign Up
-                </Button>
-              </>
-            )}
-          </Stack>
-        </motion.div>
-      </Flex>
-    </Box>
+		  {user && (
+			<Flex align="center" ml={4}>
+			  <Menu
+				isOpen={isAvatarMenuOpen}
+				onOpen={handleToggleAvatarMenu}
+				onClose={handleToggleAvatarMenu}
+			  >
+				<MenuButton as={Box} position="relative" display="flex" alignItems="center">
+				  <AvatarNav uid={user.id} size={50} />
+				  <Box position="absolute" bottom="-15px" left="50%" transform="translateX(-50%)">
+					{isAvatarMenuOpen ? <ChevronDownIcon /> : <ChevronUpIcon />}
+				  </Box>
+				</MenuButton>
+				<MenuList {...avatarMenuListStyle}>
+				  {renderAvatarItem("profile", "/account")}
+				  {renderAvatarItem("sign out", undefined, handleSignOut)}
+				</MenuList>
+			  </Menu>
+			</Flex>
+		  )}
+		</Flex>
+		{/* Motion div for the Hamburger Menu */}
+		<motion.div
+		  variants={variants}
+		  initial="closed"
+		  animate={isOpen ? "open" : "closed"}
+		  transition={{ duration: 0.2 }}
+		  style={{
+			display: isOpen ? "block" : "none",
+			position: "fixed",
+			top: 0,
+			left: 0,
+			zIndex: 1000,
+			width: "100%",
+			height: "100%",
+			backgroundColor: "black",
+		  }}
+		>
+		  {isOpen && (
+			<IconButton
+			  onClick={handleCloseMainMenu}
+			  aria-label="Close menu"
+			  icon={<CloseIcon boxSize={5} />}
+			  position="absolute"
+			  top="1rem"
+			  right="1rem"
+			  zIndex="tooltip"
+			/>
+		  )}
+		  <Stack spacing={4} align="center" justify="center" pt="5rem">
+			{menuItems.map((item, index) =>
+			  item.submenu ? renderMenuItem(item, index) : null
+			)}
+			{!user && (
+			  <>
+				<Button as={Link} href="/login" {...buttonStyle}>
+				  Login
+				</Button>
+				<Button as={Link} href="/signup" {...buttonStyle}>
+				  Sign Up
+				</Button>
+			  </>
+			)}
+		  </Stack>
+		</motion.div>
+	  </Flex>
+	</Box>
   );
 };
 
 export default Navbar;
-
 
 
 

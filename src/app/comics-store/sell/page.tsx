@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -82,7 +82,7 @@ export default function ComicForm() {
 
       // Redirect to login page if the user is not authenticated
       if (!user) {
-        router.push('/login');
+        router.push("/login");
       }
     };
 
@@ -214,7 +214,7 @@ export default function ComicForm() {
               </Select>
               {errors.publisher && <Text color="red.500">{errors.publisher.message}</Text>}
             </FormControl>
-			<FormControl id="genre" isInvalid={!!errors.genre}>
+            <FormControl id="genre" isInvalid={!!errors.genre}>
               <FormLabel>Genre</FormLabel>
               <Select placeholder="Select genre" {...register("genre")}>
                 {genres.map((genre) => (
