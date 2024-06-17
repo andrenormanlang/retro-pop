@@ -1,4 +1,4 @@
-import { createClient } from '@/utils/supabase/server';
+import { supabase } from '@/utils/supabaseClient';
 import { redirect } from 'next/navigation';
 import { Box, FormControl, FormLabel, Input, Button, Text, useColorModeValue } from "@chakra-ui/react";
 import Link from 'next/link';
@@ -8,7 +8,7 @@ export default async function ResetPassword({
 }: {
   searchParams: { message: string; code: string };
 }) {
-  const supabase = createClient();
+//   const supabase = createClient();
 
   const {
     data: { session },
@@ -22,7 +22,7 @@ export default async function ResetPassword({
     'use server';
 
     const password = formData.get('password') as string;
-    const supabase = createClient();
+    // const supabase = createClient();
 
     if (searchParams.code) {
       const { error } = await supabase.auth.exchangeCodeForSession(searchParams.code);

@@ -112,7 +112,7 @@ export default function Signup() {
 
   if (loading) {
     return (
-      <Center minH="100vh" bg={bgCenter}>
+      <Center>
         <Spinner size="xl" />
       </Center>
     );
