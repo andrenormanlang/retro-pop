@@ -20,7 +20,7 @@
 }
 html, body {
   color: rgb(var(--foreground-rgb)); /* Text color set to white */
-  background: linear-gradient(to bottom, transparent, rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
+  /* background: linear-gradient(to bottom, transparent, rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb)); */
   width: 100%;
   overflow-x: hidden;
   margin: 0;
@@ -28,7 +28,7 @@ html, body {
   box-sizing: border-box;
 }
 
-*, *::before, *::after {
+ *, *::before, *::after {
 	box-sizing: border-box;
   }
 

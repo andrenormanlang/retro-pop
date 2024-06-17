@@ -49,7 +49,7 @@ export default function HomePage() {
                     <Text fontWeight="bold" fontSize="2rem" mt={2} fontFamily="Bangers" letterSpacing="0.2rem" color="red">
                         RANDOM COVER!
                     </Text>
-                    <Text fontWeight="bold" fontSize="1.5rem" mt={2} fontFamily="Bangers" letterSpacing="0.2rem" color="white">
+                    <Text fontWeight="bold" fontSize="1.5rem" mt={2} fontFamily="Bangers" letterSpacing="0.2rem" color="red.500">
                         {cover.issue}
                     </Text>
                     <Image

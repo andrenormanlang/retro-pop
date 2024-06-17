@@ -22,12 +22,11 @@ export default function Confirm() {
   const email = emailMatch ? emailMatch[1] : "";
 
   return (
-    <Center bg={useColorModeValue("gray.50", "gray.800")}>
+    <Center >
       <Box
         p={8}
         maxWidth="400px"
         width="full"
-        bg={useColorModeValue("white", "black.800")}
         boxShadow="lg"
         borderRadius="lg"
       >
