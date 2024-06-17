@@ -1,6 +1,6 @@
 'use client';
 
-import { supabase } from "@/utils/supabaseClient";
+import { supabaseReset } from "@/utils/supabaseClient";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
@@ -31,7 +31,7 @@ export default function Reset() {
     const { password, confirmPassword } = data;
     if (password !== confirmPassword) return alert(`Your passwords are incorrect`);
 
-    const { data: resetData, error } = await supabase
+    const { data: resetData, error } = await supabaseReset
       .auth
       .updateUser({
         password: data.password

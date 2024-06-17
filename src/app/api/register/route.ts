@@ -1,12 +1,12 @@
 // app/api/register/route.js
 import { NextResponse, NextRequest } from 'next/server';
-import { supabase } from '../../../utils/supabaseClient';
+import { supabaseRegister } from '../../../utils/supabaseRegister';
 
 export async function POST(request: NextRequest) {
   const { email, password, first_name, last_name, avatar_url, is_admin } = await request.json();
 
   // Insert the new user into the database
-  const { data, error } = await supabase
+  const { data, error } = await supabaseRegister
     .from('users')
     .insert([
       {

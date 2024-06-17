@@ -91,7 +91,7 @@
 
 'use client';
 
-import { supabase } from "@/utils/supabaseClient";
+import { supabaseReset } from "@/utils/supabaseClient";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
@@ -124,7 +124,7 @@ export default function ForgotPassword() {
 
   const sendResetPassword = async () => {
     try {
-      const { data: resetData, error } = await supabase
+      const { data: resetData, error } = await supabaseReset
         .auth
         .resetPasswordForEmail(data.email, {
           redirectTo: `${window.location.href}reset`
