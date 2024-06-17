@@ -1,3 +1,5 @@
+'use client';
+
 import { supabase } from '@/utils/supabaseClient';
 import { useRouter } from 'next/router';
 import { Box, FormControl, FormLabel, Input, Button, Text, useColorModeValue } from "@chakra-ui/react";
