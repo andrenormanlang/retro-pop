@@ -11,6 +11,6 @@ export default async function UpdatePassword() {
 
   return(
   <Box display="flex" alignItems="center" justifyContent="center">
-  <PasswordForm user={session?.user} />;
-  </Box>);
+  <PasswordForm user={session?.user} />
+  </Box>)
 }
