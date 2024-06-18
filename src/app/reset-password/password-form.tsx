@@ -5,23 +5,21 @@ import { useState, FormEvent } from "react";
 import { z, ZodError } from "zod";
 import { User, createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
-export const password = (number = 5, name = 'Password') =>
-	require(name).min(number, `${name} must be at least ${number} characters`);
+// Define a Zod schema for password validation directly
+const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
 
-const UpdatePasswordSchema = z
-  .object({
-    password: password(6),
-    passwordConfirm: password(6, "Confirm Password"),
-  })
-  .superRefine(({ password, passwordConfirm }, ctx) => {
-    if (password !== passwordConfirm) {
-      ctx.addIssue({
-        code: "custom",
-        message: "Password does not match",
-        path: ["passwordConfirm"],
-      });
-    }
-  });
+const UpdatePasswordSchema = z.object({
+  password: passwordSchema,
+  passwordConfirm: passwordSchema
+}).superRefine(({ password, passwordConfirm }, ctx) => {
+  if (password !== passwordConfirm) {
+    ctx.addIssue({
+      code: "custom",
+      message: "Passwords do not match",
+      path: ["passwordConfirm"]
+    });
+  }
+});
 
 type FormData = z.infer<typeof UpdatePasswordSchema>;
 
@@ -74,8 +72,8 @@ export default function PasswordForm({ user }: { user: User | undefined }) {
   };
 
   return (
-    <Box width={["90%", "80%", "60%", "50%", "30%"]} p={12} rounded="lg">
-      <Text fontSize="4xl" fontWeight="semibold" mb={4}>Update Password</Text>
+    <Box width={["90%", "80%", "60%", "50%", "30%"]} p={8} maxWidth="400px" boxShadow="md" borderRadius="md" >
+      <Text fontSize="xl" fontWeight="semibold" mb={4}>Update Password</Text>
       <Text mb={4}>Hi {user?.email}, enter your new password below and confirm it.</Text>
       <form onSubmit={handleSubmit}>
         <FormControl isInvalid={formData.password !== ""}>
