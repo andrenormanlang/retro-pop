@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { headers } from 'next/headers';
-import { createClient } from '@/utils/supabase/server';
-import { redirect } from 'next/navigation';
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Box, FormControl, FormLabel, Input, Button, Text, useColorModeValue } from "@chakra-ui/react";
 
@@ -10,14 +10,15 @@ export default async function ForgotPassword({
 }: {
   searchParams: { message: string };
 }) {
-  const supabase = createClient();
+  const supabase = createClientComponentClient();
+  const router = useRouter();
 
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
   if (session) {
-    return redirect('/');
+    return router.push('/');
   }
 
   const confirmReset = async (formData: FormData) => {
@@ -25,17 +26,17 @@ export default async function ForgotPassword({
 
     const origin = headers().get('origin');
     const email = formData.get('email') as string;
-    const supabase = createClient();
+    const supabase = createClientComponentClient();
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${origin}/reset-password`,
     });
 
     if (error) {
-      return redirect('/forgot-password?message=Could not authenticate user');
+      return router.push('/forgot-password?message=Could not authenticate user');
     }
 
-    return redirect(
+    return router.push(
       '/confirm?message=Password Reset link has been sent to your email address'
     );
   };
