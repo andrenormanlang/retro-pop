@@ -22,6 +22,7 @@ import {
 	Flex,
 	Heading,
 	Image,
+	Textarea,
 } from "@chakra-ui/react";
 import { ArrowBackIcon } from "@chakra-ui/icons";
 import ImageUpload from "./image-upload";
@@ -280,7 +281,12 @@ const EditComic = () => {
 					</FormControl>
 					<FormControl isInvalid={!!errors.description}>
 						<FormLabel>Description</FormLabel>
-						<Input type="text" {...register("description")} />
+						<Textarea
+							{...register("description")}
+							placeholder="Enter comic description"
+							size="sm"
+							rows={5} // Default number of rows, it will expand automatically with input
+						/>
 						{errors.description && <Text color="red.500">{errors.description.message}</Text>}
 					</FormControl>
 					<Button colorScheme="teal" width="300px" type="submit" isDisabled={loading}>
