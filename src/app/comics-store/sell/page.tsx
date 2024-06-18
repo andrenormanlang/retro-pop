@@ -261,12 +261,16 @@ export default function ComicForm() {
               <Input type="text" {...register("main_writer")} />
               {errors.main_writer && <Text color="red.500">{errors.main_writer.message}</Text>}
             </FormControl>
-            <FormControl id="description" isInvalid={!!errors.description}>
-              <FormLabel>Description</FormLabel>
-              <Input type="text" {...register("description")} />
-              {errors.description && <Text color="red.500">{errors.description.message}</Text>}
-            </FormControl>
-
+                                                    <FormControl isInvalid={!!errors.description}>
+                                                <FormLabel>Description</FormLabel>
+                                                <Textarea
+                                                        {...register("description")}
+                                                        placeholder="Enter comic description"
+                                                        size="sm"
+                                                        rows={5} // Default number of rows, it will expand automatically with input
+                                                />
+                                                {errors.description && <Text color="red.500">{errors.description.message}</Text>}
+                                        </FormControl>
             <Button colorScheme="teal" width="300px" type="submit" isDisabled={loading}>
               {loading ? "Loading ..." : "Post Comic"}
             </Button>
