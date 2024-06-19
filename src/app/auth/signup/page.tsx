@@ -104,9 +104,9 @@ export default function Signup() {
 
     if (error) {
       console.error('Sign up error:', error);
-      router.push("/signup?message=Could not authenticate user");
+      router.push("/auth/signup?message=Could not authenticate user");
     } else {
-      router.push(`/confirm?message=Check email(${email}) to continue sign in process`);
+      router.push(`/auth/confirm?message=Check email(${email}) to continue sign in process`);
     }
   };
 
