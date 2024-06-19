@@ -15,25 +15,26 @@ import {
   Center,
   useColorModeValue,
   Spinner,
+  useToast,
 } from "@chakra-ui/react";
 import Link from "next/link";
-import { createClient } from "@/utils/supabase/client";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useForm, SubmitHandler } from "react-hook-form";
 
 const passwordValidation = new RegExp(
-  /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/
+  /^(?=.?[A-Z])(?=.?[a-z])(?=.?[0-9])(?=.?[#?!@$%^&*-]).{8,}$/
 );
 
 const validationSchema = z.object({
   email: z
     .string()
-    .min(1, { message: 'Must have at least 1 character' })
+    .min(1, { message: 'Must have at least 5 characters' })
     .email({ message: 'Must be a valid email' }),
   password: z
     .string()
-    .min(1, { message: 'Must have at least 1 character' })
-    .regex(passwordValidation, { message: 'Your password is not valid' }),
-  confirmPassword: z.string().min(1, { message: 'Must have at least 1 character' }),
+    .min(6, { message: 'Must have at least 6 characters long' }),
+    // .regex(passwordValidation, { message: 'Your password must have at least one uppercase and one special character' }),
+  confirmPassword: z.string().min(6, { message: 'Must have at least 6 characters' }),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords must match",
   path: ["confirmPassword"], // Set the path of the error
@@ -45,6 +46,7 @@ export default function Signup() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const message = searchParams.get("message");
+  const toast = useToast();
 
   const {
     register,
@@ -54,7 +56,7 @@ export default function Signup() {
     resolver: zodResolver(validationSchema)
   });
 
-  const supabase = createClient();
+  const supabase = createClientComponentClient();
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -92,8 +94,6 @@ export default function Signup() {
   const signUp: SubmitHandler<SchemaProps> = async (data) => {
     const { email, password } = data;
 
-    console.log('Signing up with email:', email);
-
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -103,8 +103,13 @@ export default function Signup() {
     });
 
     if (error) {
-      console.error('Sign up error:', error);
-      router.push("/auth/signup?message=Could not authenticate user");
+      toast({
+        title: "Sign up error",
+        description: error.message,
+        status: "error",
+        duration: 9000,
+        isClosable: true,
+      });
     } else {
       router.push(`/auth/confirm?message=Check email(${email}) to continue sign in process`);
     }
