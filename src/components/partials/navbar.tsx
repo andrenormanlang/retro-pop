@@ -2,28 +2,22 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import {
-  Box,
-  Button,
-  Flex,
-  IconButton,
-  Link,
-  useDisclosure,
-  useColorMode,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
-  Stack,
-  useColorModeValue,
+	Box,
+	Button,
+	Flex,
+	IconButton,
+	Link,
+	useDisclosure,
+	useColorMode,
+	Menu,
+	MenuButton,
+	MenuList,
+	MenuItem,
+	Stack,
+	useColorModeValue,
+	useToast,
 } from "@chakra-ui/react";
-import {
-  HamburgerIcon,
-  CloseIcon,
-  MoonIcon,
-  SunIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
-} from "@chakra-ui/icons";
+import { HamburgerIcon, CloseIcon, MoonIcon, SunIcon, ChevronDownIcon, ChevronUpIcon } from "@chakra-ui/icons";
 import { motion } from "framer-motion";
 import { createClient } from "@/utils/supabase/client";
 import RetroPopLogo from "./logo";
@@ -36,363 +30,380 @@ import { setAvatarUrl } from "@/store/avatarSlice";
 import AvatarNav from "../../helpers/AvatarNav";
 
 const Navbar = () => {
-  const supabase = createClient();
-  const { isOpen, onToggle, onClose } = useDisclosure();
-  const { colorMode, toggleColorMode } = useColorMode();
-  const [user, setUser] = useState<User | null>(null);
-  const [isMainMenuOpen, setIsMainMenuOpen] = useState(false);
-  const [isAvatarMenuOpen, setIsAvatarMenuOpen] = useState(false);
-  const avatarUrl = useSelector((state: RootState) => state.avatar.url);
-  const dispatch = useDispatch();
-  const router = useRouter();
+	const supabase = createClient();
+	const { isOpen, onToggle, onClose } = useDisclosure();
+	const { colorMode, toggleColorMode } = useColorMode();
+	const [user, setUser] = useState<User | null>(null);
+	const [isMainMenuOpen, setIsMainMenuOpen] = useState(false);
+	const [isAvatarMenuOpen, setIsAvatarMenuOpen] = useState(false);
+	const avatarUrl = useSelector((state: RootState) => state.avatar.url);
+	const dispatch = useDispatch();
+	const toast = useToast({
+		position: "top", // Positions the toast at the top-center of the viewport
+	});
+	const [loading, setLoading] = useState(false);
+	const router = useRouter();
 
-  const fetchUserProfile = useCallback(
-    async (userId: string) => {
-      try {
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("avatar_url")
-          .eq("id", userId)
-          .single();
-        if (error) {
-          throw error;
-        }
-        if (data && data.avatar_url) {
-          dispatch(setAvatarUrl(data.avatar_url));
-          console.log("Fetched avatar_url", data.avatar_url);
-        } else {
-          console.log("No avatar URL found");
-        }
-      } catch (error) {
-        console.error("Error fetching profile data:", error);
-      }
-    },
-    [supabase, dispatch]
-  );
+	const fetchUserProfile = useCallback(
+		async (userId: string) => {
+			try {
+				const { data, error } = await supabase.from("profiles").select("avatar_url").eq("id", userId).single();
+				if (error) {
+					throw error;
+				}
+				if (data && data.avatar_url) {
+					dispatch(setAvatarUrl(data.avatar_url));
+					console.log("Fetched avatar_url", data.avatar_url);
+				} else {
+					console.log("No avatar URL found");
+				}
+			} catch (error) {
+				console.error("Error fetching profile data:", error);
+			}
+		},
+		[supabase, dispatch]
+	);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      setUser(session?.user || null);
-      if (session?.user) {
-        fetchUserProfile(session.user.id);
-      }
-    };
+	useEffect(() => {
+		const fetchUser = async () => {
+			const {
+				data: { session },
+			} = await supabase.auth.getSession();
+			setUser(session?.user || null);
+			if (session?.user) {
+				fetchUserProfile(session.user.id);
+			}
+		};
 
-    fetchUser();
-  }, [supabase, fetchUserProfile]);
+		fetchUser();
+	}, [supabase, fetchUserProfile]);
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    router.push("/");
-  };
+	const handleSignOut = async () => {
+		setLoading(true);
+		try {
+			await supabase.auth.signOut();
+			setUser(null);
+			router.push("/");
+			toast({
+				title: "Signed out successfully",
+				description: "You have been signed out.",
+				status: "success",
+				duration: 5000,
+				isClosable: true,
+				position: "top", // Ensures this specific toast will appear at the top
+			});
+		} catch (error) {
+			toast({
+				title: "Sign out failed",
+				description: "Failed to sign out. Please try again.",
+				status: "error",
+				duration: 5000,
+				isClosable: true,
+				position: "top", // Ensures this specific toast will appear at the top
+			});
+			console.error("Sign out error:", error);
+		} finally {
+			setLoading(false);
+		}
+	};
 
-  const handleOpenMainMenu = () => {
-    setIsMainMenuOpen(true);
-    onToggle();
-  };
+	const handleOpenMainMenu = () => {
+		setIsMainMenuOpen(true);
+		onToggle();
+	};
 
-  const handleCloseMainMenu = () => {
-    setIsMainMenuOpen(false);
-    onToggle();
-  };
+	const handleCloseMainMenu = () => {
+		setIsMainMenuOpen(false);
+		onToggle();
+	};
 
-  const handleToggleAvatarMenu = () => {
-    setIsAvatarMenuOpen(!isAvatarMenuOpen);
-  };
+	const handleToggleAvatarMenu = () => {
+		setIsAvatarMenuOpen(!isAvatarMenuOpen);
+	};
 
-  const variants = {
-    open: { opacity: 1, x: 0 },
-    closed: { opacity: 0, x: "-100%" },
-  };
+	const variants = {
+		open: { opacity: 1, x: 0 },
+		closed: { opacity: 0, x: "-100%" },
+	};
 
-  const buttonStyle = {
-    width: "100%",
-    maxWidth: "310px",
-    fontWeight: "700",
-    fontFamily: "Bangers",
-    fontSize: "1.3rem",
-    letterSpacing: "0.2rem",
-    color: "white",
-    justifyContent: "center",
-    alignItems: "center",
-    display: "flex",
-    height: "2rem",
-    my: "0.5rem",
-    bg: "blue.500",
-    borderRadius: "md",
-    outline: "none",
-    _hover: {
-      bg: "blue.500",
-      color: "white",
-    },
-    _active: {
-      bg: "blue.700",
-      color: "white",
-    },
-    _focus: {
-      bg: "blue.600",
-      boxShadow: "outline",
-    },
-  };
+	const buttonStyle = {
+		width: "100%",
+		maxWidth: "310px",
+		fontWeight: "700",
+		fontFamily: "Bangers",
+		fontSize: "1.3rem",
+		letterSpacing: "0.2rem",
+		color: "white",
+		justifyContent: "center",
+		alignItems: "center",
+		display: "flex",
+		height: "2rem",
+		my: "0.5rem",
+		bg: "blue.500",
+		borderRadius: "md",
+		outline: "none",
+		_hover: {
+			bg: "blue.500",
+			color: "white",
+		},
+		_active: {
+			bg: "blue.700",
+			color: "white",
+		},
+		_focus: {
+			bg: "blue.600",
+			boxShadow: "outline",
+		},
+	};
 
-  const buttonAvatarStyle = {
-    width: "100%",
-    maxWidth: "310px",
-    fontWeight: "400",
-    fontFamily: "'Libre Franklin', sans-serif",
-    fontSize: "1rem",
-    color: "white",
-    justifyContent: "center",
-    alignItems: "center",
-    display: "flex",
-    height: "1.5rem",
-    my: "0.5rem",
-    bg: "blue.500",
-    borderRadius: "md",
-    outline: "none",
-    _hover: {
-      bg: "blue.500",
-      color: "white",
-    },
-    _active: {
-      bg: "blue.700",
-      color: "white",
-    },
-    _focus: {
-      bg: "blue.600",
-      boxShadow: "outline",
-    },
-  };
+	const buttonAvatarStyle = {
+		width: "100%",
+		maxWidth: "310px",
+		fontWeight: "400",
+		fontFamily: "'Libre Franklin', sans-serif",
+		fontSize: "1rem",
+		color: "white",
+		justifyContent: "center",
+		alignItems: "center",
+		display: "flex",
+		height: "1.5rem",
+		my: "0.5rem",
+		bg: "blue.500",
+		borderRadius: "md",
+		outline: "none",
+		_hover: {
+			bg: "blue.500",
+			color: "white",
+		},
+		_active: {
+			bg: "blue.700",
+			color: "white",
+		},
+		_focus: {
+			bg: "blue.600",
+			boxShadow: "outline",
+		},
+	};
 
-  const menuBgColor = useColorModeValue("white", "gray.800");
-  const menuColor = useColorModeValue("black", "white");
-  const menuItemHoverBg = useColorModeValue("gray.200", "gray.600");
-  const menuItemFocusBg = useColorModeValue("gray.300", "gray.700");
+	const menuBgColor = useColorModeValue("white", "gray.800");
+	const menuColor = useColorModeValue("black", "white");
+	const menuItemHoverBg = useColorModeValue("gray.200", "gray.600");
+	const menuItemFocusBg = useColorModeValue("gray.300", "gray.700");
 
-  const customMenuListStyle = {
-    borderColor: "gray.600",
-    borderWidth: "0.5px",
-    borderRadius: "md",
-    boxShadow: "lg",
-    minWidth: "5rem",
-    width: "310px",
-    bg: menuBgColor,
-    color: menuColor,
-    outline: "none",
-    margin: "1",
-    _hover: {
-      bg: menuItemHoverBg,
-    },
-    _focus: {
-      bg: menuItemFocusBg,
-      outline: "none",
-    },
-  };
+	const customMenuListStyle = {
+		borderColor: "gray.600",
+		borderWidth: "0.5px",
+		borderRadius: "md",
+		boxShadow: "lg",
+		minWidth: "5rem",
+		width: "310px",
+		bg: menuBgColor,
+		color: menuColor,
+		outline: "none",
+		margin: "1",
+		_hover: {
+			bg: menuItemHoverBg,
+		},
+		_focus: {
+			bg: menuItemFocusBg,
+			outline: "none",
+		},
+	};
 
-  const avatarMenuListStyle = {
-    ...customMenuListStyle,
-    width: "6rem",
-  };
+	const avatarMenuListStyle = {
+		...customMenuListStyle,
+		width: "6rem",
+	};
 
-  const marvelButtonStyle = {
-    ...buttonStyle,
-    fontFamily: "'Libre Franklin', sans-serif",
-    fontWeight: "900",
-    textTransform: "uppercase",
-    bg: "red.500",
-    color: "white",
-    padding: "1rem",
-    letterSpacing: "-0.15rem",
-  };
+	const marvelButtonStyle = {
+		...buttonStyle,
+		fontFamily: "'Libre Franklin', sans-serif",
+		fontWeight: "900",
+		textTransform: "uppercase",
+		bg: "red.500",
+		color: "white",
+		padding: "1rem",
+		letterSpacing: "-0.15rem",
+	};
 
-  const storeSubmenu: SubmenuType[] = [
-    { name: "Buy", href: "/comics-store/buy" },
-  ];
+	const storeSubmenu: SubmenuType[] = [{ name: "Buy", href: "/comics-store/buy" }];
 
-  if (user) {
-    storeSubmenu.push({ name: "Sell", href: "/comics-store/sell" });
-  }
+	if (user) {
+		storeSubmenu.push({ name: "Sell", href: "/comics-store/sell" });
+	}
 
-  const menuItems: MenuType[] = [
-    {
-      name: "Search",
-      submenu: [
-        {
-          name: "Comic Vine",
-          submenu: [
-            { name: "Issues", href: "/search/comic-vine/issues" },
-            { name: "Characters", href: "/search/comic-vine/characters" },
-            { name: "Publishers", href: "/search/comic-vine/publishers" },
-          ],
-        },
-        {
-          name: "Characters",
-          submenu: [
-            { name: "Superheros API", href: "/search/superheros/superhero-api" },
-            { name: "Superheros List", href: "/search/superheros/superheros-list" },
-          ],
-        },
-        {
-          name: "getcomics.org",
-          submenu: [{ name: "Get Some!", href: "/search/comicbooks-api" }],
-        },
-        {
-          name: "MARVEL",
-          submenu: [
-            { name: "Comics", href: "/search/marvel/marvel-comics" },
-            { name: "Characters", href: "/search/marvel/marvel-characters" },
-            { name: "Creators", href: "/search/marvel/marvel-creators" },
-            { name: "Events", href: "/search/marvel/marvel-events" },
-            { name: "Series", href: "/search/marvel/marvel-series" },
-            { name: "Stories", href: "/search/marvel/marvel-stories" },
-          ],
-        },
-      ],
-    },
-    {
-      name: "Store",
-      submenu: storeSubmenu,
-    },
-  ];
+	const menuItems: MenuType[] = [
+		{
+			name: "Search",
+			submenu: [
+				{
+					name: "Comic Vine",
+					submenu: [
+						{ name: "Issues", href: "/search/comic-vine/issues" },
+						{ name: "Characters", href: "/search/comic-vine/characters" },
+						{ name: "Publishers", href: "/search/comic-vine/publishers" },
+					],
+				},
+				{
+					name: "Characters",
+					submenu: [
+						{ name: "Superheros API", href: "/search/superheros/superhero-api" },
+						{ name: "Superheros List", href: "/search/superheros/superheros-list" },
+					],
+				},
+				{
+					name: "getcomics.org",
+					submenu: [{ name: "Get Some!", href: "/search/comicbooks-api" }],
+				},
+				{
+					name: "MARVEL",
+					submenu: [
+						{ name: "Comics", href: "/search/marvel/marvel-comics" },
+						{ name: "Characters", href: "/search/marvel/marvel-characters" },
+						{ name: "Creators", href: "/search/marvel/marvel-creators" },
+						{ name: "Events", href: "/search/marvel/marvel-events" },
+						{ name: "Series", href: "/search/marvel/marvel-series" },
+						{ name: "Stories", href: "/search/marvel/marvel-stories" },
+					],
+				},
+			],
+		},
+		{
+			name: "Store",
+			submenu: storeSubmenu,
+		},
+	];
 
-  const renderMenuItem = (item: MenuType | SubmenuType, index: number | string) => (
-    <Menu key={index}>
-      <MenuButton as={Button} {...(item.name === "MARVEL" ? marvelButtonStyle : buttonStyle)}>
-        {item.name}
-      </MenuButton>
-      <MenuList {...customMenuListStyle}>
-        {item.submenu?.map((subItem, subIndex) =>
-          subItem.submenu ? (
-            // For items with further nested submenus (recursive call for deeper levels)
-            renderMenuItem(subItem, `${index}-${subIndex}`)
-          ) : (
-            <Link key={subIndex} href={subItem.href} style={{ textDecoration: "none", width: "100%" }}>
-              <MenuItem {...buttonStyle}>{subItem.name}</MenuItem>
-            </Link>
-          )
-        )}
-      </MenuList>
-    </Menu>
-  );
+	const renderMenuItem = (item: MenuType | SubmenuType, index: number | string) => (
+		<Menu key={index}>
+			<MenuButton as={Button} {...(item.name === "MARVEL" ? marvelButtonStyle : buttonStyle)}>
+				{item.name}
+			</MenuButton>
+			<MenuList {...customMenuListStyle}>
+				{item.submenu?.map((subItem, subIndex) =>
+					subItem.submenu ? (
+						// For items with further nested submenus (recursive call for deeper levels)
+						renderMenuItem(subItem, `${index}-${subIndex}`)
+					) : (
+						<Link key={subIndex} href={subItem.href} style={{ textDecoration: "none", width: "100%" }}>
+							<MenuItem {...buttonStyle}>{subItem.name}</MenuItem>
+						</Link>
+					)
+				)}
+			</MenuList>
+		</Menu>
+	);
 
-  const renderAvatarItem = (name: string, href?: string, onClick?: () => void) => (
-    <Link href={href} onClick={onClick} style={{ textDecoration: "none", width: "100%" }}>
-      <MenuItem {...buttonAvatarStyle}>{name}</MenuItem>
-    </Link>
-  );
+	const renderAvatarItem = (name: string, href?: string, onClick?: () => void) => (
+		<Link href={href} onClick={onClick} style={{ textDecoration: "none", width: "100%" }}>
+			<MenuItem {...buttonAvatarStyle}>{name}</MenuItem>
+		</Link>
+	);
 
-  return (
-	<Box as="nav" position="fixed" top="0" width="100%" zIndex={10} bg="gray.800">
-	  <Flex
-		justify="space-between"
-		wrap="wrap"
-		padding="1.5rem"
-		color="white"
-		px={{ base: "1rem", md: "4rem", lg: "8rem" }}
-	  >
-		<Flex align="center" mr={5}>
-		  <Link href="/">
-			<RetroPopLogo />
-		  </Link>
-		</Flex>
-		<Flex align="center">
-		  {/* Theme Toggle Button */}
-		  <IconButton
-			aria-label="Toggle theme"
-			icon={colorMode === "dark" ? <SunIcon /> : <MoonIcon />}
-			onClick={toggleColorMode}
-			mr={4}
-		  />
+	return (
+		<Box as="nav" position="fixed" top="0" width="100%" zIndex={10} bg="gray.800">
+			<Flex
+				justify="space-between"
+				wrap="wrap"
+				padding="1.5rem"
+				color="white"
+				px={{ base: "1rem", md: "4rem", lg: "8rem" }}
+			>
+				<Flex align="center" mr={5}>
+					<Link href="/">
+						<RetroPopLogo />
+					</Link>
+				</Flex>
+				<Flex align="center">
+					{/* Theme Toggle Button */}
+					<IconButton
+						aria-label="Toggle theme"
+						icon={colorMode === "dark" ? <SunIcon /> : <MoonIcon />}
+						onClick={toggleColorMode}
+						mr={4}
+					/>
 
-		  {/* Hamburger Icon */}
-		  {!isMainMenuOpen && (
-			<IconButton
-			  onClick={handleOpenMainMenu}
-			  aria-label="Open menu"
-			  icon={<HamburgerIcon boxSize={10} />}
-			  display={{ base: "block" }}
-			  zIndex="tooltip"
-			  mr={4}
-			/>
-		  )}
+					{/* Hamburger Icon */}
+					{!isMainMenuOpen && (
+						<IconButton
+							onClick={handleOpenMainMenu}
+							aria-label="Open menu"
+							icon={<HamburgerIcon boxSize={10} />}
+							display={{ base: "block" }}
+							zIndex="tooltip"
+							mr={4}
+						/>
+					)}
 
-		  {user && (
-			<Flex align="center" ml={4}>
-			  <Menu
-				isOpen={isAvatarMenuOpen}
-				onOpen={handleToggleAvatarMenu}
-				onClose={handleToggleAvatarMenu}
-			  >
-				<MenuButton as={Box} position="relative" display="flex" alignItems="center">
-				  <AvatarNav uid={user.id} size={50} />
-				  <Box position="absolute" bottom="-15px" left="50%" transform="translateX(-50%)">
-					{isAvatarMenuOpen ? <ChevronDownIcon /> : <ChevronUpIcon />}
-				  </Box>
-				</MenuButton>
-				<MenuList {...avatarMenuListStyle}>
-				  {renderAvatarItem("profile", "/auth/account")}
-				  {renderAvatarItem("sign out", undefined, handleSignOut)}
-				</MenuList>
-			  </Menu>
+					{user && (
+						<Flex align="center" ml={4}>
+							<Menu
+								isOpen={isAvatarMenuOpen}
+								onOpen={handleToggleAvatarMenu}
+								onClose={handleToggleAvatarMenu}
+							>
+								<MenuButton as={Box} position="relative" display="flex" alignItems="center">
+									<AvatarNav uid={user.id} size={50} />
+									<Box position="absolute" bottom="-15px" left="50%" transform="translateX(-50%)">
+										{isAvatarMenuOpen ? <ChevronDownIcon /> : <ChevronUpIcon />}
+									</Box>
+								</MenuButton>
+								<MenuList {...avatarMenuListStyle}>
+									{renderAvatarItem("profile", "/auth/account")}
+									{renderAvatarItem("sign out", undefined, handleSignOut)}
+								</MenuList>
+							</Menu>
+						</Flex>
+					)}
+				</Flex>
+				{/* Motion div for the Hamburger Menu */}
+				<motion.div
+					variants={variants}
+					initial="closed"
+					animate={isOpen ? "open" : "closed"}
+					transition={{ duration: 0.2 }}
+					style={{
+						display: isOpen ? "block" : "none",
+						position: "fixed",
+						top: 0,
+						left: 0,
+						zIndex: 1000,
+						width: "100%",
+						height: "100%",
+						backgroundColor: "black",
+					}}
+				>
+					{isOpen && (
+						<IconButton
+							onClick={handleCloseMainMenu}
+							aria-label="Close menu"
+							icon={<CloseIcon boxSize={5} />}
+							position="absolute"
+							top="1rem"
+							right="1rem"
+							zIndex="tooltip"
+						/>
+					)}
+					<Stack spacing={4} align="center" justify="center" pt="5rem">
+						{menuItems.map((item, index) => (item.submenu ? renderMenuItem(item, index) : null))}
+						{!user && (
+							<>
+								<Button as={Link} href="/auth/login" {...buttonStyle}>
+									Login
+								</Button>
+								<Button as={Link} href="/auth/signup" {...buttonStyle}>
+									Sign Up
+								</Button>
+							</>
+						)}
+					</Stack>
+				</motion.div>
 			</Flex>
-		  )}
-		</Flex>
-		{/* Motion div for the Hamburger Menu */}
-		<motion.div
-		  variants={variants}
-		  initial="closed"
-		  animate={isOpen ? "open" : "closed"}
-		  transition={{ duration: 0.2 }}
-		  style={{
-			display: isOpen ? "block" : "none",
-			position: "fixed",
-			top: 0,
-			left: 0,
-			zIndex: 1000,
-			width: "100%",
-			height: "100%",
-			backgroundColor: "black",
-		  }}
-		>
-		  {isOpen && (
-			<IconButton
-			  onClick={handleCloseMainMenu}
-			  aria-label="Close menu"
-			  icon={<CloseIcon boxSize={5} />}
-			  position="absolute"
-			  top="1rem"
-			  right="1rem"
-			  zIndex="tooltip"
-			/>
-		  )}
-		  <Stack spacing={4} align="center" justify="center" pt="5rem">
-			{menuItems.map((item, index) =>
-			  item.submenu ? renderMenuItem(item, index) : null
-			)}
-			{!user && (
-			  <>
-				<Button as={Link} href="/auth/login" {...buttonStyle}>
-				  Login
-				</Button>
-				<Button as={Link} href="/auth/signup" {...buttonStyle}>
-				  Sign Up
-				</Button>
-			  </>
-			)}
-		  </Stack>
-		</motion.div>
-	  </Flex>
-	</Box>
-  );
+		</Box>
+	);
 };
 
 export default Navbar;
-
-
 
 // WITH CONTEXT!
 // 'use client';

@@ -11,8 +11,9 @@ import {
   Button,
   Text,
   Center,
-  useColorModeValue,
   Spinner,
+  useColorModeValue,
+  useToast,
 } from "@chakra-ui/react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
@@ -26,6 +27,7 @@ export default function Login() {
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const toast = useToast(); // Initialize the useToast hook
 
   const bgCenter = useColorModeValue("gray.50", "gray.800");
   const bgBox = useColorModeValue("white", "gray.700");
@@ -33,7 +35,6 @@ export default function Login() {
   useEffect(() => {
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-
       if (user) {
         setIsAuthenticated(true);
         router.push("/");
@@ -41,22 +42,21 @@ export default function Login() {
         setLoading(false);
       }
     };
-
     checkUser();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN") {
-        setIsAuthenticated(true);
-        router.refresh(); // Refresh the browser
-        // router.push("/");
-        // window.location.reload();
-      }
-    });
+	const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+		if (event === "SIGNED_IN") {
+		  setIsAuthenticated(true);
+		  router.refresh(); // Refresh the browser
+		  // router.push("/");
+		  // window.location.reload();
+		}
+	  });
 
-    // Cleanup subscription on unmount
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
+	  // Cleanup subscription on unmount
+	  return () => {
+		authListener.subscription.unsubscribe();
+	  };
   }, [router, supabase.auth]);
 
   const signIn = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -68,15 +68,28 @@ export default function Login() {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
+      toast({
+        title: "Authentication Failed",
+        description: error.message,
+        status: "error",
+        duration: 9000,
+        isClosable: true,
+        position: "top"
+      });
       router.push("/auth/login?message=Could not authenticate user");
     } else {
-		if (data.session) {
-			localStorage.setItem('supabase_token', data.session.access_token);
-		  }
       setIsAuthenticated(true);
       router.refresh(); // Refresh the browser
+      toast({
+        title: "Logged In Successfully",
+        description: "You have successfully logged in.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+        position: "top"
+      });
       router.push("/");
-      window.location.reload();
+	//   window.location.reload();
     }
   };
 
@@ -89,6 +102,7 @@ export default function Login() {
   }
 
   if (isAuthenticated) {
+	window.location.reload();
     return null; // Do not render anything if the user is authenticated
   }
 
@@ -136,4 +150,3 @@ export default function Login() {
     </Center>
   );
 }
-
