@@ -71,7 +71,7 @@ export default function ForgotPasswordForm() {
         <Button mt={6} colorScheme="blue" type="submit">Send</Button>
       </form>
       <Text pt={4} textAlign="center">
-        Not registered yet? <Link href="/signup" color="blue.500">Create an account</Link>
+        Not registered yet? <Link href="/auth/signup" color="blue.500">Create an account</Link>
       </Text>
     </Box>
   );

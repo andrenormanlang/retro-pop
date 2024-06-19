@@ -28,7 +28,7 @@ export default function AuthError() {
         <Text mb={4} color={textColor}>
           Your session has expired. Please sign up again to continue.
         </Text>
-        <Button colorScheme="teal" onClick={() => router.push("/signup")}>
+        <Button colorScheme="teal" onClick={() => router.push("/auth/signup")}>
           Sign Up
         </Button>
       </Box>

@@ -334,7 +334,7 @@ const Navbar = () => {
 				  </Box>
 				</MenuButton>
 				<MenuList {...avatarMenuListStyle}>
-				  {renderAvatarItem("profile", "/account")}
+				  {renderAvatarItem("profile", "/auth/account")}
 				  {renderAvatarItem("sign out", undefined, handleSignOut)}
 				</MenuList>
 			  </Menu>
@@ -375,10 +375,10 @@ const Navbar = () => {
 			)}
 			{!user && (
 			  <>
-				<Button as={Link} href="/login" {...buttonStyle}>
+				<Button as={Link} href="/auth/login" {...buttonStyle}>
 				  Login
 				</Button>
-				<Button as={Link} href="/signup" {...buttonStyle}>
+				<Button as={Link} href="/auth/signup" {...buttonStyle}>
 				  Sign Up
 				</Button>
 			  </>

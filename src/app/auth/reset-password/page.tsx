@@ -1,5 +1,5 @@
 import { Box } from "@chakra-ui/react";
-import { createServerClient} from "../../lib/supabase-server";
+import { createServerClient} from "../../../lib/supabase-server";
 import PasswordForm from "./password-form";
 
 export default async function UpdatePassword() {
