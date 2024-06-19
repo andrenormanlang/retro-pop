@@ -79,13 +79,18 @@ const Avatar: React.FC<AvatarProps> = ({ uid, url, size, onUpload }) => {
           height={size}
           src={avatarUrl}
           alt="Upload an Image"
-          style={{ height: size, width: size, borderRadius: '50%' }}
+		  style={{
+			borderRadius: '20%', // this will make it round
+			objectFit: 'cover', // prevents distortion
+			border: '2px solid white', // optional: adds a border around the image
+			boxSizing: 'border-box'
+		  }}
         />
       ) : (
         <Box
           height={size}
           width={size}
-          borderRadius="50%"
+          borderRadius="20%"
           bg="gray.200"
           display="flex"
           alignItems="center"

@@ -21,7 +21,7 @@ const validationSchema = z.object({
       return names.length >= 2 && names.every(n => n.length >= 2);
     }, { message: 'Full name must be at least two names with 2 characters each' }),
   username: z.string().min(1, { message: 'Username is required' }),
-  website: z.string().url({ message: 'Website is required' }),
+//   website: z.string().url({ message: 'Website is required' }),
   avatarUrl: z.string().url({ message: '' }).optional(),
 });
 
@@ -39,7 +39,7 @@ export default function AccountForm({ user }: { user: User | null }) {
     defaultValues: {
       fullname: '',
       username: '',
-      website: '',
+    //   website: '',
       avatarUrl: '',
     }
   });
@@ -62,7 +62,7 @@ export default function AccountForm({ user }: { user: User | null }) {
       if (data) {
         setValue("fullname", data.full_name || '');
         setValue("username", data.username || '');
-        setValue("website", data.website || '');
+        // setValue("website", data.website || '');
         setValue("avatarUrl", data.avatar_url || '');
         dispatch(setAvatarUrl(data.avatar_url));
       }
@@ -79,7 +79,8 @@ export default function AccountForm({ user }: { user: User | null }) {
     }
   }, [user, getProfile]);
 
-  const updateProfile: SubmitHandler<FormData> = async ({ fullname, username, website, avatarUrl }) => {
+//   const updateProfile: SubmitHandler<FormData> = async ({ fullname, username, website, avatarUrl }) => {
+  const updateProfile: SubmitHandler<FormData> = async ({ fullname, username, avatarUrl }) => {
     try {
       setLoading(true);
       setError(null);
@@ -88,7 +89,7 @@ export default function AccountForm({ user }: { user: User | null }) {
         id: user?.id as string,
         full_name: fullname,
         username,
-        website,
+        // website,
         avatar_url: avatarUrl,
         updated_at: new Date().toISOString(),
       });
@@ -161,7 +162,7 @@ export default function AccountForm({ user }: { user: User | null }) {
               <Input
                 type="url"
               />
-              {errors.website && <Text color="red.500">{errors.website.message}</Text>}
+              {/* {errors.website && <Text color="red.500">{errors.website.message}</Text>} */}
             </FormControl>
             {errors.avatarUrl && <Text color="red.500">{errors.avatarUrl.message}</Text>}
             <Button

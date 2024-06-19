@@ -47,7 +47,7 @@ export default function AvatarNav({
           height={size}
           src={avatarUrl}
           alt="X"
-          style={{ height: size, width: size, borderRadius: '100%' }}
+          style={{ height: size, width: size, objectFit: 'cover', borderRadius: '40%' }}
         />
       ) : (
         <Box
