@@ -21,6 +21,7 @@ import {
   Text,
   Select,
   useToast,
+  Textarea,
 } from "@chakra-ui/react";
 import ImageUpload from "./image-upload";
 import { v4 as uuidv4 } from "uuid";
