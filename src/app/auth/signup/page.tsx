@@ -124,7 +124,7 @@ export default function Signup() {
   }
 
   if (isAuthenticated) {
-    return null; // Do not render anything if the user is authenticated
+    return router.push(`/auth/login`);
   }
 
   return (
