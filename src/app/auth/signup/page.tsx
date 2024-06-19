@@ -160,7 +160,7 @@ export default function Signup() {
             </Text>
           )}
         </form>
-        <Link href="/login" passHref>
+        <Link href="/auth/login" passHref>
           <Button type="button" variant="link" colorScheme="teal" width="full">
             Already have an account? Sign In
           </Button>

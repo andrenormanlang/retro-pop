@@ -68,7 +68,7 @@ export default function Login() {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
-      router.push("/login?message=Could not authenticate user");
+      router.push("/auth/login?message=Could not authenticate user");
     } else {
 		if (data.session) {
 			localStorage.setItem('supabase_token', data.session.access_token);
@@ -122,12 +122,12 @@ export default function Login() {
             </Text>
           )}
         </form>
-        <Link href="/forgot-password" passHref>
+        <Link href="/auth/forgot-password" passHref>
           <Button variant="link" colorScheme="teal" width="full" mb={2}>
             Forgotten Password?
           </Button>
         </Link>
-        <Link href="/signup" passHref>
+        <Link href="/auth/signup" passHref>
           <Button variant="link" colorScheme="teal" width="full">
             Don’t have an Account? Sign Up
           </Button>
