@@ -25,7 +25,7 @@ import {
 } from "@chakra-ui/react";
 import ImageUpload from "./image-upload";
 import { v4 as uuidv4 } from "uuid";
-import { User } from "@supabase/supabase-js";
+import { useUser } from "../../../contexts/UserContext";
 
 // Define validation schema
 const validationSchema = z.object({
@@ -49,7 +49,7 @@ export default function ComicForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [imageURL, setImageURL] = useState<string | null>(null);
-  const [user, setUser] = useState<User | null>(null);
+  const { user, setUser } = useUser();
   const toast = useToast();
   const router = useRouter();
 
@@ -75,66 +75,66 @@ export default function ComicForm() {
     },
   });
 
-  useEffect(() => {
-    // Fetch the current user
-    const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-
-      // Redirect to login page if the user is not authenticated
-      if (!user) {
-        router.push("/login");
-      }
-    };
-
-    fetchUser();
-  }, [router, supabase]);
-
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     if (!user) {
       setError("User not authenticated");
       return;
     }
 
-    if (!imageURL) {
-      setError("Image is required");
-      return;
-    }
-
     try {
+      // Fetch the user profile to check if the user is an admin
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("is_admin")
+        .eq("id", user.id)
+        .single();
+
+      if (profileError) throw profileError;
+
+      const approvedStatus = profile.is_admin; // Directly use the is_admin flag from user profile
+
       setLoading(true);
-      setError(null);
-
-      const id = uuidv4();
-
+      const comicId = uuidv4();
+      console.log("Submitting data:", {
+        id: comicId,
+        ...data,
+        image: imageURL,
+        user_id: user.id,
+        is_approved: approvedStatus,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
       const { error } = await supabase.from("comics-sell").insert([
         {
-          id,
+          id: comicId,
           ...data,
           image: imageURL,
+          user_id: user.id,
+          is_approved: approvedStatus,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-          user_id: user.id, // Include the user ID here
         },
       ]);
 
       if (error) throw error;
 
       toast({
-        title: "Comic book posted for sale!",
-        description: "Your comic book has been successfully posted for sale.",
+        title: approvedStatus ? "Comic book posted!" : "Comic book submitted for review!",
+        description: approvedStatus ? "Your comic book is now live." : "Your comic book is pending admin approval.",
         status: "success",
         duration: 5000,
         isClosable: true,
+		position: "top"
       });
-      reset();
-      setImageURL(null); // Reset image URL after successful submission
+      reset(); // Reset the form fields
     } catch (error) {
-      setError("Error posting comic book!");
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+      setError("Error submitting comic book: " + errorMessage);
     } finally {
       setLoading(false);
     }
   };
+
 
   const publishers = [
     "Marvel Comics",
@@ -262,16 +262,16 @@ export default function ComicForm() {
               <Input type="text" {...register("main_writer")} />
               {errors.main_writer && <Text color="red.500">{errors.main_writer.message}</Text>}
             </FormControl>
-                                                    <FormControl isInvalid={!!errors.description}>
-                                                <FormLabel>Description</FormLabel>
-                                                <Textarea
-                                                        {...register("description")}
-                                                        placeholder="Enter comic description"
-                                                        size="sm"
-                                                        rows={5} // Default number of rows, it will expand automatically with input
-                                                />
-                                                {errors.description && <Text color="red.500">{errors.description.message}</Text>}
-                                        </FormControl>
+            <FormControl isInvalid={!!errors.description}>
+              <FormLabel>Description</FormLabel>
+              <Textarea
+                {...register("description")}
+                placeholder="Enter comic description"
+                size="sm"
+                rows={5} // Default number of rows, it will expand automatically with input
+              />
+              {errors.description && <Text color="red.500">{errors.description.message}</Text>}
+            </FormControl>
             <Button colorScheme="teal" width="300px" type="submit" isDisabled={loading}>
               {loading ? "Loading ..." : "Post Comic"}
             </Button>

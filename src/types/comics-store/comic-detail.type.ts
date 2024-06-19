@@ -3,6 +3,7 @@
 export type Comic = {
 	id: string;
 	user_id: string;
+	is_approved: boolean;
 	created_at: string;
 	image: string;
 	title: string;

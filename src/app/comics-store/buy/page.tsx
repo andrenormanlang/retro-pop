@@ -23,6 +23,7 @@ import {
 	AlertDialogContent,
 	AlertDialogOverlay,
 	Badge,
+	Switch,
 } from "@chakra-ui/react";
 import { useComicBuy } from "@/hooks/comics-sale/useComicBuy";
 import { motion } from "framer-motion";
@@ -49,7 +50,7 @@ const ComicsBuy: NextPage = () => {
 	const [selectedComic, setSelectedComic] = useState<Comic | null>(null);
 	const [isOpen, setIsOpen] = useState(false);
 	const cancelRef = useRef(null);
-	const user = useUser();
+	const { user } = useUser();
 	const router = useRouter();
 
 	const onClose = () => setIsOpen(false);
@@ -110,6 +111,40 @@ const ComicsBuy: NextPage = () => {
 		setIsOpen(true);
 	};
 
+	const toggleApproval = async (comic: Comic) => {
+		try {
+			const { error } = await supabase
+				.from("comics-sell")
+				.update({ is_approved: !comic.is_approved })
+				.eq("id", comic.id);
+
+			if (error) throw error;
+
+			const updatedData = data
+				? data.map((item) => (item.id === comic.id ? { ...item, is_approved: !comic.is_approved } : item))
+				: [];
+			setData(updatedData);
+
+			toast({
+				title: comic.is_approved ? "Comic disapproved." : "Comic approved.",
+				description: comic.is_approved
+					? "The comic has been set to not approved."
+					: "The comic has been approved.",
+				status: "success",
+				duration: 5000,
+				isClosable: true,
+			});
+		} catch (error) {
+			toast({
+				title: "Error updating comic.",
+				description: "There was an error updating the comic.",
+				status: "error",
+				duration: 5000,
+				isClosable: true,
+			});
+		}
+	};
+
 	if (loading) {
 		return (
 			<Center h="100vh">
@@ -137,88 +172,127 @@ const ComicsBuy: NextPage = () => {
 				Buy Comic Books
 			</Heading>
 			<SimpleGrid columns={{ base: 1, md: 3 }} spacing={10} width="100%">
-				{data?.map((comic: Comic) => (
-					<Box
-						key={comic.id}
-						as={motion.div}
-						whileHover={{ scale: 1.05 }}
-						boxShadow="0 4px 8px rgba(0,0,0,0.1)"
-						rounded="md"
-						overflow="hidden"
-						p={4}
-						display="flex"
-						flexDirection="column"
-						alignItems="center"
-						justifyContent="space-between"
-						minH="400px"
-						position="relative"
-						cursor="pointer"
-						onClick={() => router.push(`/comics-store/buy/${comic.id}`)}
-					>
-						<Image
-							src={comic.image || defaultImageUrl}
-							alt={comic.title}
-							maxW="500px"
-							maxH="500px"
-							objectFit="contain"
-							onError={(e) => {
-								e.currentTarget.src = defaultImageUrl;
-							}}
-						/>
+				{data
+					?.filter((comic: Comic) => isAdmin || comic.is_approved)
+					.map((comic: Comic) => (
 						<Box
-							position="absolute"
-							bottom="0"
-							left="0"
-							width="100%"
-							p={3}
-							bgColor="black"
-							color="white"
+							key={comic.id}
+							as={motion.div}
+							whileHover={{ scale: 1.05 }}
+							boxShadow="0 4px 8px rgba(0,0,0,0.1)"
+							rounded="md"
+							overflow="hidden"
+							p={4}
+							display="flex"
+							flexDirection="column"
+							alignItems="center"
+							justifyContent="space-between"
+							minH="400px"
+							position="relative"
+							cursor="pointer"
+							onClick={() => router.push(`/comics-store/buy/${comic.id}`)}
 						>
-							<Text fontWeight="bold" fontSize="lg" noOfLines={1} textAlign="center">
-								{comic.title}
-							</Text>
-							<Badge m={1} colorScheme="green">
-								Release Date: {formatDate(comic.release_date)}
-							</Badge>
-							<Badge m={1} colorScheme="purple">
-								Publisher: {comic.publisher}
-							</Badge>
-							<Badge m={1} colorScheme="red">
-								Price: {comic.price} {comic.currency}
-							</Badge>
-							<Badge m={1} colorScheme="blue">
-								Genre: {comic.genre}
-							</Badge>
-						</Box>
-						{isAdmin && (
-							<Box position="absolute" top={2} right={2} display="flex" gap={1}>
-								<NextLink href={`/comics-store/edit/${comic.id}`} passHref>
-									<IconButton
-										aria-label="Edit Comic"
-										icon={<EditIcon />}
-										fontWeight={"900"}
-										color={"white"}
-										backgroundColor={"blue.500"}
-										size="sm"
-										onClick={(e) => e.stopPropagation()}
-									/>
-								</NextLink>
-								<IconButton
-									aria-label="Delete Comic"
-									icon={<DeleteIcon />}
-									fontWeight={"900"}
-									color={"white"}
-									backgroundColor={"red.500"}
-									size="sm"
-									onClick={(e) => {
-										e.stopPropagation();
-										openDeleteDialog(comic);
+							<Box position="relative" width="100%" height="0" paddingBottom="100%">
+								<Image
+									src={comic.image || defaultImageUrl}
+									alt={comic.title}
+									maxW="500px"
+									maxH="500px"
+									objectFit="contain"
+									onError={(e) => {
+										e.currentTarget.src = defaultImageUrl;
 									}}
 								/>
+								{!comic.is_approved && (
+									<Box
+										position="absolute"
+										top="0"
+										left="0"
+										width="100%"
+										height="100%"
+										display="flex"
+										alignItems="center"
+										justifyContent="center"
+										bgColor="rgba(0, 0, 0, 0.5)"
+										color="white"
+										fontSize="2xl"
+										fontWeight="bold"
+										textAlign="center"
+									>
+										Not Rendered
+									</Box>
+								)}
 							</Box>
-						)}
-					</Box>
-				))}
+							<Box
+								position="absolute"
+								bottom="0"
+								left="0"
+								width="100%"
+								p={3}
+								bgColor="black"
+								color="white"
+							>
+								<Text fontWeight="bold" fontSize="lg" noOfLines={1} textAlign="center">
+									{comic.title}
+								</Text>
+								<Badge m={1} colorScheme="green">
+									Release Date: {formatDate(comic.release_date)}
+								</Badge>
+								<Badge m={1} colorScheme="purple">
+									Publisher: {comic.publisher}
+								</Badge>
+								<Badge m={1} colorScheme="red">
+									Price: {comic.price} {comic.currency}
+								</Badge>
+								<Badge m={1} colorScheme="blue">
+									Genre: {comic.genre}
+								</Badge>
+								{/* {!comic.is_approved && isAdmin && (
+									<Badge m={1} colorScheme="yellow" fontSize="1.2em">
+										Not Rendered
+									</Badge>
+								)} */}
+							</Box>
+							{/* {isAdmin && (
+								<Box position="absolute" top={2} left={2} display="flex" flexDirection="column" gap={1}>
+									<Switch
+										size="lg"
+										colorScheme="teal"
+										isChecked={comic.is_approved}
+										onChange={() => toggleApproval(comic)}
+									/>
+									<Text>{comic.is_approved ? "Approved" : "Not Approved"}</Text>
+								</Box>
+							)} */}
+							{isAdmin && (
+								<Box position="absolute" top={2} right={2} display="flex" gap={1}>
+									<NextLink href={`/comics-store/edit/${comic.id}`} passHref>
+										<IconButton
+											aria-label="Edit Comic"
+											icon={<EditIcon />}
+											fontWeight={"900"}
+											color={"white"}
+											backgroundColor={"blue.500"}
+											size="sm"
+											onClick={(e) => e.stopPropagation()}
+										/>
+									</NextLink>
+									<IconButton
+										aria-label="Delete Comic"
+										icon={<DeleteIcon />}
+										fontWeight={"900"}
+										color={"white"}
+										backgroundColor={"red.500"}
+										size="sm"
+										onClick={(e) => {
+											e.stopPropagation();
+											openDeleteDialog(comic);
+										}}
+									/>
+								</Box>
+							)}
+						</Box>
+					))}
 			</SimpleGrid>
 
 			<AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={onClose}>
