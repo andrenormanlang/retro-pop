@@ -1,42 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-// Initialize Supabase client with the service role key
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-  process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY as string
-);
+import { supabase } from '@/utils/supabase/client'; // Adjust path based on your project structure
 
 export async function GET(request: NextRequest) {
+  const urlParams = new URL(request.url).searchParams;
+  const page = parseInt(urlParams.get('page') || '1', 10);
+  const limit = parseInt(urlParams.get('limit') || '15', 10);
+
+  const offset = (page - 1) * limit;
+
   try {
-    // Fetch user profiles
-    const { data: profileData, error: profileError } = await supabaseAdmin
-      .from('profiles')
-      .select('id, username, full_name, avatar_url');
+    const { data, error } = await supabase
+      .from('comics-sell')
+      .select('*')
+      .range(offset, offset + limit - 1);
 
-    if (profileError) {
-      console.error('Supabase profile query error:', profileError);
-      throw new Error(`Supabase query failed: ${profileError.message}`);
+    if (error) {
+      throw new Error(`Supabase query failed: ${error.message}`);
     }
 
-    // Fetch user emails from the authentication service
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.listUsers();
-
-    if (authError) {
-      console.error('Supabase auth query error:', authError);
-      throw new Error(`Supabase auth query failed: ${authError.message}`);
-    }
-
-    // Merge the data based on user ID
-    const mergedData = profileData.map((profile) => {
-      const authUser = authData.users.find((user) => user.id === profile.id);
-      return {
-        ...profile,
-        email: authUser ? authUser.email : null,
-      };
-    });
-
-    return new NextResponse(JSON.stringify({ users: mergedData }), {
+    return new NextResponse(JSON.stringify(data), {
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
@@ -44,7 +26,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'An unknown error occurred';
-    console.error('API route error:', message);
     return new NextResponse(JSON.stringify({ error: message }), {
       status: 500,
       headers: {
