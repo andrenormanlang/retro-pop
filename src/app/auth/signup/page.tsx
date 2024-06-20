@@ -174,6 +174,3 @@ export default function Signup() {
     </Center>
   );
 }
-    </Center>
-  );
-}
