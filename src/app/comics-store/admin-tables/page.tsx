@@ -14,7 +14,7 @@ const AdminPage = () => {
   const [error, setError] = useState<string | null>(null);
 
   type SupabaseError = {
-	message: string;
+    message: string;
   };
 
   useEffect(() => {
@@ -33,7 +33,7 @@ const AdminPage = () => {
             setIsAdmin(true);
           }
         } catch (error) {
-			setError((error as SupabaseError).message);
+          setError((error as SupabaseError).message);
         } finally {
           setLoading(false);
         }

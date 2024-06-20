@@ -7,6 +7,7 @@ async function fetchUsers() {
     throw new Error(`API call failed with status: ${response.status}`);
   }
   const data = await response.json();
+  console.log( data.users );
   return data.users; // Return the users array directly
 }
 

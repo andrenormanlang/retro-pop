@@ -34,6 +34,8 @@ export async function GET(request: NextRequest) {
       return {
         ...profile,
         email: authUser ? authUser.email : null,
+		created: authUser ? authUser.created_at : null,
+		last_sign_in: authUser ? authUser.last_sign_in_at : null,
       };
     });
 
