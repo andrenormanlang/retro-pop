@@ -98,7 +98,7 @@ export default function Signup() {
 			email,
 			password,
 			options: {
-				emailRedirectTo: `${window.location.origin}/auth/callback?redirect_to=${window.location.origin}/auth/account`,
+				emailRedirectTo: `${window.location.origin}/auth/account`,
 			},
 		});
 
