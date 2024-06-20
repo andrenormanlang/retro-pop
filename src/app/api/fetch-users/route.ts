@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase client with the service role key
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-  process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY as string
-);
+// Hard-code the Supabase URL and Service Role Key for testing
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL as string
+const SUPABASE_SERVICE_ROLE_KEY =    process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY as string
+
+// Initialize Supabase client with the hard-coded service role key
+const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 export async function GET(request: NextRequest) {
   try {

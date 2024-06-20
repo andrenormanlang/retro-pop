@@ -19,5 +19,6 @@ export type Comic = {
 	currency: string;
 	profiles: {
 		username: string;
+		email: string;
 	};
   }

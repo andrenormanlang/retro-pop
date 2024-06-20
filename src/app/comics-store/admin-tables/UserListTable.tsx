@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import {
   Table,
   Thead,
@@ -17,55 +16,16 @@ import {
   Alert,
   AlertIcon,
 } from "@chakra-ui/react";
-import { createClient } from "@/utils/supabase/client";
-import { type User } from "@supabase/supabase-js";
+import { useGetUsers } from "@/hooks/fetch-users/useGetUsers";
+import { User } from "@/types/comics-store/user";
 
 const UserListTable = () => {
-  const supabase = createClient();
-  const [users, setUsers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, isLoading, isError, error } = useGetUsers();
 
-  type SupabaseError = {
-    message: string;
-  };
+  // Log the data to check its structure
+  console.log('Fetched users data:', data);
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        // Fetch user profiles
-        const { data: profileData, error: profileError } = await supabase
-          .from("profiles")
-          .select("id, username, full_name, avatar_url");
-
-        if (profileError) throw profileError;
-
-        // Fetch user emails from the authentication service
-        const { data: authData, error: authError } = await supabase.auth.admin.listUsers();
-
-        if (authError) throw authError;
-
-        // Merge the data based on user ID
-        const mergedData = profileData.map((profile: any) => {
-          const authUser = authData.users.find((user: User) => user.id === profile.id);
-          return {
-            ...profile,
-            email: authUser ? authUser.email : null,
-          };
-        });
-
-        setUsers(mergedData);
-      } catch (error) {
-        setError((error as SupabaseError).message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUsers();
-  }, []);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <Center h="100vh">
         <Spinner size="xl" />
@@ -73,12 +33,24 @@ const UserListTable = () => {
     );
   }
 
-  if (error) {
+  if (isError) {
     return (
       <Center h="100vh">
         <Alert status="error">
           <AlertIcon />
-          {error}
+          {error.message}
+        </Alert>
+      </Center>
+    );
+  }
+
+  // Check if data is an array before mapping
+  if (!Array.isArray(data)) {
+    return (
+      <Center h="100vh">
+        <Alert status="error">
+          <AlertIcon />
+          Unexpected data format
         </Alert>
       </Center>
     );
@@ -100,7 +72,7 @@ const UserListTable = () => {
             </Tr>
           </Thead>
           <Tbody>
-            {users.map((user) => (
+            {data.map((user: User) => (
               <Tr key={user.id}>
                 <Td>
                   <Avatar src={user.avatar_url} name={user.username} />

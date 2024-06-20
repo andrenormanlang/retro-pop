@@ -1,7 +1,9 @@
+// src/app/api/comics-sell/route.ts
+
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase client with the service role key
+// Initialize Supabase client
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL as string,
   process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY as string
@@ -9,14 +11,17 @@ const supabaseAdmin = createClient(
 
 export async function GET(request: NextRequest) {
   try {
-    // Fetch user profiles
-    const { data: profileData, error: profileError } = await supabaseAdmin
-      .from('profiles')
-      .select('id, username, full_name, avatar_url');
+    // Fetch comics with user profiles
+    const { data: comicsData, error: comicsError } = await supabaseAdmin
+      .from('comics-sell')
+      .select(`
+        *,
+        profiles:profiles (id, username)
+      `);
 
-    if (profileError) {
-      console.error('Supabase profile query error:', profileError);
-      throw new Error(`Supabase query failed: ${profileError.message}`);
+    if (comicsError) {
+      console.error('Supabase comics query error:', comicsError);
+      throw new Error(`Supabase query failed: ${comicsError.message}`);
     }
 
     // Fetch user emails from the authentication service
@@ -28,15 +33,19 @@ export async function GET(request: NextRequest) {
     }
 
     // Merge the data based on user ID
-    const mergedData = profileData.map((profile) => {
+    const mergedData = comicsData.map((comic) => {
+      const profile = comic.profiles;
       const authUser = authData.users.find((user) => user.id === profile.id);
       return {
-        ...profile,
-        email: authUser ? authUser.email : null,
+        ...comic,
+        profiles: {
+          ...profile,
+          email: authUser ? authUser.email : null,
+        },
       };
     });
 
-    return new NextResponse(JSON.stringify({ users: mergedData }), {
+    return new NextResponse(JSON.stringify(mergedData), {
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
@@ -54,3 +63,4 @@ export async function GET(request: NextRequest) {
     });
   }
 }
+
