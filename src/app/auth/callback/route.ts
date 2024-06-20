@@ -15,6 +15,8 @@ export async function GET(request: Request) {
   }
 
   // URL to redirect to after sign in process completes
+//   Based on sign up process, redirect to account page
+
   return NextResponse.redirect(`${requestUrl.origin}/auth/account`);
 }
 
