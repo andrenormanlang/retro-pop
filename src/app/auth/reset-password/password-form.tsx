@@ -5,8 +5,14 @@ import { useState, FormEvent } from "react";
 import { z, ZodError } from "zod";
 import { User, createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
+
+const passwordValidation = new RegExp(
+	/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[#?!@$%^&*-]).{8,}$/
+  );
 // Define a Zod schema for password validation directly
-const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
+const passwordSchema = z.string()
+.min(6, { message: 'Must have at least 6 characters long' })
+.regex(passwordValidation, { message: 'Your password must have at least one uppercase and one special character' })
 
 const UpdatePasswordSchema = z.object({
   password: passwordSchema,

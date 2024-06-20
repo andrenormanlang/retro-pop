@@ -5,6 +5,7 @@ export type Comic = {
 	user_id: string;
 	is_approved: boolean;
 	created_at: string;
+	updated_at: string;
 	image: string;
 	title: string;
 	genre: string;
@@ -16,4 +17,7 @@ export type Comic = {
 	description: string;
 	price: number;
 	currency: string;
+	profiles: {
+		username: string;
+	};
   }
