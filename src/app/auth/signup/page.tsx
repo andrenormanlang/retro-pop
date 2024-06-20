@@ -65,30 +65,30 @@ export default function Signup() {
   const bgBox = useColorModeValue("white", "gray.700");
 
   useEffect(() => {
-	const checkUser = async () => {
-	  const { data: { user } } = await supabase.auth.getUser();
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
 
-	  if (user) {
-		setIsAuthenticated(true);
-		router.push("/auth/account");
-	  } else {
-		setLoading(false);
-	  }
-	};
+      if (user) {
+        setIsAuthenticated(true);
+        router.push("/");
+      } else {
+        setLoading(false);
+      }
+    };
 
-	checkUser();
+    checkUser();
 
-	const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-	  if (event === "SIGNED_IN") {
-		setIsAuthenticated(true);
-		router.push("/auth/account");
-	  }
-	});
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN") {
+        setIsAuthenticated(true);
+        router.push("/");
+      }
+    });
 
-	// Cleanup subscription on unmount
-	return () => {
-	  authListener.subscription.unsubscribe();
-	};
+    // Cleanup subscription on unmount
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
   }, [router, supabase.auth]);
 
   const signUp: SubmitHandler<SchemaProps> = async (data) => {
@@ -174,3 +174,4 @@ export default function Signup() {
     </Center>
   );
 }
+
