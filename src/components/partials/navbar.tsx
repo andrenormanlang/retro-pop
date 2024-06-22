@@ -86,13 +86,19 @@ const Navbar = () => {
         fetchUser();
     }, [supabase, fetchUserProfile, dispatch]);
 
+    useEffect(() => {
+        if (!user) {
+            setIsAdmin(false);
+        }
+    }, [user]);
+
     const handleSignOut = async () => {
         setLoading(true);
         try {
             await supabase.auth.signOut();
-			router.refresh();
             setUser(null);
             router.push("/");
+            router.refresh();
             toast({
                 title: "Signed out successfully",
                 description: "You have been signed out.",

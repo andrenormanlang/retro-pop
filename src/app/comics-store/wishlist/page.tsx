@@ -124,7 +124,7 @@ const Wishlist: NextPage = () => {
     return (
         <Container maxW="container.xl" centerContent p={4}>
             <Flex width="100%" mb={4} alignItems="center" justifyContent="space-between">
-                <Button leftIcon={<ArrowBackIcon />} colorScheme="teal" variant="outline" onClick={() => router.back()} alignSelf="flex-start">
+                <Button leftIcon={<ArrowBackIcon />} colorScheme="teal" variant="outline"  onClick={() => router.push('/comics-store/buy')}  alignSelf="flex-start">
                     Back to Grid
                 </Button>
                 <Heading as="h1" size="xl" textAlign="center" flex="4">
