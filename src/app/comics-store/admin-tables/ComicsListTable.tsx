@@ -130,10 +130,11 @@ const ComicsListTable = () => {
   }
 
   const formatDate = (dateString: string) => {
-    const options = { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" } as const;
-    return new Date(dateString).toLocaleDateString("en-GB", options) + ' ' + new Date(dateString).toLocaleTimeString("en-GB", options);
+    const dateOptions = { day: "2-digit", month: "2-digit", year: "2-digit" } as const;
+    const timeOptions = { hour: "2-digit", minute: "2-digit" } as const;
+    const date = new Date(dateString);
+    return `${date.toLocaleDateString("en-GB", dateOptions)} ${date.toLocaleTimeString("en-GB", timeOptions)}`;
   };
-
   return (
     <Box maxW="1300px" mx="auto" p={4}>
       <Accordion allowToggle>

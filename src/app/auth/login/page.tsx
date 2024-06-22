@@ -178,21 +178,50 @@ export default function LoginPage() {
 	const router = useRouter();
 	const [user, setUser] = useState<User | null>(null); // Use User | null type
 	const [loading, setLoading] = useState(true);
+	  const [isAuthenticated, setIsAuthenticated] = useState(false);
 	const toast = useToast();
 
 	const supabase = createClient();
 
 	useEffect(() => {
-		async function getUser() {
-			const {
-				data: { user },
-			} = await supabase.auth.getUser();
-			setUser(user);
+		const checkUser = async () => {
+		  const { data: { user } } = await supabase.auth.getUser();
+		  if (user) {
+			setIsAuthenticated(true);
+			router.push("/");
+		  } else {
 			setLoading(false);
-		}
+		  }
+		};
+		checkUser();
 
-		getUser();
-	}, []);
+		const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+			if (event === "SIGNED_IN") {
+			  setIsAuthenticated(true);
+			  router.refresh(); // Refresh the browser
+			  // router.push("/");
+			  // window.location.reload();
+			}
+		  });
+
+		  // Cleanup subscription on unmount
+		  return () => {
+			authListener.subscription.unsubscribe();
+		  };
+	  }, [router, supabase.auth]);
+
+
+	// useEffect(() => {
+	// 	async function getUser() {
+	// 		const {
+	// 			data: { user },
+	// 		} = await supabase.auth.getUser();
+	// 		setUser(user);
+	// 		setLoading(false);
+	// 	}
+
+	// 	getUser();
+	// }, []);
 
 	const handleSignUp = async () => {
 		const res = await supabase.auth.signUp({

@@ -90,6 +90,7 @@ const Navbar = () => {
         setLoading(true);
         try {
             await supabase.auth.signOut();
+			router.refresh();
             setUser(null);
             router.push("/");
             toast({
