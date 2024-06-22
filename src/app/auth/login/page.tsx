@@ -294,6 +294,11 @@ export default function LoginPage() {
 				<Button onClick={handleSignIn} colorScheme="teal" width="full">
 					Sign In
 				</Button>
+				<Link href="/auth/forgot-password" passHref>
+					<Button variant="link" colorScheme="teal" width="full" mt={4}>
+						Forgotten Password?
+					</Button>
+				</Link>
 				<Link href="/auth/signup" passHref>
 					<Button variant="link" colorScheme="teal" width="full" mt={4}>
 						Don’t have an Account? Sign Up
