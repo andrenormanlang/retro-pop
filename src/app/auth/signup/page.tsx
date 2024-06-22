@@ -133,9 +133,9 @@ export default function Signup() {
         p={8}
         maxWidth="400px"
         width="full"
-        boxShadow="md"
-        borderRadius="md"
-        bg={bgBox}
+        // boxShadow="md"
+        // borderRadius="md"
+        // bg={bgBox}
       >
         <Heading as="h1" size="lg" mb={6} textAlign="center">
           Sign Up
