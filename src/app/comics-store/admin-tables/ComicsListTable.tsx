@@ -130,9 +130,15 @@ const ComicsListTable = () => {
   }
 
   const formatDateRelease = (dateString: string) => {
-	const dateOptions: Intl.DateTimeFormatOptions = { day: "2-digit", month: "2-digit", year: "numeric" };
 	const date = new Date(dateString);
-	return `${date.toLocaleDateString("en-GB", dateOptions)}`;
+
+	const monthOptions: Intl.DateTimeFormatOptions = { month: "short" };
+	const yearOptions: Intl.DateTimeFormatOptions = { year: "numeric" };
+
+	const month = date.toLocaleDateString("en-GB", monthOptions);
+	const year = date.toLocaleDateString("en-GB", yearOptions);
+
+	return `${month} / ${year}`;
   };
 
   const formatDate = (dateString: string) => {
@@ -160,8 +166,8 @@ const ComicsListTable = () => {
                     <Th textAlign="center" onClick={() => requestSort("release_date")}>Release Date</Th>
                     <Th textAlign="center" onClick={() => requestSort("profiles.username")}>User</Th>
                     <Th textAlign="center" onClick={() => requestSort("profiles.email")}>Email</Th>
-                    <Th textAlign="center" onClick={() => requestSort("created_at")}>Date Added</Th>
-                    <Th textAlign="center" onClick={() => requestSort("updated_at")}>Date Updated</Th>
+                    <Th textAlign="center" onClick={() => requestSort("created_at")}>Date / Time Added</Th>
+                    <Th textAlign="center" onClick={() => requestSort("updated_at")}>Date / Time Updated</Th>
                     <Th textAlign="center">Approve</Th>
                   </Tr>
                 </Thead>
