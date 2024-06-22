@@ -129,6 +129,12 @@ const ComicsListTable = () => {
     );
   }
 
+  const formatDateRelease = (dateString: string) => {
+	const dateOptions: Intl.DateTimeFormatOptions = { day: "2-digit", month: "2-digit", year: "numeric" };
+	const date = new Date(dateString);
+	return `${date.toLocaleDateString("en-GB", dateOptions)}`;
+  };
+
   const formatDate = (dateString: string) => {
     const dateOptions = { day: "2-digit", month: "2-digit", year: "2-digit" } as const;
     const timeOptions = { hour: "2-digit", minute: "2-digit" } as const;
@@ -163,7 +169,7 @@ const ComicsListTable = () => {
                   {sortedComics.map((comic: Comic) => (
                     <Tr key={comic.id}>
                       <Td textAlign="initial">{comic.title}</Td>
-                      <Td textAlign="center">{formatDate(comic.release_date)}</Td>
+                      <Td textAlign="center">{formatDateRelease(comic.release_date)}</Td>
                       <Td textAlign="center">{comic.profiles?.username || "Unknown"}</Td>
                       <Td textAlign="center">{comic.profiles?.email || "Unknown"}</Td>
                       <Td textAlign="center">{formatDate(comic.created_at)}</Td>
