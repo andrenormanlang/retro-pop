@@ -12,7 +12,6 @@ import {
   Spinner,
   Alert,
   AlertIcon,
-  Heading,
   IconButton,
   useToast,
   Button,
@@ -159,70 +158,69 @@ const ComicsBuy: NextPage = () => {
   };
 
   const addToWishlist = async (comicId: string) => {
-	if (!user) {
-	  toast({
-		title: "Login required.",
-		description: "You need to be logged in to add comics to your wishlist.",
-		status: "warning",
-		duration: 5000,
-		isClosable: true,
-	  });
-	  return;
-	}
+    if (!user) {
+      toast({
+        title: "Login required.",
+        description: "You need to be logged in to add comics to your wishlist.",
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
 
-	const existingItem = wishlist.find((item) => item.comic.id === comicId);
+    const existingItem = wishlist.find((item) => item.comic.id === comicId);
 
-	if (existingItem) {
-	  if (existingItem.stock >= existingItem.comic.stock) {
-		toast({
-		  title: "Stock limit reached.",
-		  description: "You cannot add more of this comic to your wishlist.",
-		  status: "warning",
-		  duration: 5000,
-		  isClosable: true,
-		});
-		return;
-	  }
+    if (existingItem) {
+      if (existingItem.stock >= existingItem.comic.stock) {
+        toast({
+          title: "Stock limit reached.",
+          description: "You cannot add more of this comic to your wishlist.",
+          status: "warning",
+          duration: 5000,
+          isClosable: true,
+        });
+        return;
+      }
 
-	  handleStockChange(comicId, existingItem.stock + 1);
-	  return;
-	}
+      handleStockChange(comicId, existingItem.stock + 1);
+      return;
+    }
 
-	try {
-	  const { data: comicData, error: comicError } = await supabase
-		.from('comics-sell')
-		.select('stock')
-		.eq('id', comicId)
-		.single();
+    try {
+      const { data: comicData, error: comicError } = await supabase
+        .from('comics-sell')
+        .select('stock')
+        .eq('id', comicId)
+        .single();
 
-	  if (comicError || !comicData || comicData.stock < 1) {
-		throw new Error(comicError?.message || 'Comic not available');
-	  }
+      if (comicError || !comicData || comicData.stock < 1) {
+        throw new Error(comicError?.message || 'Comic not available');
+      }
 
-	  const { error } = await supabase.from("wishlists").insert([{ user_id: user.id, comic_id: comicId, stock: 1 }]);
+      const { error } = await supabase.from("wishlists").insert([{ user_id: user.id, comic_id: comicId, stock: 1 }]);
 
-	  if (error) throw error;
+      if (error) throw error;
 
-	  dispatch(fetchWishlist(user.id));
+      dispatch(fetchWishlist(user.id));
 
-	  toast({
-		title: "Comic added to wishlist.",
-		description: "The comic has been added to your wishlist.",
-		status: "success",
-		duration: 5000,
-		isClosable: true,
-	  });
-	} catch (error) {
-	  toast({
-		title: "Error adding to wishlist.",
-		description: error instanceof Error ? error.message : "There was an error adding the comic to your wishlist.",
-		status: "error",
-		duration: 5000,
-		isClosable: true,
-	  });
-	}
+      toast({
+        title: "Comic added to wishlist.",
+        description: "The comic has been added to your wishlist.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: "Error adding to wishlist.",
+        description: error instanceof Error ? error.message : "There was an error adding the comic to your wishlist.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
   };
-
 
   if (loading) {
     return (
@@ -247,9 +245,6 @@ const ComicsBuy: NextPage = () => {
 
   return (
     <Container maxW="container.xl" centerContent p={4}>
-      {/* <Heading as="h1" size="xl" mb={6}>
-        Buy Comic Books
-      </Heading> */}
       <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing={6} width="100%">
         {data
           ?.filter((comic: Comic) => isAdmin || comic.is_approved)
@@ -261,56 +256,76 @@ const ComicsBuy: NextPage = () => {
               boxShadow="0 4px 8px rgba(0,0,0,0.1)"
               rounded="md"
               overflow="hidden"
-              p={4}
-              display="flex"
-              flexDirection="column"
-              alignItems="center"
-              justifyContent="space-between"
-              maxH="400px"
-              maxW="400px"
               position="relative"
               cursor="pointer"
               onClick={() => router.push(`/comics-store/buy/${comic.id}`)}
             >
-              <Box position="relative" width="100%" height="0" paddingBottom="100%">
+              <Box position="relative" width="100%" height="0" paddingBottom="150%">
                 <Image
                   src={comic.image || defaultImageUrl}
                   alt={comic.title}
                   width="100%"
-                  objectFit="contain"
+                  height="100%"
+                  position="absolute"
+                  top="0"
+                  left="0"
+                  objectFit="cover"
                   onError={(e) => {
                     e.currentTarget.src = defaultImageUrl;
                   }}
                 />
+                <Box
+                  position="absolute"
+                  bottom="0"
+                  width="100%"
+                  bgColor="rgba(0, 0, 0, 0.7)"
+                  color="white"
+                  padding={2}
+                >
+                  <Text fontWeight="bold" fontSize="lg">
+                    {comic.price} {comic.currency}
+                  </Text>
+                  <Text>In Stock: {comic.stock}</Text>
+                </Box>
                 {comic.stock === 0 && (
                   <Box
                     position="absolute"
                     top="0"
                     left="0"
                     width="100%"
-                    height="100%"
+                    height="20%"
+                    bgColor="rgba(255, 0, 0, 0.7)"
+                    color="white"
                     display="flex"
                     alignItems="center"
                     justifyContent="center"
-                    bgColor="rgba(0, 0, 0, 0.5)"
-                    color="white"
                     fontSize="2xl"
                     fontWeight="bold"
-                    textAlign="center"
                   >
                     Sold Out
                   </Box>
                 )}
+                {isAdmin && !comic.is_approved && (
+                  <Box
+                    position="absolute"
+                    bottom="60"
+                    left="0"
+                    width="100%"
+                    height="20%"
+                    bgColor="rgba(255, 252, 127, 0.5)"
+                    color="white"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+					textColor="red.800"
+                    fontSize="2xl"
+                    fontWeight="bold"
+                  >
+                    Not Approved
+                  </Box>
+                )}
               </Box>
-              <Box
-                position="relative"
-                bottom="0"
-                left="0"
-                width="100%"
-                p={3}
-                bgColor="black"
-                color="white"
-              >
+              <Box p={3} bgColor="black" color="white" width="100%">
                 <Text fontWeight="bold" fontSize="lg" noOfLines={1} textAlign="center">
                   {comic.title}
                 </Text>
@@ -319,12 +334,6 @@ const ComicsBuy: NextPage = () => {
                 </Badge>
                 <Badge m={1} colorScheme="purple">
                   Publisher: {comic.publisher}
-                </Badge>
-                <Badge m={1} colorScheme="red">
-                  Price: {comic.price} {comic.currency}
-                </Badge>
-                <Badge m={1} colorScheme="blue">
-                  In Stock: {comic.stock}
                 </Badge>
                 <Badge m={1} colorScheme="yellow">
                   Genre: {comic.genre}
@@ -359,11 +368,11 @@ const ComicsBuy: NextPage = () => {
                   <IconButton
                     aria-label="Delete Comic"
                     icon={<DeleteIcon />}
-                      fontWeight={"900"}
-                      color={"white"}
-                      backgroundColor={"red.500"}
-                      size="sm"
-                      onClick={(e) => {
+                    fontWeight={"900"}
+                    color={"white"}
+                    backgroundColor={"red.500"}
+                    size="sm"
+                    onClick={(e) => {
                       e.stopPropagation();
                       openDeleteDialog(comic);
                     }}
@@ -401,4 +410,5 @@ const ComicsBuy: NextPage = () => {
 };
 
 export default ComicsBuy;
+
 

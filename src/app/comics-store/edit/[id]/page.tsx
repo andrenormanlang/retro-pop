@@ -215,9 +215,9 @@ const EditComic = () => {
           />
         </Box>
         <VStack as="form" onSubmit={handleSubmit(onSubmit)} flex="2" align="start" spacing={4} p={4}>
-          <Heading as="h1" size="xl" color="tomato">
+          {/* <Heading as="h1" size="xl" color="tomato">
             Edit Comic
-          </Heading>
+          </Heading> */}
           <FormControl isInvalid={!!errors.title}>
             <FormLabel>Title</FormLabel>
             <Input type="text" {...register("title")} />
@@ -243,6 +243,11 @@ const EditComic = () => {
             <FormLabel>Release Date</FormLabel>
             <Input type="date" {...register("release_date")} />
             {errors.release_date && <Text color="red.500">{errors.release_date.message}</Text>}
+          </FormControl>
+		  <FormControl isInvalid={!!errors.stock}>
+            <FormLabel>Stock</FormLabel>
+            <Input type="number" {...register("stock", { valueAsNumber: true })} />
+            {errors.stock && <Text color="red.500">{errors.stock.message}</Text>}
           </FormControl>
           <FormControl isInvalid={!!errors.currency}>
             <FormLabel>Currency</FormLabel>
@@ -295,11 +300,6 @@ const EditComic = () => {
               rows={5} // Default number of rows, it will expand automatically with input
             />
             {errors.description && <Text color="red.500">{errors.description.message}</Text>}
-          </FormControl>
-          <FormControl isInvalid={!!errors.stock}>
-            <FormLabel>Stock</FormLabel>
-            <Input type="number" {...register("stock", { valueAsNumber: true })} />
-            {errors.stock && <Text color="red.500">{errors.stock.message}</Text>}
           </FormControl>
           <Button colorScheme="teal" width="300px" type="submit" isDisabled={loading}>
             {loading ? "Loading ..." : "Update Comic"}

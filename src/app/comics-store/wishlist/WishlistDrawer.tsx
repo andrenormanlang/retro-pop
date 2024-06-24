@@ -143,7 +143,7 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
         <DrawerOverlay />
         <DrawerContent>
           <DrawerCloseButton />
-          <DrawerHeader>My Wishlist</DrawerHeader>
+          {/* <DrawerHeader>My Wishlist</DrawerHeader> */}
 
           <DrawerBody>
             {loading ? (
