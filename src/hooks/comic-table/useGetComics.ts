@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 async function fetchComics() {
-  const response = await fetch('/api/comics-table');
+  const response = await fetch('/api/comics-admin');
   if (!response.ok) {
     throw new Error(`API call failed with status: ${response.status}`);
   }

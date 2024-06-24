@@ -247,9 +247,9 @@ const ComicsBuy: NextPage = () => {
 
   return (
     <Container maxW="container.xl" centerContent p={4}>
-      <Heading as="h1" size="xl" mb={6}>
+      {/* <Heading as="h1" size="xl" mb={6}>
         Buy Comic Books
-      </Heading>
+      </Heading> */}
       <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing={6} width="100%">
         {data
           ?.filter((comic: Comic) => isAdmin || comic.is_approved)

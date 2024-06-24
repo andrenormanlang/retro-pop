@@ -172,8 +172,8 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
                   <Image
                     src={item.comic.image || defaultImageUrl}
                     alt={item.comic.title}
-                    maxW={{ base: '50px', md: '75px' }}
-                    maxH={{ base: '50px', md: '75px' }}
+                    maxW={{ base: '75px', md: '100px' }}
+                    maxH={{ base: '75px', md: '100px' }}
                     objectFit="contain"
                     onError={(e) => {
                       e.currentTarget.src = defaultImageUrl;

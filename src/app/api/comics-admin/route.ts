@@ -1,5 +1,3 @@
-// src/app/api/comics-sell/route.ts
-
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
@@ -66,11 +64,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { comicId, newStock } = await request.json();
+    const { comicId, newStock, newPrice } = await request.json();
 
     const { data, error } = await supabaseAdmin
       .from('comics-sell')
-      .update({ stock: newStock })
+      .update({ stock: newStock, price: newPrice })
       .eq('id', comicId)
       .select();
 
@@ -97,4 +95,3 @@ export async function POST(request: NextRequest) {
     });
   }
 }
-
