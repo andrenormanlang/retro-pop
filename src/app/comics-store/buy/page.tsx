@@ -1,327 +1,404 @@
 'use client';
 
-import { useEffect, useState, useRef } from "react";
-import { useUser } from "../../../contexts/UserContext";
+import { useEffect, useState, useRef } from 'react';
+import { useUser } from '../../../contexts/UserContext';
 import {
-    SimpleGrid,
-    Box,
-    Image,
-    Text,
-    Container,
-    Center,
-    Spinner,
-    Alert,
-    AlertIcon,
-    Heading,
-    IconButton,
-    useToast,
-    Button,
-    AlertDialog,
-    AlertDialogBody,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogContent,
-    AlertDialogOverlay,
-    Badge,
-} from "@chakra-ui/react";
-import { useComicBuy } from "@/hooks/comics-sale/useComicBuy";
-import { motion } from "framer-motion";
-import NextLink from "next/link";
-import { DeleteIcon, EditIcon, StarIcon } from "@chakra-ui/icons";
-import { useRouter } from "next/navigation";
-import { supabase } from "@/utils/supabase/client";
-import { Comic } from "@/types/comics-store/comic-detail.type";
-import { NextPage } from "next";
-import { useDispatch } from "react-redux";
-import { fetchWishlist } from '@/store/wishlistSlice';
-import { AppDispatch } from '@/store/store';
+  SimpleGrid,
+  Box,
+  Image,
+  Text,
+  Container,
+  Center,
+  Spinner,
+  Alert,
+  AlertIcon,
+  Heading,
+  IconButton,
+  useToast,
+  Button,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
+  Badge,
+} from '@chakra-ui/react';
+import { useComicBuy } from '@/hooks/comics-sale/useComicBuy';
+import { motion } from 'framer-motion';
+import NextLink from 'next/link';
+import { DeleteIcon, EditIcon, StarIcon } from '@chakra-ui/icons';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/utils/supabase/client';
+import { Comic } from '@/types/comics-store/comic-detail.type';
+import { NextPage } from 'next';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchWishlist, removeFromWishlist, updateWishlistQuantity } from '@/store/wishlistSlice';
+import { AppDispatch, RootState } from '@/store/store';
 
 const formatDate = (dateString: string) => {
-    const options: Intl.DateTimeFormatOptions = {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-    };
-    return new Date(dateString).toLocaleDateString(undefined, options);
+  const options: Intl.DateTimeFormatOptions = {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  };
+  return new Date(dateString).toLocaleDateString(undefined, options);
 };
 
 const ComicsBuy: NextPage = () => {
-    const { data, setData, loading, error } = useComicBuy();
-    const toast = useToast();
-    const [isAdmin, setIsAdmin] = useState(false);
-    const [selectedComic, setSelectedComic] = useState<Comic | null>(null);
-    const [isOpen, setIsOpen] = useState(false);
-    const cancelRef = useRef(null);
-    const { user } = useUser();
-    const router = useRouter();
-    const dispatch: AppDispatch = useDispatch();
+  const { data, setData, loading, error } = useComicBuy();
+  const toast = useToast();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [selectedComic, setSelectedComic] = useState<Comic | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const cancelRef = useRef(null);
+  const { user } = useUser();
+  const router = useRouter();
+  const dispatch: AppDispatch = useDispatch();
+  const wishlist = useSelector((state: RootState) => state.wishlist.wishlist);
 
-    const onClose = () => setIsOpen(false);
+  const onClose = () => setIsOpen(false);
 
-    useEffect(() => {
-        const fetchUserProfile = async () => {
-            if (user) {
-                const { data, error } = await supabase.from("profiles").select("is_admin").eq("id", user.id).single();
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (user) {
+        const { data, error } = await supabase.from("profiles").select("is_admin").eq("id", user.id).single();
 
-                if (error) {
-                    console.error("Error fetching profile:", error.message);
-                    return;
-                }
-
-                if (data && data.is_admin) {
-                    setIsAdmin(true);
-                }
-            }
-        };
-
-        fetchUserProfile();
-    }, [user]);
-
-    const handleDelete = async () => {
-        if (selectedComic) {
-            try {
-                const { error } = await supabase.from("comics-sell").delete().eq("id", selectedComic.id);
-
-                if (error) throw error;
-
-                toast({
-                    title: "Comic deleted.",
-                    description: "The comic has been successfully deleted.",
-                    status: "success",
-                    duration: 5000,
-                    isClosable: true,
-                });
-
-                // Refresh the list after deletion
-                const updatedData = data ? data.filter((comic: Comic) => comic.id !== selectedComic.id) : [];
-                setData(updatedData);
-            } catch (error) {
-                toast({
-                    title: "Error deleting comic.",
-                    description: "There was an error deleting the comic.",
-                    status: "error",
-                    duration: 5000,
-                    isClosable: true,
-                });
-            } finally {
-                setIsOpen(false);
-            }
-        }
-    };
-
-    const openDeleteDialog = (comic: Comic) => {
-        setSelectedComic(comic);
-        setIsOpen(true);
-    };
-
-    const addToWishlist = async (comicId: string) => {
-        if (!user) {
-            toast({
-                title: "Login required.",
-                description: "You need to be logged in to add comics to your wishlist.",
-                status: "warning",
-                duration: 5000,
-                isClosable: true,
-            });
-            return;
+        if (error) {
+          console.error("Error fetching profile:", error.message);
+          return;
         }
 
-        try {
-            const { error } = await supabase.from("wishlists").insert([{ user_id: user.id, comic_id: comicId }]);
-
-            if (error) throw error;
-
-            // Dispatch fetchWishlist to update the wishlist state
-            dispatch(fetchWishlist(user.id));
-
-            toast({
-                title: "Comic added to wishlist.",
-                description: "The comic has been added to your wishlist.",
-                status: "success",
-                duration: 5000,
-                isClosable: true,
-            });
-        } catch (error) {
-            toast({
-                title: "Error adding to wishlist.",
-                description: "There was an error adding the comic to your wishlist.",
-                status: "error",
-                duration: 5000,
-                isClosable: true,
-            });
+        if (data && data.is_admin) {
+          setIsAdmin(true);
         }
+      }
     };
 
-    if (loading) {
-        return (
-            <Center h="100vh">
-                <Spinner size="xl" />
-            </Center>
-        );
+    fetchUserProfile();
+  }, [user]);
+
+  const handleDelete = async () => {
+    if (selectedComic) {
+      try {
+        const { error } = await supabase.from("comics-sell").delete().eq("id", selectedComic.id);
+
+        if (error) throw error;
+
+        toast({
+          title: "Comic deleted.",
+          description: "The comic has been successfully deleted.",
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        });
+
+        // Refresh the list after deletion
+        const updatedData = data ? data.filter((comic: Comic) => comic.id !== selectedComic.id) : [];
+        setData(updatedData);
+      } catch (error) {
+        toast({
+          title: "Error deleting comic.",
+          description: "There was an error deleting the comic.",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+      } finally {
+        setIsOpen(false);
+      }
+    }
+  };
+
+  const openDeleteDialog = (comic: Comic) => {
+    setSelectedComic(comic);
+    setIsOpen(true);
+  };
+
+  const handleStockChange = async (comicId: string, newStock: number) => {
+    if (!user) return;
+
+    // Fetch the current stock of the comic from the comics-sell table
+    const { data: comicData, error: comicError } = await supabase
+      .from('comics-sell')
+      .select('stock')
+      .eq('id', comicId)
+      .single();
+
+    if (comicError || !comicData || comicData.stock < newStock) {
+      toast({
+        title: 'Error updating stock.',
+        description: 'There was an error updating the stock or insufficient stock available.',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
     }
 
-    if (error) {
-        return (
-            <Center h="100vh">
-                <Alert status="error">
-                    <AlertIcon />
-                    {error}
-                </Alert>
-            </Center>
-        );
-    }
+    dispatch(updateWishlistQuantity({ userId: user.id, comicId, stock: newStock }))
+      .unwrap()
+      .then(() => {
+        toast({
+          title: 'Wishlist updated.',
+          description: 'The stock has been updated.',
+          status: 'success',
+          duration: 5000,
+          isClosable: true,
+        });
+      })
+      .catch(() => {
+        toast({
+          title: 'Error updating wishlist.',
+          description: 'There was an error updating the wishlist.',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+      });
+  };
 
-    const defaultImageUrl = "/path/to/default-image.jpg";
+  const addToWishlist = async (comicId: string) => {
+	if (!user) {
+	  toast({
+		title: "Login required.",
+		description: "You need to be logged in to add comics to your wishlist.",
+		status: "warning",
+		duration: 5000,
+		isClosable: true,
+	  });
+	  return;
+	}
 
+	const existingItem = wishlist.find((item) => item.comic.id === comicId);
+
+	if (existingItem) {
+	  if (existingItem.stock >= existingItem.comic.stock) {
+		toast({
+		  title: "Stock limit reached.",
+		  description: "You cannot add more of this comic to your wishlist.",
+		  status: "warning",
+		  duration: 5000,
+		  isClosable: true,
+		});
+		return;
+	  }
+
+	  handleStockChange(comicId, existingItem.stock + 1);
+	  return;
+	}
+
+	try {
+	  const { data: comicData, error: comicError } = await supabase
+		.from('comics-sell')
+		.select('stock')
+		.eq('id', comicId)
+		.single();
+
+	  if (comicError || !comicData || comicData.stock < 1) {
+		throw new Error(comicError?.message || 'Comic not available');
+	  }
+
+	  const { error } = await supabase.from("wishlists").insert([{ user_id: user.id, comic_id: comicId, stock: 1 }]);
+
+	  if (error) throw error;
+
+	  dispatch(fetchWishlist(user.id));
+
+	  toast({
+		title: "Comic added to wishlist.",
+		description: "The comic has been added to your wishlist.",
+		status: "success",
+		duration: 5000,
+		isClosable: true,
+	  });
+	} catch (error) {
+	  toast({
+		title: "Error adding to wishlist.",
+		description: error instanceof Error ? error.message : "There was an error adding the comic to your wishlist.",
+		status: "error",
+		duration: 5000,
+		isClosable: true,
+	  });
+	}
+  };
+
+
+  if (loading) {
     return (
-        <Container maxW="container.xl" centerContent p={4}>
-            <Heading as="h1" size="xl" mb={6}>
-                Buy Comic Books
-            </Heading>
-            <SimpleGrid columns={{ base: 1, md: 3 }} spacing={10} width="100%">
-                {data
-                    ?.filter((comic: Comic) => isAdmin || comic.is_approved)
-                    .map((comic: Comic) => (
-                        <Box
-                            key={comic.id}
-                            as={motion.div}
-                            whileHover={{ scale: 1.05 }}
-                            boxShadow="0 4px 8px rgba(0,0,0,0.1)"
-                            rounded="md"
-                            overflow="hidden"
-                            p={4}
-                            display="flex"
-                            flexDirection="column"
-                            alignItems="center"
-                            justifyContent="space-between"
-                            minH="400px"
-                            position="relative"
-                            cursor="pointer"
-                            onClick={() => router.push(`/comics-store/buy/${comic.id}`)}
-                        >
-                            <Box position="relative" width="100%" height="0" paddingBottom="100%">
-                                <Image
-                                    src={comic.image || defaultImageUrl}
-                                    alt={comic.title}
-                                    maxW="500px"
-                                    maxH="500px"
-                                    objectFit="contain"
-                                    onError={(e) => {
-                                        e.currentTarget.src = defaultImageUrl;
-                                    }}
-                                />
-                                {!comic.is_approved && (
-                                    <Box
-                                        position="absolute"
-                                        top="0"
-                                        left="0"
-                                        width="100%"
-                                        height="100%"
-                                        display="flex"
-                                        alignItems="center"
-                                        justifyContent="center"
-                                        bgColor="rgba(0, 0, 0, 0.5)"
-                                        color="white"
-                                        fontSize="2xl"
-                                        fontWeight="bold"
-                                        textAlign="center"
-                                    >
-                                        Not Rendered
-                                    </Box>
-                                )}
-                            </Box>
-                            <Box
-                                position="absolute"
-                                bottom="0"
-                                left="0"
-                                width="100%"
-                                p={3}
-                                bgColor="black"
-                                color="white"
-                            >
-                                <Text fontWeight="bold" fontSize="lg" noOfLines={1} textAlign="center">
-                                    {comic.title}
-                                </Text>
-                                <Badge m={1} colorScheme="green">
-                                    Release Date: {formatDate(comic.release_date)}
-                                </Badge>
-                                <Badge m={1} colorScheme="purple">
-                                    Publisher: {comic.publisher}
-                                </Badge>
-                                <Badge m={1} colorScheme="red">
-                                    Price: {comic.price} {comic.currency}
-                                </Badge>
-                                <Badge m={1} colorScheme="blue">
-                                    Genre: {comic.genre}
-                                </Badge>
-                            </Box>
-                            <IconButton
-                                aria-label="Add to wishlist"
-                                icon={<StarIcon />}
-                                colorScheme="yellow"
-                                position="absolute"
-                                top={2}
-                                left={2}
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    addToWishlist(comic.id);
-                                }}
-                            />
-                            {isAdmin && (
-                                <Box position="absolute" top={2} right={2} display="flex" gap={1}>
-                                    <NextLink href={`/comics-store/edit/${comic.id}`} passHref>
-                                        <IconButton
-                                            aria-label="Edit Comic"
-                                            icon={<EditIcon />}
-                                            fontWeight={"900"}
-                                            color={"white"}
-                                            backgroundColor={"blue.500"}
-                                            size="sm"
-                                            onClick={(e) => e.stopPropagation()}
-                                        />
-                                    </NextLink>
-                                    <IconButton
-                                        aria-label="Delete Comic"
-                                        icon={<DeleteIcon />}
-                                        fontWeight={"900"}
-                                        color={"white"}
-                                        backgroundColor={"red.500"}
-                                        size="sm"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            openDeleteDialog(comic);
-                                        }}
-                                    />
-                                </Box>
-                            )}
-                        </Box>
-                    ))}
-            </SimpleGrid>
-
-            <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={onClose}>
-                <AlertDialogOverlay>
-                    <AlertDialogContent>
-                        <AlertDialogHeader fontSize="lg" fontWeight="bold">
-                            Delete Comic
-                        </AlertDialogHeader>
-
-                        <AlertDialogBody>
-                            Are you sure you want to delete the comic titled {selectedComic?.title}?
-                        </AlertDialogBody>
-
-                        <AlertDialogFooter>
-                            <Button ref={cancelRef} onClick={onClose}>
-                                Cancel
-                            </Button>
-                            <Button colorScheme="red" onClick={handleDelete} ml={3}>
-                                Delete
-                            </Button>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialogOverlay>
-            </AlertDialog>
-        </Container>
+      <Center h="100vh">
+        <Spinner size="xl" />
+      </Center>
     );
+  }
+
+  if (error) {
+    return (
+      <Center h="100vh">
+        <Alert status="error">
+          <AlertIcon />
+          {error}
+        </Alert>
+      </Center>
+    );
+  }
+
+  const defaultImageUrl = "/path/to/default-image.jpg";
+
+  return (
+    <Container maxW="container.xl" centerContent p={4}>
+      <Heading as="h1" size="xl" mb={6}>
+        Buy Comic Books
+      </Heading>
+      <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing={6} width="100%">
+        {data
+          ?.filter((comic: Comic) => isAdmin || comic.is_approved)
+          .map((comic: Comic) => (
+            <Box
+              key={comic.id}
+              as={motion.div}
+              whileHover={{ scale: 1.05 }}
+              boxShadow="0 4px 8px rgba(0,0,0,0.1)"
+              rounded="md"
+              overflow="hidden"
+              p={4}
+              display="flex"
+              flexDirection="column"
+              alignItems="center"
+              justifyContent="space-between"
+              maxH="400px"
+              maxW="400px"
+              position="relative"
+              cursor="pointer"
+              onClick={() => router.push(`/comics-store/buy/${comic.id}`)}
+            >
+              <Box position="relative" width="100%" height="0" paddingBottom="100%">
+                <Image
+                  src={comic.image || defaultImageUrl}
+                  alt={comic.title}
+                  width="100%"
+                  objectFit="contain"
+                  onError={(e) => {
+                    e.currentTarget.src = defaultImageUrl;
+                  }}
+                />
+                {comic.stock === 0 && (
+                  <Box
+                    position="absolute"
+                    top="0"
+                    left="0"
+                    width="100%"
+                    height="100%"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    bgColor="rgba(0, 0, 0, 0.5)"
+                    color="white"
+                    fontSize="2xl"
+                    fontWeight="bold"
+                    textAlign="center"
+                  >
+                    Sold Out
+                  </Box>
+                )}
+              </Box>
+              <Box
+                position="relative"
+                bottom="0"
+                left="0"
+                width="100%"
+                p={3}
+                bgColor="black"
+                color="white"
+              >
+                <Text fontWeight="bold" fontSize="lg" noOfLines={1} textAlign="center">
+                  {comic.title}
+                </Text>
+                <Badge m={1} colorScheme="green">
+                  Release Date: {formatDate(comic.release_date)}
+                </Badge>
+                <Badge m={1} colorScheme="purple">
+                  Publisher: {comic.publisher}
+                </Badge>
+                <Badge m={1} colorScheme="red">
+                  Price: {comic.price} {comic.currency}
+                </Badge>
+                <Badge m={1} colorScheme="blue">
+                  In Stock: {comic.stock}
+                </Badge>
+                <Badge m={1} colorScheme="yellow">
+                  Genre: {comic.genre}
+                </Badge>
+              </Box>
+              <IconButton
+                aria-label="Add to wishlist"
+                icon={<StarIcon />}
+                colorScheme="yellow"
+                position="absolute"
+                top={2}
+                left={2}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  addToWishlist(comic.id);
+                }}
+                disabled={comic.stock === 0}
+              />
+              {isAdmin && (
+                <Box position="absolute" top={2} right={2} display="flex" gap={1}>
+                  <NextLink href={`/comics-store/edit/${comic.id}`} passHref>
+                    <IconButton
+                      aria-label="Edit Comic"
+                      icon={<EditIcon />}
+                      fontWeight={"900"}
+                      color={"white"}
+                      backgroundColor={"blue.500"}
+                      size="sm"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </NextLink>
+                  <IconButton
+                    aria-label="Delete Comic"
+                    icon={<DeleteIcon />}
+                      fontWeight={"900"}
+                      color={"white"}
+                      backgroundColor={"red.500"}
+                      size="sm"
+                      onClick={(e) => {
+                      e.stopPropagation();
+                      openDeleteDialog(comic);
+                    }}
+                  />
+                </Box>
+              )}
+            </Box>
+          ))}
+      </SimpleGrid>
+
+      <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={onClose}>
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              Delete Comic
+            </AlertDialogHeader>
+
+            <AlertDialogBody>
+              Are you sure you want to delete the comic titled {selectedComic?.title}?
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={onClose}>
+                Cancel
+              </Button>
+              <Button colorScheme="red" onClick={handleDelete} ml={3}>
+                Delete
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
+    </Container>
+  );
 };
 
 export default ComicsBuy;
+

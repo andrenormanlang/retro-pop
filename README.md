@@ -12,19 +12,16 @@ Welcome to my mega project dedicated to lovers and collectors of classic comic b
 
 ## Technology
 
-- **NextJS 14**
+- **NextJS 14 App Router**
 - **TypeScript**
 - **Supabase BaaS**
-- **NodeJS (Supabase Edge Functions)**
-- **Prisma Express**
+- **NodeJS**
+- **Redux Toolkit**
 - **React Query**
 - **Chakra UI**
-- **Next UI**
-- **Tailwind**
-- **Sass**
 
 ## Launch Timeline
 
-- This web app is scheduled to go live in the first semester of 2024.
+- This web app is scheduled to go live by august 2024.
 
 Stay tuned for more updates and get ready to dive into the nostalgic world of classic comic books!

@@ -19,10 +19,14 @@ import {
   Flex,
   Switch,
   useToast,
+  IconButton
 } from "@chakra-ui/react";
-import { ArrowBackIcon } from "@chakra-ui/icons";
+import { ArrowBackIcon, StarIcon } from "@chakra-ui/icons";
 import { Comic } from "@/types/comics-store/comic-detail.type";
 import { useUser } from "@/contexts/UserContext";
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchWishlist, updateWishlistQuantity } from '@/store/wishlistSlice';
+import { AppDispatch, RootState } from '@/store/store';
 
 const ComicDetail = () => {
   const pathname = usePathname();
@@ -36,6 +40,9 @@ const ComicDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+
+  const dispatch: AppDispatch = useDispatch();
+  const wishlist = useSelector((state: RootState) => state.wishlist.wishlist);
 
   useEffect(() => {
     if (user) {
@@ -81,6 +88,7 @@ const ComicDetail = () => {
               description,
               price,
               currency,
+              stock,
               is_approved
             `
             )
@@ -100,6 +108,114 @@ const ComicDetail = () => {
       fetchComic();
     }
   }, [id]);
+
+  const addToWishlist = async (comicId: string) => {
+    if (!user) {
+      toast({
+        title: "Login required.",
+        description: "You need to be logged in to add comics to your wishlist.",
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    const existingItem = wishlist.find((item) => item.comic.id === comicId);
+
+    if (existingItem) {
+      if (existingItem.stock >= existingItem.comic.stock) {
+        toast({
+          title: "Stock limit reached.",
+          description: "You cannot add more of this comic to your wishlist.",
+          status: "warning",
+          duration: 5000,
+          isClosable: true,
+        });
+        return;
+      }
+
+      handleStockChange(comicId, existingItem.stock + 1);
+      return;
+    }
+
+    try {
+      const { data: comicData, error: comicError } = await supabase
+        .from('comics-sell')
+        .select('stock')
+        .eq('id', comicId)
+        .single();
+
+      if (comicError || !comicData || comicData.stock < 1) {
+        throw new Error(comicError?.message || 'Comic not available');
+      }
+
+      const { error } = await supabase.from("wishlists").insert([{ user_id: user.id, comic_id: comicId, stock: 1 }]);
+
+      if (error) throw error;
+
+      dispatch(fetchWishlist(user.id));
+
+      toast({
+        title: "Comic added to wishlist.",
+        description: "The comic has been added to your wishlist.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: "Error adding to wishlist.",
+        description: error instanceof Error ? error.message : "There was an error adding the comic to your wishlist.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const handleStockChange = async (comicId: string, newStock: number) => {
+    if (!user) return;
+
+    // Fetch the current stock of the comic from the comics-sell table
+    const { data: comicData, error: comicError } = await supabase
+      .from('comics-sell')
+      .select('stock')
+      .eq('id', comicId)
+      .single();
+
+    if (comicError || !comicData || comicData.stock < newStock) {
+      toast({
+        title: 'Error updating stock.',
+        description: 'There was an error updating the stock or insufficient stock available.',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    dispatch(updateWishlistQuantity({ userId: user.id, comicId, stock: newStock }))
+      .unwrap()
+      .then(() => {
+        toast({
+          title: 'Wishlist updated.',
+          description: 'The stock has been updated.',
+          status: 'success',
+          duration: 5000,
+          isClosable: true,
+        });
+      })
+      .catch(() => {
+        toast({
+          title: 'Error updating wishlist.',
+          description: 'There was an error updating the wishlist.',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+      });
+  };
 
   const toggleApproval = async () => {
     if (comic) {
@@ -247,6 +363,14 @@ const ComicDetail = () => {
                 <Text color="white">{comic.is_approved ? "Approved" : "Not Approved"}</Text>
               </HStack>
             )}
+            <Button
+              leftIcon={<StarIcon />}
+              colorScheme="yellow"
+              onClick={() => addToWishlist(comic.id)}
+              isDisabled={comic.stock === 0}
+            >
+              Add to Wishlist
+            </Button>
           </VStack>
         </Flex>
       </Container>

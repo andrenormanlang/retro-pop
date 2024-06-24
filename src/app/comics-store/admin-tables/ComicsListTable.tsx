@@ -22,6 +22,9 @@ import {
   AccordionPanel,
   AccordionIcon,
   Box,
+  Input,
+  Button,
+  HStack,
 } from "@chakra-ui/react";
 import { useGetComics } from "@/hooks/comic-table/useGetComics";
 import { Comic } from "@/types/comics-store/comic-detail.type";
@@ -110,6 +113,42 @@ const ComicsListTable = () => {
     }
   };
 
+  const updateStock = async (comicId: string, newStock: number) => {
+    const updatedComics = localComics.map((item) =>
+      item.id === comicId ? { ...item, stock: newStock } : item
+    );
+    setLocalComics(updatedComics);
+
+    try {
+      const { error } = await supabase
+        .from("comics-sell")
+        .update({ stock: newStock })
+        .eq("id", comicId);
+
+      if (error) {
+        // Revert the change in case of an error
+        setLocalComics(localComics);
+        throw error;
+      }
+
+      toast({
+        title: "Stock updated.",
+        description: "The stock has been updated.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: "Error updating stock.",
+        description: "There was an error updating the stock.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <Center h="100vh">
@@ -168,6 +207,7 @@ const ComicsListTable = () => {
                     <Th textAlign="center" onClick={() => requestSort("profiles.email")}>Email</Th>
                     <Th textAlign="center" onClick={() => requestSort("created_at")}>Date / Time Added</Th>
                     <Th textAlign="center" onClick={() => requestSort("updated_at")}>Date / Time Updated</Th>
+                    <Th textAlign="center">Stock</Th>
                     <Th textAlign="center">Approve</Th>
                   </Tr>
                 </Thead>
@@ -180,12 +220,36 @@ const ComicsListTable = () => {
                       <Td textAlign="center">{comic.profiles?.email || "Unknown"}</Td>
                       <Td textAlign="center">{formatDate(comic.created_at)}</Td>
                       <Td textAlign="center">{formatDate(comic.updated_at)}</Td>
+					  <Td textAlign="center">
+                        <HStack>
+                          <Input
+                            size="sm"
+                            value={comic.stock}
+                            onChange={(e) => setLocalComics(
+                              localComics.map((item) =>
+                                item.id === comic.id
+                                  ? { ...item, stock: parseInt(e.target.value, 10) }
+                                  : item
+                              )
+                            )}
+                            width="60px"
+                            textAlign="center"
+                          />
+                          <Button
+                            size="sm"
+                            onClick={() => updateStock(comic.id, comic.stock)}
+                          >
+                            Update
+                          </Button>
+                        </HStack>
+                      </Td>
                       <Td textAlign="center">
                         <Switch
                           isChecked={comic.is_approved}
                           onChange={() => toggleApproval(comic)}
                         />
                       </Td>
+
                     </Tr>
                   ))}
                 </Tbody>
@@ -199,4 +263,3 @@ const ComicsListTable = () => {
 };
 
 export default ComicsListTable;
-

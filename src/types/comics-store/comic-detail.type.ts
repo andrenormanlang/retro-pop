@@ -1,5 +1,3 @@
-// src/types/comic.ts
-
 export type Comic = {
 	id: string;
 	user_id: string;
@@ -15,10 +13,18 @@ export type Comic = {
 	main_artist: string;
 	main_writer: string;
 	description: string;
-	price: number;
 	currency: string;
+	price: number;
+	stock: number;
 	profiles: {
-		username: string;
-		email: string;
+	  username: string;
+	  email: string;
 	};
+  }
+
+  export type WishlistItem = {
+	user_id: string;
+	comic_id: string;
+	stock: number;
+	comic: Comic;
   }

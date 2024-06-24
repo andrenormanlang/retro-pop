@@ -141,11 +141,11 @@ export default function Login() {
             Forgotten Password?
           </Button>
         </Link>
-<Link href="/auth/signup" passHref>
-  <Button variant="link" colorScheme="teal" width="full">
-    Don’t have an Account? Sign Up
-  </Button>
-</Link>
+        <Link href="/auth/signup" passHref>
+          <Button variant="link" colorScheme="teal" width="full">
+            Don’t have an Account? Sign Up
+          </Button>
+        </Link>
       </Box>
     </Center>
   );
