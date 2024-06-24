@@ -159,7 +159,7 @@ const EditComic = () => {
         isClosable: true,
       });
 
-      router.push("/comics-store/buy");
+      router.push("/");
     } catch (error: any) {
       setError("Error updating the comic!");
       toast({

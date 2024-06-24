@@ -208,7 +208,7 @@ const ComicsBuy: NextPage = () => {
                             height="100%"
                             position="relative"
                             cursor="pointer"
-                            onClick={() => router.push(`/comics-store/buy/${comic.id}`)}
+                            onClick={() => router.push(`/${comic.id}`)}
                         >
                             <Box position="relative" width="100%" height="0" paddingBottom="100%">
                                 <Image
