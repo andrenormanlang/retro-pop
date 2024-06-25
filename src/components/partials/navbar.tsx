@@ -394,7 +394,7 @@ const Navbar = () => {
                 onClose={handleToggleAvatarMenu}
               >
                 <MenuButton as={Box} position="relative" display="flex" alignItems="center">
-                  <AvatarNav uid={user.id} size={{ base: 40, md: 50 }} />
+                  <AvatarNav uid={user.id} size={{ base: 10, md: 20 }} />
                   <Box position="absolute" bottom="-15px" left="50%" transform="translateX(-50%)">
                     {isAvatarMenuOpen ? <ChevronDownIcon boxSize={{ base: 4, md: 5 }} /> : <ChevronUpIcon boxSize={{ base: 4, md: 5 }} />}
                   </Box>

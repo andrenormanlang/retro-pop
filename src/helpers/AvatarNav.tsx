@@ -9,8 +9,8 @@ export default function AvatarNav({
   uid,
   size,
 }: {
-  uid: string | null
-  size: { base: number, md: number }
+  uid: string | null;
+  size: { base: number, md: number };
 }) {
   const supabase = createClient();
   const avatarUrl = useSelector((state: RootState) => state.avatar.url);
@@ -47,8 +47,8 @@ export default function AvatarNav({
           width={responsiveSize}
           height={responsiveSize}
           src={avatarUrl}
-          alt="X"
-          style={{ height: responsiveSize, width: responsiveSize, objectFit: 'cover', borderRadius: '50%' }}
+          alt="Avatar"
+          style={{ objectFit: 'cover', borderRadius: '50%' }}
         />
       ) : (
         <Box
@@ -66,6 +66,7 @@ export default function AvatarNav({
     </Box>
   );
 }
+
 
 
 
