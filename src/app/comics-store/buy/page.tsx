@@ -329,14 +329,14 @@ const ComicsBuy: NextPage = () => {
                 <Text fontWeight="bold" fontSize={{ base: 'xs', md: 'lg' }} noOfLines={1} textAlign="center">
                   {comic.title}
                 </Text>
-                <Badge m={1} colorScheme="green" fontSize={{ base: '3xs', md: 'sm' }}>
+                <Badge m={1} colorScheme="green" fontSize={{ base: '2xs', md: 'sm' }}>
                   Released: {formatDate(comic.release_date)}
                 </Badge>
-                <Badge m={1} colorScheme="purple" fontSize={{ base: '3xs', md: 'sm' }}>
+                <Badge m={1} colorScheme="purple" fontSize={{ base: '2xs', md: 'sm' }}>
                   {/* Publisher: {comic.publisher} */}
                   {comic.publisher}
                 </Badge>
-                <Badge m={1} colorScheme="yellow" fontSize={{ base: '3xs', md: 'sm' }}>
+                <Badge m={1} colorScheme="yellow" fontSize={{ base: '2xs', md: 'sm' }}>
                   Genre: {comic.genre}
                 </Badge>
               </Box>

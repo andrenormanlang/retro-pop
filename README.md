@@ -2,7 +2,7 @@
 
 ## Classic Comic Book Search, Collectors Store and Community
 
-Welcome to my mega project dedicated to lovers and collectors of classic comic book oldies! This platform is a comprehensive comics search tool connected to Comic Vine, SuperHero & Comic Books  API´s, enriched with an interactive webshop for selling & buying used comics  and a vibrant forum!
+Welcome to my mega project dedicated to lovers and collectors of classic comic book oldies! This platform is a comprehensive comics search tool connected to Comic Vine, SuperHero & Comic Books  API´s, enriched with an interactive webshop for selling & buying used comics and a vibrant forum!
 
 ## Features
 
@@ -19,6 +19,7 @@ Welcome to my mega project dedicated to lovers and collectors of classic comic b
 - **Redux Toolkit**
 - **React Query**
 - **Chakra UI**
+- **Zod Validation & React Hook Form**
 
 ## Launch Timeline
 
