@@ -9,6 +9,7 @@ import { Box, Button, FormControl, FormLabel, Input, VStack, Heading, Spinner, A
 import { RootState } from '@/store/store';
 import { setAvatarUrl } from '@/store/avatarSlice';
 import { useForm, SubmitHandler } from "react-hook-form";
+import {useRouter} from 'next/navigation';
 import { z } from 'zod';
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -31,6 +32,7 @@ export default function AccountForm({ user }: { user: User | null }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const avatarUrl = useSelector((state: RootState) => state.avatar.url);
+  const router = useRouter();
   const dispatch = useDispatch();
 
   const { register, handleSubmit, formState: { errors }, setValue } = useForm<FormData>({
@@ -97,6 +99,16 @@ export default function AccountForm({ user }: { user: User | null }) {
     }
   }
 
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      window.location.href = "/";
+    } catch (error) {
+      setError("Error signing out!");
+    }
+  };
+
+
   return (
     <Center>
       <Box
@@ -120,60 +132,63 @@ export default function AccountForm({ user }: { user: User | null }) {
             <Spinner />
           </Center>
         ) : (
-          <>
-            <VStack spacing={4} as="form" onSubmit={handleSubmit(updateProfile)}>
-              <FormControl id="email">
-                <FormLabel>Email</FormLabel>
-                <Input type="text" value={user?.email || ''} isDisabled />
-              </FormControl>
-              {user && (
-                <Avatar
-                  uid={user.id}
-                  url={avatarUrl}
-                  size={150}
-                  onUpload={(url) => {
-                    dispatch(setAvatarUrl(url));
-                    setValue("avatarUrl", url);
-                  }}
-                />
-              )}
-              <FormControl id="fullname" isInvalid={!!errors.fullname}>
-                <FormLabel>Full Name</FormLabel>
-                <Input
-                  type="text"
-                  {...register("fullname")}
-                />
-                {errors.fullname && <Text color="red.500">{errors.fullname.message}</Text>}
-              </FormControl>
-              <FormControl id="username" isInvalid={!!errors.username}>
-                <FormLabel>Username</FormLabel>
-                <Input
-                  type="text"
-                  {...register("username")}
-                />
-                {errors.username && <Text color="red.500">{errors.username.message}</Text>}
-              </FormControl>
-              {errors.avatarUrl && <Text color="red.500">{errors.avatarUrl.message}</Text>}
-              <Button
-                colorScheme="teal"
-                width="300px"
-                type="submit"
-                isDisabled={loading}
-              >
-                {loading ? 'Loading ...' : 'Update'}
-              </Button>
-            </VStack>
-            <form action="/auth/signout" method="post" style={{ marginTop: '16px' }}>
-              <Button colorScheme="red" width="300px" type="submit">
-                Sign out
-              </Button>
-            </form>
-          </>
+          <VStack spacing={4} as="form" onSubmit={handleSubmit(updateProfile)}>
+            <FormControl id="email">
+              <FormLabel>Email</FormLabel>
+              <Input type="text" value={user?.email || ''} isDisabled />
+            </FormControl>
+            {user && (
+              <Avatar
+                uid={user.id}
+                url={avatarUrl}
+                size={150}
+                onUpload={(url) => {
+                  dispatch(setAvatarUrl(url));
+                  setValue("avatarUrl", url);
+                }}
+              />
+            )}
+            <FormControl id="fullname" isInvalid={!!errors.fullname}>
+              <FormLabel>Full Name</FormLabel>
+              <Input
+                type="text"
+                {...register("fullname")}
+              />
+              {errors.fullname && <Text color="red.500">{errors.fullname.message}</Text>}
+            </FormControl>
+            <FormControl id="username" isInvalid={!!errors.username}>
+              <FormLabel>Username</FormLabel>
+              <Input
+                type="text"
+                {...register("username")}
+              />
+              {errors.username && <Text color="red.500">{errors.username.message}</Text>}
+            </FormControl>
+            {errors.avatarUrl && <Text color="red.500">{errors.avatarUrl.message}</Text>}
+            <Button
+              colorScheme="teal"
+              width="300px"
+              type="submit"
+              isDisabled={loading}
+            >
+              {loading ? 'Loading ...' : 'Update'}
+            </Button>
+            <Button
+              colorScheme="red"
+              width="300px"
+              mt={4}
+              onClick={handleSignOut}
+            >
+              Sign out
+            </Button>
+          </VStack>
         )}
       </Box>
     </Center>
   );
 }
+
+
 
 
 
