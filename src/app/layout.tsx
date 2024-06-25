@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import Providers from "@/lib/query-provider";
 import ReduxProvider from '../contexts/ReduxProvider'; // Import the new ReduxProvider component
 import { UserProvider } from "@/contexts/UserContext";
+import Head from 'next/head';
 
 export const metadata: Metadata = {
   title: "Retro-Pop Comics",
@@ -15,6 +16,18 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" data-bs-theme="dark">
+      <Head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com/s/librefranklin/v4/jiizDREVtHg8c9pDtHTskTgx4kRiUFzc.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+
+      </Head>
       <body>
         <ChakraProvider>
           <ColorModeProvider
@@ -39,6 +52,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
+
 
 
 // WITH CONTEXT!
