@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { createClient } from '@/utils/supabase/client';
-import { Image, Box, Spinner, useColorModeValue, Text } from "@chakra-ui/react";
+import { Image, Box, Spinner, useColorModeValue, Text, useBreakpointValue } from "@chakra-ui/react";
 import { RootState } from '@/store/store';
 import { setAvatarUrl } from '@/store/avatarSlice';
 
@@ -10,13 +10,14 @@ export default function AvatarNav({
   size,
 }: {
   uid: string | null
-  size: number
+  size: { base: number, md: number }
 }) {
   const supabase = createClient();
   const avatarUrl = useSelector((state: RootState) => state.avatar.url);
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
   const borderColor = useColorModeValue("gray.300", "gray.600");
+  const responsiveSize = useBreakpointValue(size);
 
   useEffect(() => {
     async function downloadImage(path: string) {
@@ -43,16 +44,16 @@ export default function AvatarNav({
     <Box textAlign="center" borderRadius="full" borderWidth={1} borderColor={borderColor}>
       {avatarUrl ? (
         <Image
-          width={size}
-          height={size}
+          width={responsiveSize}
+          height={responsiveSize}
           src={avatarUrl}
           alt="X"
-          style={{ height: size, width: size, objectFit: 'cover', borderRadius: '40%' }}
+          style={{ height: responsiveSize, width: responsiveSize, objectFit: 'cover', borderRadius: '50%' }}
         />
       ) : (
         <Box
-          height={size}
-          width={size}
+          height={responsiveSize}
+          width={responsiveSize}
           borderRadius="50%"
           bg="gray.200"
           display="flex"
@@ -65,6 +66,7 @@ export default function AvatarNav({
     </Box>
   );
 }
+
 
 
 

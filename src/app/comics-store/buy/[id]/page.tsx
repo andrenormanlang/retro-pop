@@ -292,6 +292,7 @@ const ComicDetail = () => {
             colorScheme="teal"
             variant="outline"
             onClick={() => router.back()}
+            size={{ base: "sm", md: "md" }} // Responsive button size
           >
             Back to Grid
           </Button>
@@ -299,7 +300,7 @@ const ComicDetail = () => {
         <Flex
           direction={{ base: "column", md: "row" }}
           bg="gray.800"
-          p={6}
+          p={{ base: 4, md: 6 }} // Responsive padding
           borderRadius="md"
           borderWidth="1px"
           borderColor="gray.700"
@@ -308,35 +309,39 @@ const ComicDetail = () => {
             <Image
               borderRadius="md"
               objectFit="contain"
-              src={comic.image || "../../public/default-image.jpg"}
+              src={comic.image || "/default-image.jpg"} // Use absolute path for public folder
               alt={`Cover of ${comic.title}`}
               width="100%"
+              height={{ base: "auto", md: "400px" }} // Responsive image height
             />
           </Box>
-          <VStack flex="2" align="start" spacing={4} p={4}>
-            <Heading as="h1" size="xl" color="tomato">
+          <VStack flex="2" align="start" spacing={4} p={{ base: 2, md: 4 }}>
+            <Heading as="h1" size={{ base: "lg", md: "xl" }} color="tomato">
               {comic.title}
             </Heading>
             <HStack spacing={4}>
-              <Badge colorScheme="green" fontSize="1.2em">
-                {formatDate(comic.release_date)}
+              <Badge colorScheme="green" fontSize={{ base: "0.8em", md: "1.2em" }}>
+                RELEASED {formatDate(comic.release_date)}
               </Badge>
             </HStack>
             <HStack spacing={4}>
-              <Text fontSize="md" color="gray.400">
-                <strong>Publisher:</strong> {comic.publisher}
+              <Text fontSize={{ base: "sm", md: "md" }} color="gray.400">
+                {/* <strong>Publisher:</strong> {comic.publisher} */}
+                <strong>{comic.publisher}</strong>
               </Text>
-              <Text fontSize="md" color="gray.400">
-                <strong>Price:</strong> {comic.price} {comic.currency}
-              </Text>
+
             </HStack>
             <HStack spacing={4}>
-              <Text fontSize="md" color="gray.400">
-                <strong>Pages:</strong> {comic.pages}
+              <Text fontSize={{ base: "sm", md: "md" }} color="gray.400">
+                <strong>{comic.pages} pages</strong>
+              </Text>
+			  <Text fontSize={{ base: "sm", md: "md" }} color="gray.400">
+                {/* <strong>Price:</strong> {comic.price} {comic.currency} */}
+                <strong>{comic.currency} {comic.price}</strong>
               </Text>
             </HStack>
             <Box>
-              <Heading as="h2" size="md" color="orange" mb={2}>
+              <Heading as="h2" size={{ base: "sm", md: "md" }} color="orange" mb={2}>
                 Credits
               </Heading>
               <SimpleGrid columns={{ base: 1, md: 2 }} spacing={2}>
@@ -355,12 +360,14 @@ const ComicDetail = () => {
             {isAdmin && (
               <HStack spacing={4} align="center">
                 <Switch
-                  size="lg"
+                  size={{ base: "sm", md: "lg" }}
                   colorScheme="teal"
                   isChecked={comic.is_approved}
                   onChange={toggleApproval}
                 />
-                <Text color="white">{comic.is_approved ? "Approved" : "Not Approved"}</Text>
+                <Text color="white" fontSize={{ base: "sm", md: "md" }}>
+                  {comic.is_approved ? "Approved" : "Not Approved"}
+                </Text>
               </HStack>
             )}
             <Button
@@ -368,6 +375,7 @@ const ComicDetail = () => {
               colorScheme="yellow"
               onClick={() => addToWishlist(comic.id)}
               isDisabled={comic.stock === 0}
+              size={{ base: "sm", md: "md" }} // Responsive button size
             >
               Add to Wishlist
             </Button>
@@ -378,12 +386,12 @@ const ComicDetail = () => {
         <Flex
           direction={{ base: "column", md: "row" }}
           bg="gray.800"
-          p={6}
+          p={{ base: 4, md: 6 }} // Responsive padding
           borderRadius="md"
           borderWidth="1px"
           borderColor="gray.700"
         >
-          <Text fontSize="lg" color="white" textAlign="start">
+          <Text fontSize={{ base: "sm", md: "lg" }} color="white" textAlign="start">
             {comic.description || "No description available."}
           </Text>
         </Flex>

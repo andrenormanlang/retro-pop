@@ -41,7 +41,7 @@ const validationSchema = z.object({
   description: z.string().min(1, { message: "Description is required" }),
   currency: z.string().min(1, { message: "Currency is required" }),
   genre: z.string().min(1, { message: "Genre is required" }),
-  stock: z.preprocess((val) => parseInt(val as string), z.number().positive({ message: "Stock must be positive" })),
+  stock: z.preprocess((val) => parseInt(val as string), z.number().nonnegative({ message: "Stock must be 0 or greater" })),
 });
 
 type FormData = z.infer<typeof validationSchema>;

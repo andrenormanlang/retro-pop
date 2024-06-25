@@ -1,9 +1,5 @@
 'use client';
 
-// components/Navbar.tsx
-
-'use client';
-
 import React, { useEffect, useState, useCallback } from "react";
 import {
   Box,
@@ -25,7 +21,7 @@ import {
 import { HamburgerIcon, CloseIcon, MoonIcon, SunIcon, ChevronDownIcon, ChevronUpIcon, StarIcon } from "@chakra-ui/icons";
 import { motion } from "framer-motion";
 import { createClient } from "@/utils/supabase/client";
-import RetroPopLogo from "./logo";
+import RetroPopLogo from "@/helpers/RetroPopLogo";
 import { MenuType, SubmenuType } from "@/types/navbar/nav.types";
 import { useRouter } from "next/navigation";
 import { User } from "@supabase/supabase-js";
@@ -35,7 +31,6 @@ import { setAvatarUrl } from "@/store/avatarSlice";
 import { fetchWishlist } from '@/store/wishlistSlice';
 import AvatarNav from "../../helpers/AvatarNav";
 import WishlistDrawer from "@/app/comics-store/wishlist/WishlistDrawer";
-
 
 const Navbar = () => {
   const supabase = createClient();
@@ -150,10 +145,10 @@ const Navbar = () => {
 
   const buttonStyle = {
     width: "100%",
-    maxWidth: "310px",
+    maxWidth: { base: "220px", md: "310px" },
     fontWeight: "700",
     fontFamily: "Bangers",
-    fontSize: "1.3rem",
+    fontSize: { base: "1rem", md: "1.3rem" },
     letterSpacing: "0.2rem",
     color: "white",
     justifyContent: "center",
@@ -180,10 +175,10 @@ const Navbar = () => {
 
   const buttonAvatarStyle = {
     width: "100%",
-    maxWidth: "310px",
+    maxWidth: { base: "220px", md: "310px" },
     fontWeight: "400",
     fontFamily: "'Libre Franklin', sans-serif",
-    fontSize: "1rem",
+    fontSize: { base: "0.8rem", md: "1rem" },
     color: "white",
     justifyContent: "center",
     alignItems: "center",
@@ -218,7 +213,7 @@ const Navbar = () => {
     borderRadius: "md",
     boxShadow: "lg",
     minWidth: "5rem",
-    width: "310px",
+    width: { base: "220px", md: "310px" },
     bg: menuBgColor,
     color: menuColor,
     outline: "none",
@@ -234,7 +229,7 @@ const Navbar = () => {
 
   const avatarMenuListStyle = {
     ...customMenuListStyle,
-    width: "6rem",
+    width: { base: "4rem", md: "6rem" },
   };
 
   const marvelButtonStyle = {
@@ -342,9 +337,9 @@ const Navbar = () => {
         color="white"
         px={{ base: "1rem", md: "4rem", lg: "8rem" }}
       >
-        <Flex align="center" mr={5}>
+        <Flex align="center" mr={4}>
           <Link href="/">
-            <RetroPopLogo />
+            <RetroPopLogo size={{ base: "60px", md: "80px" }} />
           </Link>
         </Flex>
         <Flex align="center">
@@ -352,15 +347,17 @@ const Navbar = () => {
             aria-label="Toggle theme"
             icon={colorMode === "dark" ? <SunIcon /> : <MoonIcon />}
             onClick={toggleColorMode}
-            mr={4}
+            mr={3}
+            size={{ base: "sm", md: "md" }}
           />
           {user && (
-            <Box position="relative" mr={4}>
+            <Box position="relative" mr={3}>
               <IconButton
                 aria-label="Wishlist"
                 icon={<StarIcon />}
                 onClick={onDrawerOpen} // Open the Drawer
                 colorScheme="yellow"
+                size={{ base: "sm", md: "md" }}
               />
               <Badge
                 position="absolute"
@@ -372,7 +369,7 @@ const Navbar = () => {
                 py="1"
                 bg="red.600"
                 color="white"
-                fontSize="0.75em"
+                fontSize={{ base: "0.6em", md: "0.75em" }}
                 fontWeight="bold"
               >
                 {wishlist.length}
@@ -383,10 +380,10 @@ const Navbar = () => {
             <IconButton
               onClick={handleOpenMainMenu}
               aria-label="Open menu"
-              icon={<HamburgerIcon boxSize={10} />}
+              icon={<HamburgerIcon boxSize={{ base: 4, md: 10 }} />}
               display={{ base: "block" }}
               zIndex="tooltip"
-              mr={4}
+              mr={2}
             />
           )}
           {user && (
@@ -397,9 +394,9 @@ const Navbar = () => {
                 onClose={handleToggleAvatarMenu}
               >
                 <MenuButton as={Box} position="relative" display="flex" alignItems="center">
-                  <AvatarNav uid={user.id} size={50} />
+                  <AvatarNav uid={user.id} size={{ base: 40, md: 50 }} />
                   <Box position="absolute" bottom="-15px" left="50%" transform="translateX(-50%)">
-                    {isAvatarMenuOpen ? <ChevronDownIcon /> : <ChevronUpIcon />}
+                    {isAvatarMenuOpen ? <ChevronDownIcon boxSize={{ base: 4, md: 5 }} /> : <ChevronUpIcon boxSize={{ base: 4, md: 5 }} />}
                   </Box>
                 </MenuButton>
                 <MenuList {...avatarMenuListStyle}>
@@ -458,6 +455,8 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
+
 
 // WITH CONTEXT!
 // 'use client';

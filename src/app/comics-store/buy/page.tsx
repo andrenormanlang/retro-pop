@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { useUser } from '../../../contexts/UserContext';
 import {
   SimpleGrid,
   Box,
@@ -34,6 +33,7 @@ import { NextPage } from 'next';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchWishlist, removeFromWishlist, updateWishlistQuantity } from '@/store/wishlistSlice';
 import { AppDispatch, RootState } from '@/store/store';
+import { useUser } from '@/contexts/UserContext';
 
 const formatDate = (dateString: string) => {
   const options: Intl.DateTimeFormatOptions = {
@@ -245,7 +245,7 @@ const ComicsBuy: NextPage = () => {
 
   return (
     <Container maxW="container.xl" centerContent p={4}>
-      <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing={6} width="100%">
+      <SimpleGrid columns={{ base: 2, md: 3, lg: 4 }} spacing={6} width="100%">
         {data
           ?.filter((comic: Comic) => isAdmin || comic.is_approved)
           .map((comic: Comic) => (
@@ -281,11 +281,12 @@ const ComicsBuy: NextPage = () => {
                   bgColor="rgba(0, 0, 0, 0.7)"
                   color="white"
                   padding={2}
+                  fontSize={{ base: 'sm', md: 'md' }}
                 >
-                  <Text fontWeight="bold" fontSize="lg">
+                  <Text fontWeight="bold" fontSize={{ base: 'xs', md: 'lg' }}>
                     {comic.price} {comic.currency}
                   </Text>
-                  <Text>In Stock: {comic.stock}</Text>
+                  <Text fontSize={{ base: 'xs', md: 'md' }}>In Stock: {comic.stock}</Text>
                 </Box>
                 {comic.stock === 0 && (
                   <Box
@@ -293,13 +294,13 @@ const ComicsBuy: NextPage = () => {
                     top="0"
                     left="0"
                     width="100%"
-                    height="20%"
+                    height="40%"
                     bgColor="rgba(255, 0, 0, 0.7)"
                     color="white"
                     display="flex"
                     alignItems="center"
                     justifyContent="center"
-                    fontSize="2xl"
+                    fontSize={{ base: 'xs', md: '2xl' }}
                     fontWeight="bold"
                   >
                     Sold Out
@@ -308,17 +309,16 @@ const ComicsBuy: NextPage = () => {
                 {isAdmin && !comic.is_approved && (
                   <Box
                     position="absolute"
-                    bottom="60"
+                    bottom="40"
                     left="0"
                     width="100%"
-                    height="20%"
+                    height="10%"
                     bgColor="rgba(255, 252, 127, 0.5)"
-                    color="white"
+                    color="red.800"
                     display="flex"
                     alignItems="center"
                     justifyContent="center"
-					textColor="red.800"
-                    fontSize="2xl"
+                    fontSize={{ base: 'xs', md: '2xl' }}
                     fontWeight="bold"
                   >
                     Not Approved
@@ -326,16 +326,17 @@ const ComicsBuy: NextPage = () => {
                 )}
               </Box>
               <Box p={3} bgColor="black" color="white" width="100%">
-                <Text fontWeight="bold" fontSize="lg" noOfLines={1} textAlign="center">
+                <Text fontWeight="bold" fontSize={{ base: 'xs', md: 'lg' }} noOfLines={1} textAlign="center">
                   {comic.title}
                 </Text>
-                <Badge m={1} colorScheme="green">
-                  Release Date: {formatDate(comic.release_date)}
+                <Badge m={1} colorScheme="green" fontSize={{ base: '3xs', md: 'sm' }}>
+                  Released: {formatDate(comic.release_date)}
                 </Badge>
-                <Badge m={1} colorScheme="purple">
-                  Publisher: {comic.publisher}
+                <Badge m={1} colorScheme="purple" fontSize={{ base: '3xs', md: 'sm' }}>
+                  {/* Publisher: {comic.publisher} */}
+                  {comic.publisher}
                 </Badge>
-                <Badge m={1} colorScheme="yellow">
+                <Badge m={1} colorScheme="yellow" fontSize={{ base: '3xs', md: 'sm' }}>
                   Genre: {comic.genre}
                 </Badge>
               </Box>
@@ -350,6 +351,7 @@ const ComicsBuy: NextPage = () => {
                   e.stopPropagation();
                   addToWishlist(comic.id);
                 }}
+                size={{ base: 'xs', md: 'md' }}
                 disabled={comic.stock === 0}
               />
               {isAdmin && (
@@ -361,7 +363,7 @@ const ComicsBuy: NextPage = () => {
                       fontWeight={"900"}
                       color={"white"}
                       backgroundColor={"blue.500"}
-                      size="sm"
+                      size={{ base: 'xs', md: 'md' }}
                       onClick={(e) => e.stopPropagation()}
                     />
                   </NextLink>
@@ -371,7 +373,7 @@ const ComicsBuy: NextPage = () => {
                     fontWeight={"900"}
                     color={"white"}
                     backgroundColor={"red.500"}
-                    size="sm"
+                    size={{ base: 'xs', md: 'md' }}
                     onClick={(e) => {
                       e.stopPropagation();
                       openDeleteDialog(comic);
@@ -410,5 +412,3 @@ const ComicsBuy: NextPage = () => {
 };
 
 export default ComicsBuy;
-
-
