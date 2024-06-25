@@ -1,44 +1,37 @@
-import { useEffect, useState } from 'react';
+// src/helpers/AvatarNav.tsx
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { createClient } from '@/utils/supabase/client';
-import { Image, Box, Spinner, useColorModeValue, Text, useBreakpointValue } from "@chakra-ui/react";
+import { Image, Box, Spinner, useColorModeValue, Text, useBreakpointValue } from '@chakra-ui/react';
 import { RootState } from '@/store/store';
 import { setAvatarUrl } from '@/store/avatarSlice';
+import { useGetAvatar } from '@/hooks/avatar-image/useGetAvatar';
+
 
 export default function AvatarNav({
   uid,
   size,
 }: {
   uid: string | null;
-  size: { base: number, md: number };
+  size: { base: number; md: number };
 }) {
-  const supabase = createClient();
-  const avatarUrl = useSelector((state: RootState) => state.avatar.url);
-  const [loading, setLoading] = useState(false);
+  const { data: avatarUrl, isLoading, isError } = useGetAvatar(uid!);
   const dispatch = useDispatch();
-  const borderColor = useColorModeValue("gray.300", "gray.600");
+  const borderColor = useColorModeValue('gray.300', 'gray.600');
   const responsiveSize = useBreakpointValue(size);
 
   useEffect(() => {
-    async function downloadImage(path: string) {
-      try {
-        setLoading(true);
-        const { data, error } = await supabase.storage.from('avatars').download(path);
-        if (error) {
-          throw error;
-        }
-
-        const url = URL.createObjectURL(data);
-        dispatch(setAvatarUrl(url));
-      } catch (error) {
-        console.log('Error downloading image: ', error);
-      } finally {
-        setLoading(false);
-      }
+    if (avatarUrl) {
+      dispatch(setAvatarUrl(avatarUrl));
     }
+  }, [avatarUrl, dispatch]);
 
-    if (avatarUrl) downloadImage(avatarUrl);
-  }, [avatarUrl, supabase, dispatch]);
+  if (isLoading) {
+    return <Spinner />;
+  }
+
+  if (isError) {
+    return <Text color="red.500">Error loading avatar</Text>;
+  }
 
   return (
     <Box textAlign="center" borderRadius="full" borderWidth={1} borderColor={borderColor}>
@@ -60,7 +53,9 @@ export default function AvatarNav({
           alignItems="center"
           justifyContent="center"
         >
-          {loading ? <Spinner /> : <Text fontSize="11px" color="red.500">Add Image</Text>}
+          <Text fontSize="11px" color="red.500">
+            No Image
+          </Text>
         </Box>
       )}
     </Box>

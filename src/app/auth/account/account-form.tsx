@@ -21,7 +21,6 @@ const validationSchema = z.object({
       return names.length >= 2 && names.every(n => n.length >= 2);
     }, { message: 'Full name must be at least two names with 2 characters each' }),
   username: z.string().min(1, { message: 'Username is required' }),
-//   website: z.string().url({ message: 'Website is required' }),
   avatarUrl: z.string().url({ message: '' }).optional(),
 });
 
@@ -39,7 +38,6 @@ export default function AccountForm({ user }: { user: User | null }) {
     defaultValues: {
       fullname: '',
       username: '',
-    //   website: '',
       avatarUrl: '',
     }
   });
@@ -50,7 +48,7 @@ export default function AccountForm({ user }: { user: User | null }) {
 
       const { data, error, status } = await supabase
         .from("profiles")
-        .select(`full_name, username, website, avatar_url, is_admin`)
+        .select(`full_name, username, avatar_url`)
         .eq("id", user?.id)
         .single();
 
@@ -62,7 +60,6 @@ export default function AccountForm({ user }: { user: User | null }) {
       if (data) {
         setValue("fullname", data.full_name || '');
         setValue("username", data.username || '');
-        // setValue("website", data.website || '');
         setValue("avatarUrl", data.avatar_url || '');
         dispatch(setAvatarUrl(data.avatar_url));
       }
@@ -79,7 +76,6 @@ export default function AccountForm({ user }: { user: User | null }) {
     }
   }, [user, getProfile]);
 
-//   const updateProfile: SubmitHandler<FormData> = async ({ fullname, username, website, avatarUrl }) => {
   const updateProfile: SubmitHandler<FormData> = async ({ fullname, username, avatarUrl }) => {
     try {
       setLoading(true);
@@ -89,7 +85,6 @@ export default function AccountForm({ user }: { user: User | null }) {
         id: user?.id as string,
         full_name: fullname,
         username,
-        // website,
         avatar_url: avatarUrl,
         updated_at: new Date().toISOString(),
       });
@@ -125,65 +120,61 @@ export default function AccountForm({ user }: { user: User | null }) {
             <Spinner />
           </Center>
         ) : (
-          <VStack spacing={4} as="form" onSubmit={handleSubmit(updateProfile)}>
-            <FormControl id="email">
-              <FormLabel>Email</FormLabel>
-              <Input type="text" value={user?.email || ''} isDisabled />
-            </FormControl>
-            {user && (
-              <Avatar
-                uid={user.id}
-                url={avatarUrl}
-                size={150}
-                onUpload={(url) => {
-                  dispatch(setAvatarUrl(url));
-                  setValue("avatarUrl", url);
-                }}
-              />
-            )}
-            <FormControl id="fullname" isInvalid={!!errors.fullname}>
-              <FormLabel>Full Name</FormLabel>
-              <Input
-                type="text"
-                {...register("fullname")}
-              />
-              {errors.fullname && <Text color="red.500">{errors.fullname.message}</Text>}
-            </FormControl>
-            <FormControl id="username" isInvalid={!!errors.username}>
-              <FormLabel>Username</FormLabel>
-              <Input
-                type="text"
-                {...register("username")}
-              />
-              {errors.username && <Text color="red.500">{errors.username.message}</Text>}
-            </FormControl>
-            <FormControl id="website">
-              <FormLabel>Website (Optional)</FormLabel>
-              <Input
-                type="url"
-              />
-              {/* {errors.website && <Text color="red.500">{errors.website.message}</Text>} */}
-            </FormControl>
-            {errors.avatarUrl && <Text color="red.500">{errors.avatarUrl.message}</Text>}
-            <Button
-              colorScheme="teal"
-              width="300px"
-              type="submit"
-              isDisabled={loading}
-            >
-              {loading ? 'Loading ...' : 'Update'}
-            </Button>
-            <form action="/auth/signout" method="post">
+          <>
+            <VStack spacing={4} as="form" onSubmit={handleSubmit(updateProfile)}>
+              <FormControl id="email">
+                <FormLabel>Email</FormLabel>
+                <Input type="text" value={user?.email || ''} isDisabled />
+              </FormControl>
+              {user && (
+                <Avatar
+                  uid={user.id}
+                  url={avatarUrl}
+                  size={150}
+                  onUpload={(url) => {
+                    dispatch(setAvatarUrl(url));
+                    setValue("avatarUrl", url);
+                  }}
+                />
+              )}
+              <FormControl id="fullname" isInvalid={!!errors.fullname}>
+                <FormLabel>Full Name</FormLabel>
+                <Input
+                  type="text"
+                  {...register("fullname")}
+                />
+                {errors.fullname && <Text color="red.500">{errors.fullname.message}</Text>}
+              </FormControl>
+              <FormControl id="username" isInvalid={!!errors.username}>
+                <FormLabel>Username</FormLabel>
+                <Input
+                  type="text"
+                  {...register("username")}
+                />
+                {errors.username && <Text color="red.500">{errors.username.message}</Text>}
+              </FormControl>
+              {errors.avatarUrl && <Text color="red.500">{errors.avatarUrl.message}</Text>}
+              <Button
+                colorScheme="teal"
+                width="300px"
+                type="submit"
+                isDisabled={loading}
+              >
+                {loading ? 'Loading ...' : 'Update'}
+              </Button>
+            </VStack>
+            <form action="/auth/signout" method="post" style={{ marginTop: '16px' }}>
               <Button colorScheme="red" width="300px" type="submit">
                 Sign out
               </Button>
             </form>
-          </VStack>
+          </>
         )}
       </Box>
     </Center>
   );
 }
+
 
 
 

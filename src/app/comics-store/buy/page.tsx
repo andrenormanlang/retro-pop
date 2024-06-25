@@ -300,7 +300,7 @@ const ComicsBuy: NextPage = () => {
                     display="flex"
                     alignItems="center"
                     justifyContent="center"
-                    fontSize={{ base: 'xs', md: '2xl' }}
+                    fontSize={{ base: 'lg', md: 'lg' }}
                     fontWeight="bold"
                   >
                     Sold Out
