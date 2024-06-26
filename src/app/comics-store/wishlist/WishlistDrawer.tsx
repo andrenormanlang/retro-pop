@@ -34,7 +34,11 @@ import { RootState, AppDispatch } from '@/store/store';
 import { fetchWishlist, removeFromWishlist, updateWishlistQuantity } from '@/store/wishlistSlice';
 import { WishlistItem } from '@/types/comics-store/comic-detail.type';
 import { useUser } from '../../../contexts/UserContext';
-import StripeCheckout from '@/components/StripeCheckout';
+import CheckoutForm from '@/components/CheckoutForm';
+import PaymentSuccess from '@/components/PaymentSuccess';
+import { Elements } from '@stripe/react-stripe-js';
+import getStripe from '@/utils/get-stripejs';
+
 
 interface WishlistDrawerProps {
   isOpen: boolean;
@@ -53,6 +57,9 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
   const [selectedComicId, setSelectedComicId] = useState<string | null>(null);
   const cancelRef = useRef(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [isPaymentSuccessOpen, setIsPaymentSuccessOpen] = useState(false);
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [clientSecret, setClientSecret] = useState("");
 
   useEffect(() => {
     if (user) {
@@ -137,8 +144,31 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
     return wishlist.reduce((total, item) => total + item.comic.price * item.stock, 0).toFixed(2);
   };
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
+    const amount = parseFloat(calculateTotalAmount()) * 100;
+    setTotalAmount(amount);
+    const response = await fetch("/api/create-payment-intent", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ amount }),
+    });
+    const data = await response.json();
+    setClientSecret(data.clientSecret);
     setIsCheckoutOpen(true);
+  };
+
+  const handlePaymentSuccess = () => {
+    setIsCheckoutOpen(false);
+    setIsPaymentSuccessOpen(true);
+    toast({
+      title: "Payment Successful",
+      description: "Thank you for your purchase.",
+      status: "success",
+      duration: 5000,
+      isClosable: true,
+    });
   };
 
   const defaultImageUrl = '/path/to/default-image.jpg';
@@ -149,8 +179,6 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
         <DrawerOverlay />
         <DrawerContent>
           <DrawerCloseButton />
-          {/* <DrawerHeader>My Wishlist</DrawerHeader> */}
-
           <DrawerBody>
             {loading ? (
               <Center h="100vh">
@@ -240,7 +268,7 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
                 <Text>Total</Text>
                 <Text>{calculateTotalAmount()}</Text>
               </Flex>
-              <Button mt={4} colorScheme="blue" width="100%">
+              <Button mt={4} colorScheme="blue" width="100%" onClick={handleCheckout}>
                 Go to Checkout
               </Button>
             </Box>
@@ -283,10 +311,28 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
           </AlertDialogContent>
         </AlertDialogOverlay>
       </AlertDialog>
-	  {isCheckoutOpen && (
-        <Center>
-          <StripeCheckout amount={parseFloat(calculateTotalAmount()) * 100} />
-        </Center>
+
+      {isCheckoutOpen && clientSecret && (
+        <Drawer isOpen={isCheckoutOpen} placement="right" onClose={() => setIsCheckoutOpen(false)} size={{ base: 'full', md: 'md' }}>
+          <DrawerOverlay />
+          <DrawerContent>
+            <DrawerCloseButton />
+            <DrawerHeader>Checkout</DrawerHeader>
+            <DrawerBody>
+              <Elements stripe={getStripe()} options={{ clientSecret }}>
+                <CheckoutForm amount={totalAmount} onPaymentSuccess={handlePaymentSuccess} />
+              </Elements>
+            </DrawerBody>
+          </DrawerContent>
+        </Drawer>
+      )}
+
+      {isPaymentSuccessOpen && (
+        <PaymentSuccess
+          isOpen={isPaymentSuccessOpen}
+          onClose={() => setIsPaymentSuccessOpen(false)}
+          amount={(totalAmount / 100).toFixed(2)}
+        />
       )}
     </>
   );

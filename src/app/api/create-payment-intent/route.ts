@@ -1,34 +1,25 @@
-import { NextRequest, NextResponse } from 'next/server';
-import Stripe from 'stripe';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-06-20',
-});
+import { NextRequest, NextResponse } from "next/server";
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 export async function POST(request: NextRequest) {
-  const { amount } = await request.json();
-
   try {
+    const { amount } = await request.json();
+
     const paymentIntent = await stripe.paymentIntents.create({
-      amount,
-      currency: 'usd',
-      payment_method_types: ['card', 'pix', 'swish'],
+      amount: amount,
+      currency: "usd",
+      automatic_payment_methods: { enabled: true },
     });
 
-    return new NextResponse(JSON.stringify({ clientSecret: paymentIntent.client_secret }), {
-      status: 201,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      },
-    });
-  } catch (error: any) {
-    return new NextResponse(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      },
-    });
+    return NextResponse.json({ clientSecret: paymentIntent.client_secret });
+  } catch (error) {
+    console.error("Internal Error:", error);
+    // Handle other errors (e.g., network issues, parsing errors)
+    return NextResponse.json(
+      { error: `Internal Server Error: ${error}` },
+      { status: 500 }
+    );
   }
 }
+
+
