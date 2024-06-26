@@ -226,7 +226,8 @@ const ComicsListTable = () => {
                     </Th>
                   </Tr>
                   <Tr>
-                    {visibleColumns.includes("title") && <Th textAlign="left" onClick={() => requestSort("title")} position="sticky" left={0} bg="black" zIndex={1}>Title</Th>}
+                    {/* {visibleColumns.includes("title") && <Th textAlign="left" onClick={() => requestSort("title")} position="sticky" left={0} bg="black" zIndex={1}>Title</Th>} */}
+                    {visibleColumns.includes("title") && <Th textAlign="left" onClick={() => requestSort("title")}>Title</Th>}
                     {visibleColumns.includes("release_date") && <Th textAlign="center" onClick={() => requestSort("release_date")}>Release Date</Th>}
                     {visibleColumns.includes("profiles.username") && <Th textAlign="center" onClick={() => requestSort("profiles.username")}>User</Th>}
                     {visibleColumns.includes("profiles.email") && <Th textAlign="center" onClick={() => requestSort("profiles.email")}>Email</Th>}
@@ -240,7 +241,8 @@ const ComicsListTable = () => {
                 <Tbody>
                   {sortedComics.map((comic: Comic) => (
                     <Tr key={comic.id}>
-                      {visibleColumns.includes("title") && <Td textAlign="initial" position="sticky" left={0} bg="black" zIndex={1}>{comic.title}</Td>}
+                      {/* {visibleColumns.includes("title") && <Td textAlign="initial" position="sticky" left={0} bg="black" zIndex={1}>{comic.title}</Td>} */}
+                      {visibleColumns.includes("title") && <Td textAlign="initial">{comic.title}</Td>}
                       {visibleColumns.includes("release_date") && <Td textAlign="center">{formatDateRelease(comic.release_date)}</Td>}
                       {visibleColumns.includes("profiles.username") && <Td textAlign="center">{comic.profiles?.username || "Unknown"}</Td>}
                       {visibleColumns.includes("profiles.email") && <Td textAlign="center">{comic.profiles?.email || "Unknown"}</Td>}

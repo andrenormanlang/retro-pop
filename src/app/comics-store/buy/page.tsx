@@ -21,6 +21,7 @@ import {
   AlertDialogContent,
   AlertDialogOverlay,
   Badge,
+  Stack,
 } from '@chakra-ui/react';
 import { useComicBuy } from '@/hooks/comics-sale/useComicBuy';
 import { motion } from 'framer-motion';
@@ -326,20 +327,21 @@ const ComicsBuy: NextPage = () => {
                 )}
               </Box>
               <Box p={3} bgColor="black" color="white" width="100%">
-                <Text fontWeight="bold" fontSize={{ base: 'xs', md: 'lg' }} noOfLines={1} textAlign="center">
-                  {comic.title}
-                </Text>
-                <Badge m={1} colorScheme="green" fontSize={{ base: '2xs', md: 'sm' }}>
-                  Released: {formatDate(comic.release_date)}
-                </Badge>
-                <Badge m={1} colorScheme="purple" fontSize={{ base: '2xs', md: 'sm' }}>
-                  {/* Publisher: {comic.publisher} */}
-                  {comic.publisher}
-                </Badge>
-                <Badge m={1} colorScheme="yellow" fontSize={{ base: '2xs', md: 'sm' }}>
-                  Genre: {comic.genre}
-                </Badge>
-              </Box>
+  <Stack spacing={2}>
+    <Text fontWeight="bold" fontSize={{ base: 'xs', md: 'lg' }} noOfLines={1} textAlign="center">
+      {comic.title}
+    </Text>
+    <Badge m={1} colorScheme="green" fontSize={{ base: '2xs', md: 'sm' }}>
+      Released: {formatDate(comic.release_date)}
+    </Badge>
+    <Badge m={1} colorScheme="purple" fontSize={{ base: '2xs', md: 'sm' }}>
+      {comic.publisher}
+    </Badge>
+    <Badge m={1} colorScheme="yellow" fontSize={{ base: '2xs', md: 'sm' }}>
+      Genre: {comic.genre}
+    </Badge>
+  </Stack>
+</Box>
               <IconButton
                 aria-label="Add to wishlist"
                 icon={<StarIcon />}
