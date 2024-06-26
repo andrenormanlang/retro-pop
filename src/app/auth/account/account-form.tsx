@@ -5,13 +5,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import { createClient } from "@/utils/supabase/client";
 import { type User } from "@supabase/supabase-js";
 import Avatar from "./avatar";
-import { Box, Button, FormControl, FormLabel, Input, VStack, Heading, Spinner, Alert, AlertIcon, Center, useColorModeValue, Text } from "@chakra-ui/react";
+import { Box, Button, FormControl, FormLabel, Input, VStack, Heading, Spinner, Alert, AlertIcon, Center, useColorModeValue, Text, useToast } from "@chakra-ui/react";
 import { RootState } from '@/store/store';
 import { setAvatarUrl } from '@/store/avatarSlice';
 import { useForm, SubmitHandler } from "react-hook-form";
-import {useRouter} from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { z } from 'zod';
-import { zodResolver } from "@hookform/resolvers/zod";
+import { zodResolver } from '@hookform/resolvers/zod';
 
 // Define validation schema
 const validationSchema = z.object({
@@ -34,6 +34,7 @@ export default function AccountForm({ user }: { user: User | null }) {
   const avatarUrl = useSelector((state: RootState) => state.avatar.url);
   const router = useRouter();
   const dispatch = useDispatch();
+  const toast = useToast();
 
   const { register, handleSubmit, formState: { errors }, setValue } = useForm<FormData>({
     resolver: zodResolver(validationSchema),
@@ -91,9 +92,24 @@ export default function AccountForm({ user }: { user: User | null }) {
         updated_at: new Date().toISOString(),
       });
       if (error) throw error;
-      alert("Profile updated!");
+      toast({
+        title: "Profile updated.",
+        description: "Your profile has been updated successfully.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
     } catch (error) {
       setError("Error updating the data!");
+      toast({
+        title: "Profile update failed.",
+        description: "There was an error updating your profile.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
     } finally {
       setLoading(false);
     }
@@ -102,9 +118,17 @@ export default function AccountForm({ user }: { user: User | null }) {
   const handleSignOut = async () => {
     try {
       await supabase.auth.signOut();
-      window.location.href = "/";
+      router.push("/");
     } catch (error) {
       setError("Error signing out!");
+      toast({
+        title: "Sign out failed.",
+        description: "There was an error signing out.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
     }
   };
 

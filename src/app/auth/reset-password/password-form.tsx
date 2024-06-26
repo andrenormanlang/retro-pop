@@ -25,6 +25,7 @@ type FormData = z.infer<typeof UpdatePasswordSchema>;
 
 export default function PasswordForm({ user }: { user: User | undefined }) {
   const supabase = createClientComponentClient();
+  const [error, setError] = useState<string | null>(null);
   const toast = useToast();
   const [formData, setFormData] = useState<FormData>({ password: "", passwordConfirm: "" });
 
@@ -71,6 +72,14 @@ export default function PasswordForm({ user }: { user: User | undefined }) {
     });
   };
 
+  const handleReset = async () => {
+    try {
+      window.location.href = "/auth/login";
+    } catch (error) {
+      setError("Error updating password!");
+    }
+  };
+
   return (
     <Box width={["90%", "80%", "60%", "50%", "30%"]} p={8} maxWidth="400px" boxShadow="md" borderRadius="md" >
       <Text fontSize="xl" fontWeight="semibold" mb={4}>Update Password</Text>
@@ -96,7 +105,7 @@ export default function PasswordForm({ user }: { user: User | undefined }) {
             onChange={(e) => setFormData({ ...formData, passwordConfirm: e.target.value })}
           />
         </FormControl>
-        <Button colorScheme="blue" mt={6} type="submit">Update Password</Button>
+        <Button colorScheme="blue" mt={6} type="submit" onClick={handleReset}>Update Password & Login</Button>
       </form>
     </Box>
   );
