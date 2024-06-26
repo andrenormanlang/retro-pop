@@ -28,12 +28,12 @@ import {
 } from "@chakra-ui/react";
 import { DeleteIcon } from "@chakra-ui/icons";
 import { useDispatch, useSelector } from "react-redux";
+import { useRouter } from 'next/navigation';
 import { RootState, AppDispatch } from "@/store/store";
 import { fetchWishlist, removeFromWishlist, updateWishlistQuantity } from "@/store/wishlistSlice";
 import { WishlistItem } from "@/types/comics-store/comic-detail.type";
 import { useUser } from "../../../contexts/UserContext";
 import CheckoutForm from "@/components/CheckoutForm";
-import PaymentSuccess from "@/components/PaymentSuccess";
 import { Elements } from "@stripe/react-stripe-js";
 import getStripe from "@/utils/get-stripejs";
 
@@ -50,6 +50,7 @@ interface WishlistDrawerProps {
 
 const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
   const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
   const { user } = useUser();
   const wishlist = useSelector((state: RootState) => state.wishlist.wishlist);
   const loading = useSelector((state: RootState) => state.wishlist.loading);
@@ -60,7 +61,6 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
   const [selectedComicId, setSelectedComicId] = useState<string | null>(null);
   const cancelRef = useRef(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-  const [isPaymentSuccessOpen, setIsPaymentSuccessOpen] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
   const [clientSecret, setClientSecret] = useState("");
   const [orderData, setOrderData] = useState<OrderData | null>(null);
@@ -149,39 +149,39 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
   };
 
   const handleCheckout = async () => {
-	if (!user) return;
+    if (!user) return;
 
-	const amount = parseFloat(calculateTotalAmount()) * 100;
-	setTotalAmount(amount);
+    const amount = parseFloat(calculateTotalAmount()) * 100;
+    setTotalAmount(amount);
 
-	const response = await fetch("/api/create-payment-intent", {
-	  method: "POST",
-	  headers: {
-		"Content-Type": "application/json",
-	  },
-	  body: JSON.stringify({ amount, userId: user.id, wishlistItems: wishlist }),
-	});
+    const response = await fetch("/api/create-payment-intent", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ amount, userId: user.id, wishlistItems: wishlist }),
+    });
 
-	const data = await response.json();
+    const data = await response.json();
 
-	if (data.error) {
-	  toast({
-		title: "Payment Error",
-		description: data.error,
-		status: "error",
-		duration: 5000,
-		isClosable: true,
-	  });
-	} else {
-	  setClientSecret(data.clientSecret);
-	  setOrderData({ amount, items: wishlist, orderId: data.orderId }); // Store order data
-	  setIsCheckoutOpen(true);
-	}
+    if (data.error) {
+      toast({
+        title: "Payment Error",
+        description: data.error,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    } else {
+      setClientSecret(data.clientSecret);
+      setOrderData({ amount, items: wishlist, orderId: data.orderId }); // Store order data
+      setIsCheckoutOpen(true);
+    }
   };
 
   const handlePaymentSuccess = async () => {
     setIsCheckoutOpen(false);
-    setIsPaymentSuccessOpen(true);
+    router.push(`/payment-success?orderId=${orderData!.orderId}`); // Navigate to payment success page
     toast({
       title: "Payment Successful",
       description: "Thank you for your purchase.",
@@ -357,16 +357,9 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
           </DrawerContent>
         </Drawer>
       )}
-
-      {isPaymentSuccessOpen && orderData && (
-        <PaymentSuccess
-          onClose={() => setIsPaymentSuccessOpen(false)}
-          amount={(totalAmount / 100).toFixed(2)}
-          orderId={orderData.orderId} // Pass orderId to PaymentSuccess component
-        />
-      )}
     </>
   );
 };
 
 export default WishlistDrawer;
+
