@@ -360,7 +360,6 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
 
       {isPaymentSuccessOpen && orderData && (
         <PaymentSuccess
-          isOpen={isPaymentSuccessOpen}
           onClose={() => setIsPaymentSuccessOpen(false)}
           amount={(totalAmount / 100).toFixed(2)}
           orderId={orderData.orderId} // Pass orderId to PaymentSuccess component
