@@ -34,6 +34,7 @@ import { RootState, AppDispatch } from '@/store/store';
 import { fetchWishlist, removeFromWishlist, updateWishlistQuantity } from '@/store/wishlistSlice';
 import { WishlistItem } from '@/types/comics-store/comic-detail.type';
 import { useUser } from '../../../contexts/UserContext';
+import StripeCheckout from '@/components/StripeCheckout';
 
 interface WishlistDrawerProps {
   isOpen: boolean;
@@ -51,6 +52,7 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedComicId, setSelectedComicId] = useState<string | null>(null);
   const cancelRef = useRef(null);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -133,6 +135,10 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
 
   const calculateTotalAmount = () => {
     return wishlist.reduce((total, item) => total + item.comic.price * item.stock, 0).toFixed(2);
+  };
+
+  const handleCheckout = () => {
+    setIsCheckoutOpen(true);
   };
 
   const defaultImageUrl = '/path/to/default-image.jpg';
@@ -277,6 +283,11 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
           </AlertDialogContent>
         </AlertDialogOverlay>
       </AlertDialog>
+	  {isCheckoutOpen && (
+        <Center>
+          <StripeCheckout amount={parseFloat(calculateTotalAmount()) * 100} />
+        </Center>
+      )}
     </>
   );
 };

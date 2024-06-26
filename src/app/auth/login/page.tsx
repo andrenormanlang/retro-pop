@@ -14,9 +14,22 @@ import {
   Spinner,
   useColorModeValue,
   useToast,
+  InputGroup,
+  InputRightElement,
+  IconButton,
 } from "@chakra-ui/react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
+import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
+import { z, ZodError } from "zod";
+
+// Define a Zod schema for password validation directly
+const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
+
+const validationSchema = z.object({
+  email: z.string().email("Must be a valid email"),
+  password: passwordSchema,
+});
 
 export default function Login() {
   const router = useRouter();
@@ -27,7 +40,9 @@ export default function Login() {
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
-  const toast = useToast(); // Initialize the useToast hook
+  const toast = useToast();
+  const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({ email: "", password: "" });
 
   const bgCenter = useColorModeValue("gray.50", "gray.800");
   const bgBox = useColorModeValue("white", "gray.700");
@@ -44,26 +59,38 @@ export default function Login() {
     };
     checkUser();
 
-	const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-		if (event === "SIGNED_IN") {
-		  setIsAuthenticated(true);
-		  router.refresh(); // Refresh the browser
-		  // router.push("/");
-		  // window.location.reload();
-		}
-	  });
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN") {
+        setIsAuthenticated(true);
+        router.refresh();
+      }
+    });
 
-	  // Cleanup subscription on unmount
-	  return () => {
-		authListener.subscription.unsubscribe();
-	  };
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
   }, [router, supabase.auth]);
 
   const signIn = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
+    const { email, password } = formData;
+
+    try {
+      validationSchema.parse({ email, password });
+    } catch (err) {
+      if (err instanceof ZodError) {
+        err.errors.forEach((error) => {
+          toast({
+            title: "Validation Error",
+            description: error.message,
+            status: "error",
+            duration: 9000,
+            isClosable: true,
+          });
+        });
+        return;
+      }
+    }
 
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
@@ -74,22 +101,21 @@ export default function Login() {
         status: "error",
         duration: 9000,
         isClosable: true,
-        position: "top"
+        position: "top",
       });
       router.push("/auth/login?message=Could not authenticate user");
     } else {
       setIsAuthenticated(true);
-      router.refresh(); // Refresh the browser
+      router.refresh();
       toast({
         title: "Logged In Successfully",
         description: "You have successfully logged in.",
         status: "success",
         duration: 5000,
         isClosable: true,
-        position: "top"
+        position: "top",
       });
       router.push("/");
-	//   window.location.reload();
     }
   };
 
@@ -102,8 +128,8 @@ export default function Login() {
   }
 
   if (isAuthenticated) {
-	window.location.reload();
-    return null; // Do not render anything if the user is authenticated
+    window.location.reload();
+    return null;
   }
 
   return (
@@ -121,11 +147,33 @@ export default function Login() {
         <form onSubmit={signIn}>
           <FormControl id="email" mb={4}>
             <FormLabel>Email</FormLabel>
-            <Input type="email" name="email" required />
+            <Input
+              type="email"
+              name="email"
+              required
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            />
           </FormControl>
           <FormControl id="password" mb={4}>
             <FormLabel>Password</FormLabel>
-            <Input type="password" name="password" required />
+            <InputGroup>
+              <Input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                required
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              />
+              <InputRightElement>
+                <IconButton
+                  icon={showPassword ? <ViewOffIcon /> : <ViewIcon />}
+                  onClick={() => setShowPassword(!showPassword)}
+                  variant="ghost"
+                  aria-label="Toggle Password Visibility"
+                />
+              </InputRightElement>
+            </InputGroup>
           </FormControl>
           <Button type="submit" colorScheme="teal" width="full" mb={4}>
             Sign In
@@ -150,6 +198,7 @@ export default function Login() {
     </Center>
   );
 }
+
 
 // "use client";
 

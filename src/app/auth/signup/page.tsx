@@ -16,24 +16,28 @@ import {
   useColorModeValue,
   Spinner,
   useToast,
+  InputGroup,
+  InputRightElement,
+  IconButton,
 } from "@chakra-ui/react";
+import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
 import Link from "next/link";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useForm, SubmitHandler } from "react-hook-form";
 
 const passwordValidation = new RegExp(
-  /^(?=.?[A-Z])(?=.?[a-z])(?=.?[0-9])(?=.?[#?!@$%^&*-]).{8,}$/
+  /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[#?!@$%^&*-]).{6,}$/
 );
 
 const validationSchema = z.object({
   email: z
     .string()
-    .min(1, { message: 'Must have at least 5 characters' })
+    .min(5, { message: 'Must have at least 5 characters' })
     .email({ message: 'Must be a valid email' }),
   password: z
     .string()
     .min(6, { message: 'Must have at least 6 characters long' })
-    .regex(passwordValidation, { message: 'Your password must have at least one uppercase and one special character' }),
+    .regex(passwordValidation, { message: 'Your password must have at least one uppercase letter, one special character, and one number' }),
   confirmPassword: z.string().min(6, { message: 'Must have at least 6 characters' }),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords must match",
@@ -47,6 +51,8 @@ export default function Signup() {
   const searchParams = useSearchParams();
   const message = searchParams.get("message");
   const toast = useToast();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const {
     register,
@@ -111,15 +117,14 @@ export default function Signup() {
         isClosable: true,
       });
     } else {
-		toast({
-			title: "Sign up success",
-			description: `Check your email (${email}) to continue sign in process`,
-			status: "success",
-			duration: 9000,
-			isClosable: true,
-
-		})
-    //   router.push(`/auth/confirm?message=Check email(${email}) to continue sign in process`);
+      toast({
+        title: "Sign up success",
+        description: `Check your email (${email}) to continue sign in process`,
+        status: "success",
+        duration: 9000,
+        isClosable: true,
+      });
+      // router.push(`/auth/confirm?message=Check email(${email}) to continue sign in process`);
     }
   };
 
@@ -156,12 +161,42 @@ export default function Signup() {
           </FormControl>
           <FormControl id="password" mb={4} isInvalid={!!errors.password}>
             <FormLabel>Password</FormLabel>
-            <Input type="password" {...register('password')} name="password" required />
+            <InputGroup>
+              <Input
+                type={showPassword ? 'text' : 'password'}
+                {...register('password')}
+                name="password"
+                required
+              />
+              <InputRightElement>
+                <IconButton
+                  icon={showPassword ? <ViewOffIcon /> : <ViewIcon />}
+                  onClick={() => setShowPassword(!showPassword)}
+                  variant="ghost"
+                  aria-label="Toggle Password Visibility"
+                />
+              </InputRightElement>
+            </InputGroup>
             {errors.password && <Text color="red.500">{errors.password.message}</Text>}
           </FormControl>
           <FormControl id="confirmPassword" mb={4} isInvalid={!!errors.confirmPassword}>
             <FormLabel>Confirm Password</FormLabel>
-            <Input type="password" {...register('confirmPassword')} name="confirmPassword" required />
+            <InputGroup>
+              <Input
+                type={showConfirmPassword ? 'text' : 'password'}
+                {...register('confirmPassword')}
+                name="confirmPassword"
+                required
+              />
+              <InputRightElement>
+                <IconButton
+                  icon={showConfirmPassword ? <ViewOffIcon /> : <ViewIcon />}
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  variant="ghost"
+                  aria-label="Toggle Confirm Password Visibility"
+                />
+              </InputRightElement>
+            </InputGroup>
             {errors.confirmPassword && <Text color="red.500">{errors.confirmPassword.message}</Text>}
           </FormControl>
           <Button type="submit" colorScheme="teal" width="full" mb={4}>
@@ -182,4 +217,5 @@ export default function Signup() {
     </Center>
   );
 }
+
 
