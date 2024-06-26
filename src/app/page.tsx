@@ -21,9 +21,6 @@ const HomePage: NextPage = () => {
 
 export default HomePage;
 
-
-
-
 // 'use client';
 
 // import React, { useEffect, useState } from 'react';

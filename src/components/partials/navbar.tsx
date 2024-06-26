@@ -177,7 +177,6 @@ const Navbar = () => {
     width: "100%",
     maxWidth: { base: "220px", md: "310px" },
     fontWeight: "400",
-    // fontFamily: "'Libre Franklin', sans-serif",
     fontSize: { base: "0.8rem", md: "1rem" },
     color: "white",
     justifyContent: "center",
@@ -234,7 +233,6 @@ const Navbar = () => {
 
   const marvelButtonStyle = {
     ...buttonStyle,
-    // fontFamily: "'Libre Franklin', sans-serif",
     fontWeight: "900",
     textTransform: "uppercase",
     bg: "red.500",
@@ -590,7 +588,6 @@ export default Navbar;
 
 //   const marvelButtonStyle = {
 //     ...buttonStyle,
-//     fontFamily: "'Libre Franklin', sans-serif",
 //     fontWeight: "900",
 //     textTransform: "uppercase",
 //     bg: "red.500",

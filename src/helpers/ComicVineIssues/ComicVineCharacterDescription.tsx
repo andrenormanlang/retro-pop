@@ -77,7 +77,7 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 		replace: (domNode: DomNode, index: number)  => {
 			if (domNode.name === "a" && domNode.attribs.href && domNode.attribs["data-ref-id"]) {
 				const newHref = `https://comicvine.gamespot.com/images/${domNode.attribs["data-ref-id"]}`;
-				domNode.attribs.href = newHref; // Update the href attribute to point to the custom URL
+				domNode.attribs.href = newHref; 
 			}
 			if (domNode.name === "img" && domNode.attribs["data-src"]) {
 				const {
@@ -86,10 +86,10 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 					"data-placeholder": dataPlaceholder,
 					"data-srcset": dataSrcset,
 					"data-ref-id": dataRefId,
-				} = domNode.attribs; // Since these values could be undefined, provide a default or handle the undefined case
-				const src = dataSrc || ""; // Provide a default empty string if undefined
-				const placeholder = dataPlaceholder || "path_to_your_placeholder_image"; // Provide a default placeholder image
-				const srcSet = dataSrcset || ""; // Provide a default empty string if undefined
+				} = domNode.attribs;
+				const src = dataSrc || "";
+				const placeholder = dataPlaceholder || "path_to_your_placeholder_image";
+				const srcSet = dataSrcset || "";
 				const imageUrl = dataRefId ? `https://comicvine.gamespot.com/images/${dataRefId}` : "#";
 				return (
 					<ImageLinkWrapper href={src}>
@@ -123,7 +123,6 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 					<Heading
 						as="h2"
 						size={{ base: "md", md: "lg" }}
-						// fontFamily="Libre Franklin"
 						mt="1rem"
 						mb="1rem"
 						color="red"
@@ -136,7 +135,6 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 					<Heading
 						as="h3"
 						size={{ base: "md", md: "lg" }}
-						// fontFamily="Libre Franklin"
 						mt="1rem"
 						mb="1rem"
 						color="red"
@@ -149,7 +147,6 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 					<Heading
 						as="h3"
 						size={{ base: "md", md: "md" }}
-						// fontFamily="Libre Franklin"
 						mt="1rem"
 						mb="1rem"
 						color="red"
@@ -161,7 +158,6 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 				return (
 					<Text
 						fontSize={{ base: "0.9rem", md: "md" }}
-						// fontFamily="Libre Franklin"
 						fontWeight="bold"
 						mt="0.2rem"
 						mb="1rem"

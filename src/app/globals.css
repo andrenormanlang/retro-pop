@@ -20,7 +20,6 @@
 }
 html, body {
   color: rgb(var(--foreground-rgb)); /* Text color set to white */
-  /* background: linear-gradient(to bottom, transparent, rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb)); */
   width: 100%;
   overflow-x: hidden;
   margin: 0;
@@ -51,67 +50,7 @@ html, body {
 .title, .description {
   color: rgb(var(--foreground-rgb));
 }
-
-/* Rest of your CSS */
-/* Using Comic Neue for headings */
 h1, h2, h3, h4, h5, h6 {
   font-family: "Bangers", system-ui;
 }
-
-/* Using Lato for body text */
-/* body, p {
-  font-family: "Comic Neue", cursive;
-} */
-/*# sourceMappingURL=globals.css.map */
-/* Using Lato for body text */
-/* body, p {
-  font-family: "Permanent Marker", cursive;
-} */
-/*# sourceMappingURL=globals.css.map */
-body, p {
-  /* font-family: "Libre Franklin", sans-serif; */
-}/*# sourceMappingURL=globals.css.map */
-
-/* .image-responsive {
-	height: auto;
-	width: 100%;
-  } */
-
-  /* Medium devices (tablets, 768px and up) */
-  /* @media (min-width: 768px) {
-	.image-responsive {
-	  max-width: "300px";
-	}
-  } */
-
-  /* Large devices (desktops, 992px and up) */
-  /* @media (min-width: 992px) {
-	.image-responsive {
-	 max-width: "300px";
-	}
-  } */
-
-  /* .container {
-	max-width: 100%;
-	padding: 0 1rem;
-	margin: 0 auto;
-  } */
-
-  /* @media (min-width: 640px) {
-	.container {
-	  padding: 0 2rem;
-	}
-  }
-
-  @media (min-width: 768px) {
-	.container {
-	  padding: 0 4rem;
-	}
-  }
-
-  @media (min-width: 1024px) {
-	.container {
-	  padding: 0 6rem;
-	}
-  } */
 
