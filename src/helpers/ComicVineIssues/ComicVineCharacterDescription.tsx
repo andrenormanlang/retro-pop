@@ -123,7 +123,7 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 					<Heading
 						as="h2"
 						size={{ base: "md", md: "lg" }}
-						fontFamily="Libre Franklin"
+						// fontFamily="Libre Franklin"
 						mt="1rem"
 						mb="1rem"
 						color="red"
@@ -136,7 +136,7 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 					<Heading
 						as="h3"
 						size={{ base: "md", md: "lg" }}
-						fontFamily="Libre Franklin"
+						// fontFamily="Libre Franklin"
 						mt="1rem"
 						mb="1rem"
 						color="red"
@@ -149,7 +149,7 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 					<Heading
 						as="h3"
 						size={{ base: "md", md: "md" }}
-						fontFamily="Libre Franklin"
+						// fontFamily="Libre Franklin"
 						mt="1rem"
 						mb="1rem"
 						color="red"
@@ -161,7 +161,7 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 				return (
 					<Text
 						fontSize={{ base: "0.9rem", md: "md" }}
-						fontFamily="Libre Franklin"
+						// fontFamily="Libre Franklin"
 						fontWeight="bold"
 						mt="0.2rem"
 						mb="1rem"
