@@ -111,7 +111,15 @@ export default function Signup() {
         isClosable: true,
       });
     } else {
-      router.push(`/auth/confirm?message=Check email(${email}) to continue sign in process`);
+		toast({
+			title: "Sign up success",
+			description: `Check your email (${email}) to continue sign in process`,
+			status: "success",
+			duration: 9000,
+			isClosable: true,
+
+		})
+    //   router.push(`/auth/confirm?message=Check email(${email}) to continue sign in process`);
     }
   };
 
