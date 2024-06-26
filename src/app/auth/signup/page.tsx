@@ -32,7 +32,8 @@ const validationSchema = z.object({
     .email({ message: 'Must be a valid email' }),
   password: z
     .string()
-    .min(6, { message: 'Must have at least 6 characters long' }),
+    .min(6, { message: 'Must have at least 6 characters long' })
+    .regex(passwordValidation, { message: 'Your password must have at least one uppercase and one special character' }),
   confirmPassword: z.string().min(6, { message: 'Must have at least 6 characters' }),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords must match",
@@ -110,13 +111,6 @@ export default function Signup() {
         isClosable: true,
       });
     } else {
-      toast({
-        title: "Sign up success",
-        description: "Check your email to continue the sign-in process",
-        status: "success",
-        duration: 9000,
-        isClosable: true,
-      });
       router.push(`/auth/confirm?message=Check email(${email}) to continue sign in process`);
     }
   };
@@ -139,6 +133,9 @@ export default function Signup() {
         p={8}
         maxWidth="400px"
         width="full"
+        // boxShadow="md"
+        // borderRadius="md"
+        // bg={bgBox}
       >
         <Heading as="h1" size="lg" mb={6} textAlign="center">
           Sign Up
@@ -177,3 +174,4 @@ export default function Signup() {
     </Center>
   );
 }
+
