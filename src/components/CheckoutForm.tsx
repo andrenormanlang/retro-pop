@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useEffect, useState } from "react";
 import {
   useStripe,
@@ -15,58 +13,88 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import convertToSubcurrency from "@/lib/convertToSubcurrency";
+import { useUser } from "@/contexts/UserContext";
 
-const CheckoutForm = ({ amount, onPaymentSuccess }: { amount: number, onPaymentSuccess: () => void }) => {
+const CheckoutForm = ({ amount, wishlistItems, onPaymentSuccess }: { amount: number, wishlistItems: any[], onPaymentSuccess: (amount: number) => void }) => {
   const stripe = useStripe();
   const elements = useElements();
   const toast = useToast();
+  const { user } = useUser();
   const [errorMessage, setErrorMessage] = useState<string>();
   const [loading, setLoading] = useState(false);
+  const [orderData, setOrderData] = useState<{ orderId: number } | null>(null); // Add orderData state
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setLoading(true);
+	event.preventDefault();
+	setLoading(true);
 
-    if (!stripe || !elements) {
-      return;
-    }
+	if (!stripe || !elements) {
+	  return;
+	}
 
-    const { error: submitError } = await elements.submit();
+	const { error: submitError } = await elements.submit();
 
-    if (submitError) {
-      setErrorMessage(submitError.message);
-      toast({
-        title: "Payment error",
-        description: submitError.message,
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
-      setLoading(false);
-      return;
-    }
+	if (submitError) {
+	  console.error("Error submitting payment form:", submitError);
+	  setErrorMessage(submitError.message);
+	  toast({
+		title: "Payment error",
+		description: submitError.message,
+		status: "error",
+		duration: 5000,
+		isClosable: true,
+	  });
+	  setLoading(false);
+	  return;
+	}
 
-    const { error } = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        return_url: `${window.location.origin}/payment-success`,
-      },
-    });
+	// Call your API to create the order and get orderData
+	const response = await fetch("/api/create-payment-intent", {
+	  method: "POST",
+	  headers: {
+		"Content-Type": "application/json",
+	  },
+	  body: JSON.stringify({ amount, userId: user?.id, wishlistItems }),
+	});
+	const data = await response.json();
 
-    if (error) {
-      setErrorMessage(error.message);
-      toast({
-        title: "Payment error",
-        description: error.message,
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
-    } else {
-      onPaymentSuccess();
-    }
+	if (data.error) {
+	  console.error("Error creating payment intent:", data.error);
+	  toast({
+		title: "Payment error",
+		description: data.error,
+		status: "error",
+		duration: 5000,
+		isClosable: true,
+	  });
+	  setLoading(false);
+	  return;
+	}
 
-    setLoading(false);
+	setOrderData({ orderId: data.orderId }); // Set orderData with the received orderId
+
+	const { error } = await stripe.confirmPayment({
+	  elements,
+	  confirmParams: {
+		return_url: `${window.location.origin}/payment-success?orderId=${data.orderId}`, // Use orderId from data
+	  },
+	});
+
+	if (error) {
+	  console.error("Error confirming payment:", error);
+	  setErrorMessage(error.message);
+	  toast({
+		title: "Payment error",
+		description: error.message,
+		status: "error",
+		duration: 5000,
+		isClosable: true,
+	  });
+	} else {
+	  onPaymentSuccess(amount);
+	}
+
+	setLoading(false);
   };
 
   if (!stripe || !elements) {
@@ -98,4 +126,3 @@ const CheckoutForm = ({ amount, onPaymentSuccess }: { amount: number, onPaymentS
 };
 
 export default CheckoutForm;
-

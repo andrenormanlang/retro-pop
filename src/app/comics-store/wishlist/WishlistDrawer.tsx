@@ -1,6 +1,4 @@
-'use client';
-
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from "react";
 import {
   Box,
   Flex,
@@ -27,18 +25,23 @@ import {
   AlertDialogHeader,
   AlertDialogContent,
   AlertDialogOverlay,
-} from '@chakra-ui/react';
-import { DeleteIcon } from '@chakra-ui/icons';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState, AppDispatch } from '@/store/store';
-import { fetchWishlist, removeFromWishlist, updateWishlistQuantity } from '@/store/wishlistSlice';
-import { WishlistItem } from '@/types/comics-store/comic-detail.type';
-import { useUser } from '../../../contexts/UserContext';
-import CheckoutForm from '@/components/CheckoutForm';
-import PaymentSuccess from '@/components/PaymentSuccess';
-import { Elements } from '@stripe/react-stripe-js';
-import getStripe from '@/utils/get-stripejs';
+} from "@chakra-ui/react";
+import { DeleteIcon } from "@chakra-ui/icons";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState, AppDispatch } from "@/store/store";
+import { fetchWishlist, removeFromWishlist, updateWishlistQuantity } from "@/store/wishlistSlice";
+import { WishlistItem } from "@/types/comics-store/comic-detail.type";
+import { useUser } from "../../../contexts/UserContext";
+import CheckoutForm from "@/components/CheckoutForm";
+import PaymentSuccess from "@/components/PaymentSuccess";
+import { Elements } from "@stripe/react-stripe-js";
+import getStripe from "@/utils/get-stripejs";
 
+interface OrderData {
+  amount: number;
+  items: WishlistItem[];
+  orderId: number;
+}
 
 interface WishlistDrawerProps {
   isOpen: boolean;
@@ -60,6 +63,7 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
   const [isPaymentSuccessOpen, setIsPaymentSuccessOpen] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
   const [clientSecret, setClientSecret] = useState("");
+  const [orderData, setOrderData] = useState<OrderData | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -74,18 +78,18 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
       .unwrap()
       .then(() => {
         toast({
-          title: 'Comic removed from wishlist.',
-          description: 'The comic has been removed from your wishlist.',
-          status: 'success',
+          title: "Comic removed from wishlist.",
+          description: "The comic has been removed from your wishlist.",
+          status: "success",
           duration: 5000,
           isClosable: true,
         });
       })
       .catch(() => {
         toast({
-          title: 'Error removing from wishlist.',
-          description: 'There was an error removing the comic from your wishlist.',
-          status: 'error',
+          title: "Error removing from wishlist.",
+          description: "There was an error removing the comic from your wishlist.",
+          status: "error",
           duration: 5000,
           isClosable: true,
         });
@@ -109,9 +113,9 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
 
     if (existingItem && newStock > existingItem.comic.stock) {
       toast({
-        title: 'Stock limit reached.',
-        description: 'You cannot add more of this comic to your wishlist.',
-        status: 'warning',
+        title: "Stock limit reached.",
+        description: "You cannot add more of this comic to your wishlist.",
+        status: "warning",
         duration: 5000,
         isClosable: true,
       });
@@ -122,18 +126,18 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
       .unwrap()
       .then(() => {
         toast({
-          title: 'Wishlist updated.',
-          description: 'The stock has been updated.',
-          status: 'success',
+          title: "Wishlist updated.",
+          description: "The stock has been updated.",
+          status: "success",
           duration: 5000,
           isClosable: true,
         });
       })
       .catch(() => {
         toast({
-          title: 'Error updating wishlist.',
-          description: 'There was an error updating the wishlist.',
-          status: 'error',
+          title: "Error updating wishlist.",
+          description: "There was an error updating the wishlist.",
+          status: "error",
           duration: 5000,
           isClosable: true,
         });
@@ -145,21 +149,37 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
   };
 
   const handleCheckout = async () => {
-    const amount = parseFloat(calculateTotalAmount()) * 100;
-    setTotalAmount(amount);
-    const response = await fetch("/api/create-payment-intent", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ amount }),
-    });
-    const data = await response.json();
-    setClientSecret(data.clientSecret);
-    setIsCheckoutOpen(true);
+	if (!user) return;
+
+	const amount = parseFloat(calculateTotalAmount()) * 100;
+	setTotalAmount(amount);
+
+	const response = await fetch("/api/create-payment-intent", {
+	  method: "POST",
+	  headers: {
+		"Content-Type": "application/json",
+	  },
+	  body: JSON.stringify({ amount, userId: user.id, wishlistItems: wishlist }),
+	});
+
+	const data = await response.json();
+
+	if (data.error) {
+	  toast({
+		title: "Payment Error",
+		description: data.error,
+		status: "error",
+		duration: 5000,
+		isClosable: true,
+	  });
+	} else {
+	  setClientSecret(data.clientSecret);
+	  setOrderData({ amount, items: wishlist, orderId: data.orderId }); // Store order data
+	  setIsCheckoutOpen(true);
+	}
   };
 
-  const handlePaymentSuccess = () => {
+  const handlePaymentSuccess = async () => {
     setIsCheckoutOpen(false);
     setIsPaymentSuccessOpen(true);
     toast({
@@ -171,11 +191,11 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
     });
   };
 
-  const defaultImageUrl = '/path/to/default-image.jpg';
+  const defaultImageUrl = "/path/to/default-image.jpg";
 
   return (
     <>
-      <Drawer isOpen={isOpen} placement="right" onClose={onClose} size={{ base: 'full', md: 'md' }}>
+      <Drawer isOpen={isOpen} placement="right" onClose={onClose} size={{ base: "full", md: "md" }}>
         <DrawerOverlay />
         <DrawerContent>
           <DrawerCloseButton />
@@ -206,18 +226,20 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
                   <Image
                     src={item.comic.image || defaultImageUrl}
                     alt={item.comic.title}
-                    maxW={{ base: '75px', md: '100px' }}
-                    maxH={{ base: '75px', md: '100px' }}
+                    maxW={{ base: "75px", md: "100px" }}
+                    maxH={{ base: "75px", md: "100px" }}
                     objectFit="contain"
                     onError={(e) => {
                       e.currentTarget.src = defaultImageUrl;
                     }}
                   />
                   <Box flex="1" ml={{ base: 2, md: 4 }}>
-                    <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'lg' }} noOfLines={1}>
+                    <Text fontWeight="bold" fontSize={{ base: "sm", md: "lg" }} noOfLines={1}>
                       {item.comic.title}
                     </Text>
-                    <Text fontSize={{ base: 'xs', md: 'md' }}>Price: {item.comic.price} {item.comic.currency}</Text>
+                    <Text fontSize={{ base: "xs", md: "md" }}>
+                      Price: {item.comic.price} {item.comic.currency}
+                    </Text>
                     <Flex alignItems="center">
                       <Button
                         size="sm"
@@ -313,25 +335,35 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
       </AlertDialog>
 
       {isCheckoutOpen && clientSecret && (
-        <Drawer isOpen={isCheckoutOpen} placement="right" onClose={() => setIsCheckoutOpen(false)} size={{ base: 'full', md: 'md' }}>
+        <Drawer
+          isOpen={isCheckoutOpen}
+          placement="right"
+          onClose={() => setIsCheckoutOpen(false)}
+          size={{ base: "full", md: "md" }}
+        >
           <DrawerOverlay />
           <DrawerContent>
             <DrawerCloseButton />
             <DrawerHeader>Checkout</DrawerHeader>
             <DrawerBody>
               <Elements stripe={getStripe()} options={{ clientSecret }}>
-                <CheckoutForm amount={totalAmount} onPaymentSuccess={handlePaymentSuccess} />
+                <CheckoutForm
+                  amount={totalAmount}
+                  wishlistItems={wishlist}
+                  onPaymentSuccess={handlePaymentSuccess}
+                />
               </Elements>
             </DrawerBody>
           </DrawerContent>
         </Drawer>
       )}
 
-      {isPaymentSuccessOpen && (
+      {isPaymentSuccessOpen && orderData && (
         <PaymentSuccess
           isOpen={isPaymentSuccessOpen}
           onClose={() => setIsPaymentSuccessOpen(false)}
           amount={(totalAmount / 100).toFixed(2)}
+          orderId={orderData.orderId} // Pass orderId to PaymentSuccess component
         />
       )}
     </>

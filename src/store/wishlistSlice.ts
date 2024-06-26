@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { createClient } from '@/utils/supabase/client';
 import { RootState } from './store';
 import { WishlistItem } from '@/types/comics-store/comic-detail.type';
@@ -52,39 +52,39 @@ export const removeFromWishlist = createAsyncThunk<string, { userId: string; com
     return comicId;
   }
 );
+
 export const updateWishlistQuantity = createAsyncThunk<{ comicId: string; stock: number }, { userId: string; comicId: string; stock: number }>(
-	'wishlist/updateWishlistQuantity',
-	async ({ userId, comicId, stock }) => {
-	  const { data, error } = await supabase
-		.from('comics-sell')
-		.select('stock')
-		.eq('id', comicId)
-		.single();
+  'wishlist/updateWishlistQuantity',
+  async ({ userId, comicId, stock }) => {
+    const { data, error } = await supabase
+      .from('comics-sell')
+      .select('stock')
+      .eq('id', comicId)
+      .single();
 
-	  if (error) {
-		throw new Error(error.message);
-	  }
+    if (error) {
+      throw new Error(error.message);
+    }
 
-	  if (stock < 1 || stock > data.stock) {
-		throw new Error('Invalid stock value');
-	  }
+    if (stock < 1 || stock > data.stock) {
+      throw new Error('Invalid stock value');
+    }
 
-	  const { data: wishlistData, error: wishlistError } = await supabase
-		.from('wishlists')
-		.update({ stock })
-		.eq('user_id', userId)
-		.eq('comic_id', comicId)
-		.select()
-		.single();
+    const { data: wishlistData, error: wishlistError } = await supabase
+      .from('wishlists')
+      .update({ stock })
+      .eq('user_id', userId)
+      .eq('comic_id', comicId)
+      .select()
+      .single();
 
-	  if (wishlistError) {
-		throw new Error(wishlistError.message);
-	  }
+    if (wishlistError) {
+      throw new Error(wishlistError.message);
+    }
 
-	  return { comicId, stock: wishlistData.stock };
-	}
-  );
-
+    return { comicId, stock: wishlistData.stock };
+  }
+);
 
 const wishlistSlice = createSlice({
   name: 'wishlist',
@@ -96,7 +96,7 @@ const wishlistSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchWishlist.fulfilled, (state, action) => {
+      .addCase(fetchWishlist.fulfilled, (state, action: PayloadAction<WishlistItem[]>) => {
         state.loading = false;
         state.wishlist = action.payload;
       })
@@ -108,7 +108,7 @@ const wishlistSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(removeFromWishlist.fulfilled, (state, action) => {
+      .addCase(removeFromWishlist.fulfilled, (state, action: PayloadAction<string>) => {
         state.loading = false;
         state.wishlist = state.wishlist.filter(
           (comic) => comic.comic_id !== action.payload
@@ -122,7 +122,7 @@ const wishlistSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(updateWishlistQuantity.fulfilled, (state, action) => {
+      .addCase(updateWishlistQuantity.fulfilled, (state, action: PayloadAction<{ comicId: string; stock: number }>) => {
         state.loading = false;
         const { comicId, stock } = action.payload;
         const comic = state.wishlist.find((item) => item.comic_id === comicId);
@@ -138,3 +138,4 @@ const wishlistSlice = createSlice({
 });
 
 export default wishlistSlice.reducer;
+

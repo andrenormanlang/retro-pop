@@ -17,14 +17,17 @@ export type Comic = {
 	price: number;
 	stock: number;
 	profiles: {
-	  username: string;
-	  email: string;
+		username: string;
+		email: string;
 	};
-  }
+};
 
-  export type WishlistItem = {
-	user_id: string;
+export type WishlistItem = {
+	id: string;
 	comic_id: string;
+	title: string;
+	price: number;
+	currency: string;
 	stock: number;
 	comic: Comic;
-  }
+};
