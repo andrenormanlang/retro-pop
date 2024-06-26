@@ -1,11 +1,14 @@
+import { Inter, Libre_Franklin } from 'next/font/google';
 import Navbar from "../components/partials/navbar";
 import { Box, ChakraProvider, ColorModeProvider } from "@chakra-ui/react";
 import "./globals.css";
-import type { Metadata } from "next";
 import Providers from "@/lib/query-provider";
-import ReduxProvider from '../contexts/ReduxProvider'; 
+import ReduxProvider from '../contexts/ReduxProvider';
 import { UserProvider } from "@/contexts/UserContext";
+import { Metadata } from 'next';
 
+const inter = Inter({ subsets: ['latin'], display: 'swap' });
+const libreFranklin = Libre_Franklin({ subsets: ['latin'], display: 'swap' });
 
 export const metadata: Metadata = {
   title: "Retro-Pop Comics",
@@ -15,7 +18,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" data-bs-theme="dark">
+    <html lang="en" data-bs-theme="dark" className={`${inter.className} ${libreFranklin.className}`}>
       <body>
         <ChakraProvider>
           <ColorModeProvider
