@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient, UseMutationResult, UseMutationOptions } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface UpdateStockVariables {
   comicId: string;
@@ -21,7 +21,7 @@ async function updateStock({ comicId, newStock }: UpdateStockVariables): Promise
   return response.json();
 }
 
-export const useUpdateStock = (): UseMutationResult<any, unknown, UpdateStockVariables, unknown> => {
+export const useUpdateStock = () => {
   const queryClient = useQueryClient();
 
   return useMutation<any, unknown, UpdateStockVariables>({
