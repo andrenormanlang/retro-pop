@@ -31,3 +31,14 @@ export type WishlistItem = {
 	stock: number;
 	comic: Comic;
 };
+
+export type CartItem = {
+	comicId: string;
+	quantity: number;
+	title: string;
+	image: string;
+	price: number;
+	currency: string;
+	stock: number;
+  };
+

@@ -18,7 +18,7 @@ import {
   useToast,
   Badge,
 } from "@chakra-ui/react";
-import { HamburgerIcon, CloseIcon, MoonIcon, SunIcon, ChevronDownIcon, ChevronUpIcon, StarIcon } from "@chakra-ui/icons";
+import { HamburgerIcon, CloseIcon, MoonIcon, SunIcon, ChevronDownIcon, ChevronUpIcon, AddIcon } from "@chakra-ui/icons";
 import { motion } from "framer-motion";
 import { createClient } from "@/utils/supabase/client";
 import RetroPopLogo from "@/helpers/RetroPopLogo";
@@ -28,9 +28,9 @@ import { User } from "@supabase/supabase-js";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "@/store/store";
 import { setAvatarUrl } from "@/store/avatarSlice";
-import { fetchWishlist } from '@/store/wishlistSlice';
+import { fetchCart } from '@/store/cartSlice';
 import AvatarNav from "../../helpers/AvatarNav";
-import WishlistDrawer from "@/app/comics-store/wishlist/WishlistDrawer";
+import CartDrawer from "@/app/comics-store/cart/CartDrawer";
 
 const Navbar = () => {
   const supabase = createClient();
@@ -41,7 +41,7 @@ const Navbar = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isMainMenuOpen, setIsMainMenuOpen] = useState(false);
   const [isAvatarMenuOpen, setIsAvatarMenuOpen] = useState(false);
-  const wishlist = useSelector((state: RootState) => state.wishlist.wishlist);
+  const cart = useSelector((state: RootState) => state.cart.items);
   const dispatch = useDispatch<AppDispatch>();
   const toast = useToast({
     position: "top",
@@ -81,7 +81,7 @@ const Navbar = () => {
       setUser(session?.user || null);
       if (session?.user) {
         fetchUserProfile(session.user.id);
-        dispatch(fetchWishlist(session.user.id));
+        dispatch(fetchCart({ userId: session.user.id }));
       }
     };
 
@@ -351,8 +351,8 @@ const Navbar = () => {
           {user && (
             <Box position="relative" mr={3}>
               <IconButton
-                aria-label="Wishlist"
-                icon={<StarIcon />}
+                aria-label="Cart"
+                icon={<AddIcon />}
                 onClick={onDrawerOpen} // Open the Drawer
                 colorScheme="yellow"
                 size={{ base: "sm", md: "md" }}
@@ -370,7 +370,7 @@ const Navbar = () => {
                 fontSize={{ base: "0.6em", md: "0.75em" }}
                 fontWeight="bold"
               >
-                {wishlist.length}
+                {cart.length}
               </Badge>
             </Box>
           )}
@@ -447,7 +447,7 @@ const Navbar = () => {
           </Stack>
         </motion.div>
       </Flex>
-      <WishlistDrawer isOpen={isDrawerOpen} onClose={onDrawerClose} />
+      <CartDrawer isOpen={isDrawerOpen} onClose={onDrawerClose} />
     </Box>
   );
 };

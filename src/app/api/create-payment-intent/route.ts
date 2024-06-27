@@ -23,6 +23,8 @@ export async function POST(request: NextRequest) {
     });
 
     const order = await createOrder(userId, totalAmount, currency, wishlistItems);
+
+    // Update the stock after creating the order
     await updateStock(wishlistItems);
 
     return NextResponse.json({ clientSecret: paymentIntent.client_secret, orderId: order[0].id });
@@ -34,6 +36,7 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
 
 
 

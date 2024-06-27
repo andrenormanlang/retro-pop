@@ -21,11 +21,11 @@ import {
   useToast,
   IconButton
 } from "@chakra-ui/react";
-import { ArrowBackIcon, StarIcon } from "@chakra-ui/icons";
+import { ArrowBackIcon, AddIcon } from "@chakra-ui/icons";
 import { Comic } from "@/types/comics-store/comic-detail.type";
 import { useUser } from "@/contexts/UserContext";
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchWishlist, updateWishlistQuantity } from '@/store/wishlistSlice';
+import { addToCart, updateCartQuantity } from '@/store/cartSlice';
 import { AppDispatch, RootState } from '@/store/store';
 
 const ComicDetail = () => {
@@ -42,7 +42,7 @@ const ComicDetail = () => {
   const [isAdmin, setIsAdmin] = useState(false);
 
   const dispatch: AppDispatch = useDispatch();
-  const wishlist = useSelector((state: RootState) => state.wishlist.wishlist);
+  const cart = useSelector((state: RootState) => state.cart.items);
 
   useEffect(() => {
     if (user) {
@@ -109,11 +109,11 @@ const ComicDetail = () => {
     }
   }, [id]);
 
-  const addToWishlist = async (comicId: string) => {
+  const addToCartHandler = async (comicId: string) => {
     if (!user) {
       toast({
         title: "Login required.",
-        description: "You need to be logged in to add comics to your wishlist.",
+        description: "You need to be logged in to add comics to your cart.",
         status: "warning",
         duration: 5000,
         isClosable: true,
@@ -121,101 +121,135 @@ const ComicDetail = () => {
       return;
     }
 
-    const existingItem = wishlist.find((item) => item.comic.id === comicId);
+    const existingItem = cart.find((item) => item.comicId === comicId);
 
     if (existingItem) {
-      if (existingItem.stock >= existingItem.comic.stock) {
-        toast({
-          title: "Stock limit reached.",
-          description: "You cannot add more of this comic to your wishlist.",
-          status: "warning",
-          duration: 5000,
-          isClosable: true,
-        });
-        return;
-      }
-
-      handleStockChange(comicId, existingItem.stock + 1);
+      handleStockChange(comicId, existingItem.quantity + 1);
       return;
     }
 
-    try {
-      const { data: comicData, error: comicError } = await supabase
-        .from('comics-sell')
-        .select('stock')
-        .eq('id', comicId)
-        .single();
-
-      if (comicError || !comicData || comicData.stock < 1) {
-        throw new Error(comicError?.message || 'Comic not available');
-      }
-
-      const { error } = await supabase.from("wishlists").insert([{ user_id: user.id, comic_id: comicId, stock: 1 }]);
-
-      if (error) throw error;
-
-      dispatch(fetchWishlist(user.id));
-
-      toast({
-        title: "Comic added to wishlist.",
-        description: "The comic has been added to your wishlist.",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
-    } catch (error) {
-      toast({
-        title: "Error adding to wishlist.",
-        description: error instanceof Error ? error.message : "There was an error adding the comic to your wishlist.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
-    }
+    handleStockChange(comicId, 1);
   };
 
-  const handleStockChange = async (comicId: string, newStock: number) => {
-    if (!user) return;
+  const handleStockChange = async (comicId: string, quantity: number) => {
+	if (!user) return;
 
-    // Fetch the current stock of the comic from the comics-sell table
-    const { data: comicData, error: comicError } = await supabase
-      .from('comics-sell')
-      .select('stock')
-      .eq('id', comicId)
-      .single();
+	// Fetch the current stock of the comic from the comics-sell table
+	const { data: comicData, error: comicError } = await supabase
+	  .from('comics-sell')
+	  .select('stock, title, image, price, currency')
+	  .eq('id', comicId)
+	  .single();
 
-    if (comicError || !comicData || comicData.stock < newStock) {
-      toast({
-        title: 'Error updating stock.',
-        description: 'There was an error updating the stock or insufficient stock available.',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
-      return;
-    }
+	if (comicError || !comicData) {
+	  toast({
+		title: 'Error updating stock.',
+		description: 'There was an error updating the stock or insufficient stock available.',
+		status: 'error',
+		duration: 5000,
+		isClosable: true,
+	  });
+	  return;
+	}
 
-    dispatch(updateWishlistQuantity({ userId: user.id, comicId, stock: newStock }))
-      .unwrap()
-      .then(() => {
-        toast({
-          title: 'Wishlist updated.',
-          description: 'The stock has been updated.',
-          status: 'success',
-          duration: 5000,
-          isClosable: true,
-        });
-      })
-      .catch(() => {
-        toast({
-          title: 'Error updating wishlist.',
-          description: 'There was an error updating the wishlist.',
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-        });
-      });
+	if (comicData.stock < quantity) {
+	  toast({
+		title: 'Error updating stock.',
+		description: 'Insufficient stock available.',
+		status: 'error',
+		duration: 5000,
+		isClosable: true,
+	  });
+	  return;
+	}
+
+	const existingItem = cart.find((item) => item.comicId === comicId);
+
+	if (existingItem) {
+	  dispatch(updateCartQuantity({ comicId, quantity: existingItem.quantity + quantity }))
+		.unwrap()
+		.then(async () => {
+		  const { error: stockUpdateError } = await supabase
+			.from('comics-sell')
+			.update({ stock: comicData.stock - quantity })
+			.eq('id', comicId);
+
+		  if (stockUpdateError) {
+			toast({
+			  title: 'Error updating stock.',
+			  description: stockUpdateError.message,
+			  status: 'error',
+			  duration: 5000,
+			  isClosable: true,
+			});
+			return;
+		  }
+
+		  toast({
+			title: 'Cart updated.',
+			description: 'The stock has been updated.',
+			status: 'success',
+			duration: 5000,
+			isClosable: true,
+		  });
+		})
+		.catch(() => {
+		  toast({
+			title: 'Error updating cart.',
+			description: 'There was an error updating the cart.',
+			status: 'error',
+			duration: 5000,
+			isClosable: true,
+		  });
+		});
+	} else {
+	  dispatch(addToCart({
+		comicId,
+		quantity,
+		title: comicData.title,
+		image: comicData.image,
+		price: comicData.price,
+		currency: comicData.currency,
+		stock: comicData.stock - quantity
+	  }))
+		.unwrap()
+		.then(async () => {
+		  const { error: stockUpdateError } = await supabase
+			.from('comics-sell')
+			.update({ stock: comicData.stock - quantity })
+			.eq('id', comicId);
+
+		  if (stockUpdateError) {
+			toast({
+			  title: 'Error updating stock.',
+			  description: stockUpdateError.message,
+			  status: 'error',
+			  duration: 5000,
+			  isClosable: true,
+			});
+			return;
+		  }
+
+		  toast({
+			title: 'Added to cart.',
+			description: 'The comic has been added to your cart.',
+			status: 'success',
+			duration: 5000,
+			isClosable: true,
+		  });
+		})
+		.catch(() => {
+		  toast({
+			title: 'Error adding to cart.',
+			description: 'There was an error adding the comic to your cart.',
+			status: 'error',
+			duration: 5000,
+			isClosable: true,
+		  });
+		});
+	}
   };
+
 
   const toggleApproval = async () => {
     if (comic) {
@@ -326,7 +360,6 @@ const ComicDetail = () => {
             </HStack>
             <HStack spacing={4}>
               <Text fontSize={{ base: "sm", md: "md" }} color="gray.400">
-                {/* <strong>Publisher:</strong> {comic.publisher} */}
                 <strong>{comic.publisher}</strong>
               </Text>
 
@@ -335,8 +368,7 @@ const ComicDetail = () => {
               <Text fontSize={{ base: "sm", md: "md" }} color="gray.400">
                 <strong>{comic.pages} pages</strong>
               </Text>
-			  <Text fontSize={{ base: "sm", md: "md" }} color="gray.400">
-                {/* <strong>Price:</strong> {comic.price} {comic.currency} */}
+              <Text fontSize={{ base: "sm", md: "md" }} color="gray.400">
                 <strong>{comic.currency} {comic.price}</strong>
               </Text>
             </HStack>
@@ -371,13 +403,13 @@ const ComicDetail = () => {
               </HStack>
             )}
             <Button
-              leftIcon={<StarIcon />}
+              leftIcon={<AddIcon />}
               colorScheme="yellow"
-              onClick={() => addToWishlist(comic.id)}
+              onClick={() => addToCartHandler(comic.id)}
               isDisabled={comic.stock === 0}
               size={{ base: "sm", md: "md" }} // Responsive button size
             >
-              Add to Wishlist
+              Add to Cart
             </Button>
           </VStack>
         </Flex>

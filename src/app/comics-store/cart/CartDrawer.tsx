@@ -30,31 +30,32 @@ import { DeleteIcon } from "@chakra-ui/icons";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from 'next/navigation';
 import { RootState, AppDispatch } from "@/store/store";
-import { fetchWishlist, removeFromWishlist, updateWishlistQuantity } from "@/store/wishlistSlice";
-import { WishlistItem } from "@/types/comics-store/comic-detail.type";
+import { fetchCart, removeFromCart, updateCartQuantity } from "@/store/cartSlice";
+import { CartItem } from "@/types/comics-store/comic-detail.type";
 import { useUser } from "../../../contexts/UserContext";
 import CheckoutForm from "@/components/CheckoutForm";
 import { Elements } from "@stripe/react-stripe-js";
 import getStripe from "@/utils/get-stripejs";
+import { updateStock, clearCart } from "@/lib/orders";
 
 interface OrderData {
   amount: number;
-  items: WishlistItem[];
+  items: CartItem[];
   orderId: number;
 }
 
-interface WishlistDrawerProps {
+interface CartDrawerProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
+const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const { user } = useUser();
-  const wishlist = useSelector((state: RootState) => state.wishlist.wishlist);
-  const loading = useSelector((state: RootState) => state.wishlist.loading);
-  const error = useSelector((state: RootState) => state.wishlist.error);
+  const cartItems = useSelector((state: RootState) => state.cart.items);
+  const loading = useSelector((state: RootState) => state.cart.loading);
+  const error = useSelector((state: RootState) => state.cart.error);
   const toast = useToast();
 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -64,22 +65,24 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
   const [totalAmount, setTotalAmount] = useState(0);
   const [clientSecret, setClientSecret] = useState("");
   const [orderData, setOrderData] = useState<OrderData | null>(null);
+  const [isPaymentSuccessOpen, setIsPaymentSuccessOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
-      dispatch(fetchWishlist(user.id));
+      dispatch(fetchCart({ userId: user.id }));
     }
+	console.log( user);
   }, [user, dispatch]);
 
-  const handleRemoveFromWishlist = (comicId: string) => {
+  const handleRemoveFromCart = (comicId: string) => {
     if (!user) return;
 
-    dispatch(removeFromWishlist({ userId: user.id, comicId }))
+    dispatch(removeFromCart({ userId: user.id, comicId }))
       .unwrap()
       .then(() => {
         toast({
-          title: "Comic removed from wishlist.",
-          description: "The comic has been removed from your wishlist.",
+          title: "Comic removed from cart.",
+          description: "The comic has been removed from your cart.",
           status: "success",
           duration: 5000,
           isClosable: true,
@@ -87,8 +90,8 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
       })
       .catch(() => {
         toast({
-          title: "Error removing from wishlist.",
-          description: "There was an error removing the comic from your wishlist.",
+          title: "Error removing from cart.",
+          description: "There was an error removing the comic from your cart.",
           status: "error",
           duration: 5000,
           isClosable: true,
@@ -96,7 +99,7 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
       });
   };
 
-  const confirmRemoveFromWishlist = (comicId: string) => {
+  const confirmRemoveFromCart = (comicId: string) => {
     setSelectedComicId(comicId);
     setIsDeleteDialogOpen(true);
   };
@@ -105,16 +108,16 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
     if (!user) return;
 
     if (newStock < 1) {
-      confirmRemoveFromWishlist(comicId);
+      confirmRemoveFromCart(comicId);
       return;
     }
 
-    const existingItem = wishlist.find((item) => item.comic.id === comicId);
+    const existingItem = cartItems.find((item) => item.comicId === comicId);
 
-    if (existingItem && newStock > existingItem.comic.stock) {
+    if (existingItem && newStock > existingItem.quantity) {
       toast({
         title: "Stock limit reached.",
-        description: "You cannot add more of this comic to your wishlist.",
+        description: "You cannot add more of this comic to your cart.",
         status: "warning",
         duration: 5000,
         isClosable: true,
@@ -122,22 +125,22 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
       return;
     }
 
-    dispatch(updateWishlistQuantity({ userId: user.id, comicId, stock: newStock }))
+    dispatch(updateCartQuantity({ userId: user.id, comicId, quantity: newStock }))
       .unwrap()
       .then(() => {
         toast({
-          title: "Wishlist updated.",
-          description: "The stock has been updated.",
-          status: "success",
+          title: 'Cart updated.',
+          description: 'The quantity has been updated.',
+          status: 'success',
           duration: 5000,
           isClosable: true,
         });
       })
       .catch(() => {
         toast({
-          title: "Error updating wishlist.",
-          description: "There was an error updating the wishlist.",
-          status: "error",
+          title: 'Error updating cart.',
+          description: 'There was an error updating the cart.',
+          status: 'error',
           duration: 5000,
           isClosable: true,
         });
@@ -145,7 +148,7 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
   };
 
   const calculateTotalAmount = () => {
-    return wishlist.reduce((total, item) => total + item.comic.price * item.stock, 0).toFixed(2);
+    return cartItems.reduce((total, item) => total + item.quantity * item.price, 0).toFixed(2);
   };
 
   const handleCheckout = async () => {
@@ -159,7 +162,7 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ amount, userId: user.id, wishlistItems: wishlist }),
+      body: JSON.stringify({ amount, userId: user.id, cartItems }),
     });
 
     const data = await response.json();
@@ -174,14 +177,19 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
       });
     } else {
       setClientSecret(data.clientSecret);
-      setOrderData({ amount, items: wishlist, orderId: data.orderId }); // Store order data
+      setOrderData({ amount, items: cartItems, orderId: data.orderId });
+      await updateStock(cartItems);
       setIsCheckoutOpen(true);
     }
   };
 
   const handlePaymentSuccess = async () => {
+    if (!user) return;
     setIsCheckoutOpen(false);
-    router.push(`/payment-success?orderId=${orderData!.orderId}`); // Navigate to payment success page
+    await updateStock(cartItems);
+    setIsPaymentSuccessOpen(true);
+    await clearCart(user.id);
+    dispatch(fetchCart({ userId: user.id }));
     toast({
       title: "Payment Successful",
       description: "Thank you for your purchase.",
@@ -212,9 +220,9 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
                 </Alert>
               </Center>
             ) : (
-              wishlist.map((item: WishlistItem) => (
+              cartItems.map((item: CartItem) => (
                 <Flex
-                  key={item.comic.id}
+                  key={item.comicId}
                   boxShadow="0 4px 8px rgba(0,0,0,0.1)"
                   rounded="md"
                   overflow="hidden"
@@ -224,8 +232,8 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
                   mb={4}
                 >
                   <Image
-                    src={item.comic.image || defaultImageUrl}
-                    alt={item.comic.title}
+                    src={item.image || defaultImageUrl}
+                    alt={item.title}
                     maxW={{ base: "75px", md: "100px" }}
                     maxH={{ base: "75px", md: "100px" }}
                     objectFit="contain"
@@ -235,22 +243,22 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
                   />
                   <Box flex="1" ml={{ base: 2, md: 4 }}>
                     <Text fontWeight="bold" fontSize={{ base: "sm", md: "lg" }} noOfLines={1}>
-                      {item.comic.title}
+                      {item.title}
                     </Text>
                     <Text fontSize={{ base: "xs", md: "md" }}>
-                      Price: {item.comic.price} {item.comic.currency}
+                      Price: {item.price} {item.currency}
                     </Text>
                     <Flex alignItems="center">
                       <Button
                         size="sm"
-                        onClick={() => handleStockChange(item.comic.id, item.stock - 1)}
-                        disabled={item.stock <= 1}
+                        onClick={() => handleStockChange(item.comicId, item.quantity - 1)}
+                        disabled={item.quantity <= 1}
                       >
                         -
                       </Button>
                       <Input
                         size="sm"
-                        value={item.stock}
+                        value={item.quantity}
                         readOnly
                         width="50px"
                         mx={2}
@@ -258,18 +266,18 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
                       />
                       <Button
                         size="sm"
-                        onClick={() => handleStockChange(item.comic.id, item.stock + 1)}
-                        disabled={item.stock >= item.comic.stock}
+                        onClick={() => handleStockChange(item.comicId, item.quantity + 1)}
+                        disabled={item.quantity >= item.stock}
                       >
                         +
                       </Button>
                     </Flex>
                   </Box>
                   <IconButton
-                    aria-label="Remove from wishlist"
+                    aria-label="Remove from cart"
                     icon={<DeleteIcon />}
                     colorScheme="red"
-                    onClick={() => confirmRemoveFromWishlist(item.comic.id)}
+                    onClick={() => confirmRemoveFromCart(item.comicId)}
                   />
                 </Flex>
               ))
@@ -310,7 +318,7 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
             </AlertDialogHeader>
 
             <AlertDialogBody>
-              Are you sure you want to delete this comic from your wishlist?
+              Are you sure you want to delete this comic from your cart?
             </AlertDialogBody>
 
             <AlertDialogFooter>
@@ -321,7 +329,7 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
                 colorScheme="red"
                 onClick={() => {
                   if (selectedComicId) {
-                    handleRemoveFromWishlist(selectedComicId);
+                    handleRemoveFromCart(selectedComicId);
                   }
                   setIsDeleteDialogOpen(false);
                 }}
@@ -349,7 +357,7 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
               <Elements stripe={getStripe()} options={{ clientSecret }}>
                 <CheckoutForm
                   amount={totalAmount}
-                  wishlistItems={wishlist}
+                  cartItems={cartItems}
                   onPaymentSuccess={handlePaymentSuccess}
                 />
               </Elements>
@@ -361,5 +369,4 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose }) => {
   );
 };
 
-export default WishlistDrawer;
-
+export default CartDrawer;
