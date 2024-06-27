@@ -1,5 +1,3 @@
-'use client';
-
 import { useEffect, useState, useRef } from 'react';
 import {
   SimpleGrid,
@@ -23,7 +21,6 @@ import {
   Badge,
   Stack,
 } from '@chakra-ui/react';
-import { useComicBuy } from '@/hooks/comics-sale/useComicBuy';
 import { motion } from 'framer-motion';
 import NextLink from 'next/link';
 import { DeleteIcon, EditIcon, AddIcon } from '@chakra-ui/icons';
@@ -35,6 +32,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { addToCart, updateCartQuantity } from '@/store/cartSlice';
 import { AppDispatch, RootState } from '@/store/store';
 import { useUser } from '@/contexts/UserContext';
+import { useUpdateStock } from '@/hooks/stock-management/useUpdateStock';
+import { useComics } from '@/hooks/stock-management/useComics';
 
 const formatDate = (dateString: string) => {
   const options: Intl.DateTimeFormatOptions = {
@@ -46,16 +45,18 @@ const formatDate = (dateString: string) => {
 };
 
 const ComicsBuy: NextPage = () => {
-  const { data, setData, loading, error } = useComicBuy();
+  const { data: comics, isLoading, error } = useComics();
   const toast = useToast();
   const [isAdmin, setIsAdmin] = useState(false);
   const [selectedComic, setSelectedComic] = useState<Comic | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [loadingComicIds, setLoadingComicIds] = useState<string[]>([]);
   const cancelRef = useRef(null);
   const { user } = useUser();
   const router = useRouter();
   const dispatch: AppDispatch = useDispatch();
   const cart = useSelector((state: RootState) => state.cart.items);
+  const { mutate: updateStock } = useUpdateStock();
 
   const onClose = () => setIsOpen(false);
 
@@ -93,9 +94,7 @@ const ComicsBuy: NextPage = () => {
           isClosable: true,
         });
 
-        // Refresh the list after deletion
-        const updatedData = data ? data.filter((comic: Comic) => comic.id !== selectedComic.id) : [];
-        setData(updatedData);
+        // The useQuery hook will automatically refetch the data after a successful mutation.
       } catch (error) {
         toast({
           title: "Error deleting comic.",
@@ -116,128 +115,116 @@ const ComicsBuy: NextPage = () => {
   };
 
   const handleStockChange = async (comicId: string, quantity: number) => {
-	if (!user) return;
+    if (!user) return;
 
-	// Fetch the current stock of the comic from the comics-sell table
-	const { data: comicData, error: comicError } = await supabase
-	  .from('comics-sell')
-	  .select('stock, title, image, price, currency')
-	  .eq('id', comicId)
-	  .single();
+    setLoadingComicIds((prev) => [...prev, comicId]);
 
-	if (comicError || !comicData) {
-	  toast({
-		title: 'Error updating stock.',
-		description: 'There was an error updating the stock or insufficient stock available.',
-		status: 'error',
-		duration: 5000,
-		isClosable: true,
-	  });
-	  return;
-	}
+    // Fetch the current stock of the comic from the comics-sell table
+    const { data: comicData, error: comicError } = await supabase
+      .from('comics-sell')
+      .select('stock, title, image, price, currency')
+      .eq('id', comicId)
+      .single();
 
-	if (comicData.stock < quantity) {
-	  toast({
-		title: 'Error updating stock.',
-		description: 'Insufficient stock available.',
-		status: 'error',
-		duration: 5000,
-		isClosable: true,
-	  });
-	  return;
-	}
+    if (comicError || !comicData) {
+      toast({
+        title: 'Error updating stock.',
+        description: 'There was an error updating the stock or insufficient stock available.',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      setLoadingComicIds((prev) => prev.filter((id) => id !== comicId));
+      return;
+    }
 
-	const existingItem = cart.find((item) => item.comicId === comicId);
+    if (comicData.stock < quantity) {
+      toast({
+        title: 'Error updating stock.',
+        description: 'Insufficient stock available.',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      setLoadingComicIds((prev) => prev.filter((id) => id !== comicId));
+      return;
+    }
 
-	if (existingItem) {
-	  dispatch(updateCartQuantity({ userId: user.id, comicId, quantity: existingItem.quantity + quantity }))
-		.unwrap()
-		.then(async () => {
-		  const { error: stockUpdateError } = await supabase
-			.from('comics-sell')
-			.update({ stock: comicData.stock - quantity })
-			.eq('id', comicId);
+    const existingItem = cart.find((item) => item.comicId === comicId);
 
-		  if (stockUpdateError) {
-			toast({
-			  title: 'Error updating stock.',
-			  description: stockUpdateError.message,
-			  status: 'error',
-			  duration: 5000,
-			  isClosable: true,
-			});
-			return;
-		  }
-
-		  toast({
-			title: 'Cart updated.',
-			description: 'The stock has been updated.',
-			status: 'success',
-			duration: 5000,
-			isClosable: true,
-		  });
-		})
-		.catch(() => {
-		  toast({
-			title: 'Error updating cart.',
-			description: 'There was an error updating the cart.',
-			status: 'error',
-			duration: 5000,
-			isClosable: true,
-		  });
-		});
-	} else {
-	  dispatch(addToCart({
-		userId: user.id,
-		comicId,
-		quantity,
-		title: comicData.title,
-		image: comicData.image,
-		price: comicData.price,
-		currency: comicData.currency,
-		stock: comicData.stock - quantity
-	  }))
-		.unwrap()
-		.then(async () => {
-		  const { error: stockUpdateError } = await supabase
-			.from('comics-sell')
-			.update({ stock: comicData.stock - quantity })
-			.eq('id', comicId);
-
-		  if (stockUpdateError) {
-			toast({
-			  title: 'Error updating stock.',
-			  description: stockUpdateError.message,
-			  status: 'error',
-			  duration: 5000,
-			  isClosable: true,
-			});
-			return;
-		  }
-
-		  toast({
-			title: 'Added to cart.',
-			description: 'The comic has been added to your cart.',
-			status: 'success',
-			duration: 5000,
-			isClosable: true,
-		  });
-		})
-		.catch(() => {
-		  toast({
-			title: 'Error adding to cart.',
-			description: 'There was an error adding the comic to your cart.',
-			status: 'error',
-			duration: 5000,
-			isClosable: true,
-		  });
-		});
-	}
+    if (existingItem) {
+      dispatch(updateCartQuantity({ userId: user.id, comicId, quantity: existingItem.quantity + quantity }))
+        .unwrap()
+        .then(() => {
+          updateStock({ comicId, newStock: comicData.stock - quantity }, {
+            onSuccess: () => {
+              setLoadingComicIds((prev) => prev.filter((id) => id !== comicId));
+              toast({
+                title: 'Cart updated.',
+                description: 'The stock has been updated.',
+                status: 'success',
+                duration: 5000,
+                isClosable: true,
+              });
+            },
+            onError: () => {
+              setLoadingComicIds((prev) => prev.filter((id) => id !== comicId));
+            }
+          });
+        })
+        .catch(() => {
+          toast({
+            title: 'Error updating cart.',
+            description: 'There was an error updating the cart.',
+            status: 'error',
+            duration: 5000,
+            isClosable: true,
+          });
+          setLoadingComicIds((prev) => prev.filter((id) => id !== comicId));
+        });
+    } else {
+      dispatch(addToCart({
+        userId: user.id,
+        comicId,
+        quantity,
+        title: comicData.title,
+        image: comicData.image,
+        price: comicData.price,
+        currency: comicData.currency,
+        stock: comicData.stock - quantity
+      }))
+        .unwrap()
+        .then(() => {
+          updateStock({ comicId, newStock: comicData.stock - quantity }, {
+            onSuccess: () => {
+              setLoadingComicIds((prev) => prev.filter((id) => id !== comicId));
+              toast({
+                title: 'Added to cart.',
+                description: 'The comic has been added to your cart.',
+                status: 'success',
+                duration: 5000,
+                isClosable: true,
+              });
+            },
+            onError: () => {
+              setLoadingComicIds((prev) => prev.filter((id) => id !== comicId));
+            }
+          });
+        })
+        .catch(() => {
+          toast({
+            title: 'Error adding to cart.',
+            description: 'There was an error adding the comic to your cart.',
+            status: 'error',
+            duration: 5000,
+            isClosable: true,
+          });
+          setLoadingComicIds((prev) => prev.filter((id) => id !== comicId));
+        });
+    }
   };
-  
 
-
-  if (loading) {
+  if (isLoading) {
     return (
       <Center h="100vh">
         <Spinner size="xl" />
@@ -250,7 +237,7 @@ const ComicsBuy: NextPage = () => {
       <Center h="100vh">
         <Alert status="error">
           <AlertIcon />
-          {error}
+          {error instanceof Error ? error.message : 'An error occurred'}
         </Alert>
       </Center>
     );
@@ -261,7 +248,7 @@ const ComicsBuy: NextPage = () => {
   return (
     <Container maxW="container.xl" centerContent p={4}>
       <SimpleGrid columns={{ base: 2, md: 3, lg: 4 }} spacing={6} width="100%">
-        {data
+        {comics
           ?.filter((comic: Comic) => isAdmin || comic.is_approved)
           .map((comic: Comic) => (
             <Box
@@ -358,7 +345,7 @@ const ComicsBuy: NextPage = () => {
               </Box>
               <IconButton
                 aria-label="Add to cart"
-                icon={<AddIcon />}
+                icon={loadingComicIds.includes(comic.id) ? <Spinner size="sm" /> : <AddIcon />}
                 colorScheme="yellow"
                 position="absolute"
                 top={2}
@@ -368,7 +355,7 @@ const ComicsBuy: NextPage = () => {
                   handleStockChange(comic.id, 1);
                 }}
                 size={{ base: 'xs', md: 'md' }}
-                disabled={comic.stock === 0}
+                disabled={comic.stock === 0 || loadingComicIds.includes(comic.id)}
               />
               {isAdmin && (
                 <Box position="absolute" top={2} right={2} display="flex" gap={1}>

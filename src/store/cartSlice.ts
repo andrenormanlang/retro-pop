@@ -149,59 +149,63 @@ export const fetchCart = createAsyncThunk<CartItem[], FetchCartPayload>(
 );
 
 export const updateCartQuantity = createAsyncThunk(
-  'cart/updateCartQuantity',
-  async ({ userId, comicId, quantity }: UpdateCartQuantityPayload) => {
-    const { data: comic, error } = await supabase
-      .from('comics-sell')
-      .select('*')
-      .eq('id', comicId)
-      .single();
+	'cart/updateCartQuantity',
+	async ({ userId, comicId, quantity }: UpdateCartQuantityPayload) => {
+	  const { data: comic, error } = await supabase
+		.from('comics-sell')
+		.select('*')
+		.eq('id', comicId)
+		.single();
 
-    if (error || !comic) {
-      throw new Error(error?.message || 'Comic not found');
-    }
+	  if (error || !comic) {
+		throw new Error(error?.message || 'Comic not found');
+	  }
 
-    if (comic.stock < quantity) {
-      throw new Error('Insufficient stock');
-    }
+	  const { data: existingCartItem, error: fetchError } = await supabase
+		.from('cart')
+		.select('*')
+		.eq('user_id', userId)
+		.eq('comic_id', comicId)
+		.single();
 
-    const { data: existingCartItem, error: fetchError } = await supabase
-      .from('cart')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('comic_id', comicId)
-      .single();
+	  if (fetchError && fetchError.code !== 'PGRST116') {
+		throw new Error(fetchError.message);
+	  }
 
-    if (fetchError && fetchError.code !== 'PGRST116') {
-      throw new Error(fetchError.message);
-    }
+	  if (existingCartItem) {
+		const newQuantity = quantity;
+		const stockDifference = newQuantity - existingCartItem.quantity;
 
-    if (existingCartItem) {
-      const { error: updateError } = await supabase
-        .from('cart')
-        .update({ quantity })
-        .eq('user_id', userId)
-        .eq('comic_id', comicId);
+		if (comic.stock < stockDifference) {
+		  throw new Error('Insufficient stock');
+		}
 
-      if (updateError) {
-        throw new Error(updateError.message);
-      }
+		const { error: updateError } = await supabase
+		  .from('cart')
+		  .update({ quantity: newQuantity })
+		  .eq('user_id', userId)
+		  .eq('comic_id', comicId);
 
-      const { error: stockError } = await supabase
-        .from('comics-sell')
-        .update({ stock: comic.stock - (quantity - existingCartItem.quantity) })
-        .eq('id', comicId);
+		if (updateError) {
+		  throw new Error(updateError.message);
+		}
 
-      if (stockError) {
-        throw new Error(stockError.message);
-      }
+		const { error: stockError } = await supabase
+		  .from('comics-sell')
+		  .update({ stock: comic.stock - stockDifference })
+		  .eq('id', comicId);
 
-      return { comicId, quantity };
-    } else {
-      throw new Error('Item not found in cart');
-    }
-  }
-);
+		if (stockError) {
+		  throw new Error(stockError.message);
+		}
+
+		return { userId, comicId, quantity };
+	  } else {
+		throw new Error('Item not found in cart');
+	  }
+	}
+  );
+
 
 export const removeFromCart = createAsyncThunk(
   'cart/removeFromCart',
@@ -249,8 +253,8 @@ const cartSlice = createSlice({
         state.error = null;
       })
       .addCase(updateCartQuantity.fulfilled, (state, action: PayloadAction<UpdateCartQuantityPayload>) => {
-        const { comicId, quantity } = action.payload;
-        const existingItem = state.items.find(item => item.comicId === comicId);
+        const { userId, comicId, quantity } = action.payload;
+        const existingItem = state.items.find(item => item.comicId === comicId && item.userId === userId);
         if (existingItem) {
           existingItem.quantity = quantity;
         }

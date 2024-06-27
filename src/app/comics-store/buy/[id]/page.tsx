@@ -27,6 +27,8 @@ import { useUser } from "@/contexts/UserContext";
 import { useDispatch, useSelector } from 'react-redux';
 import { addToCart, updateCartQuantity } from '@/store/cartSlice';
 import { AppDispatch, RootState } from '@/store/store';
+import { useUpdateStock } from "@/hooks/stock-management/useUpdateStock";
+
 
 const ComicDetail = () => {
   const pathname = usePathname();
@@ -43,6 +45,7 @@ const ComicDetail = () => {
 
   const dispatch: AppDispatch = useDispatch();
   const cart = useSelector((state: RootState) => state.cart.items);
+  const updateStockMutation = useUpdateStock();
 
   useEffect(() => {
     if (user) {
@@ -132,124 +135,99 @@ const ComicDetail = () => {
   };
 
   const handleStockChange = async (comicId: string, quantity: number) => {
-	if (!user) return;
+    if (!user) return;
 
-	// Fetch the current stock of the comic from the comics-sell table
-	const { data: comicData, error: comicError } = await supabase
-	  .from('comics-sell')
-	  .select('stock, title, image, price, currency')
-	  .eq('id', comicId)
-	  .single();
+    // Fetch the current stock of the comic from the comics-sell table
+    const { data: comicData, error: comicError } = await supabase
+      .from('comics-sell')
+      .select('stock, title, image, price, currency')
+      .eq('id', comicId)
+      .single();
 
-	if (comicError || !comicData) {
-	  toast({
-		title: 'Error updating stock.',
-		description: 'There was an error updating the stock or insufficient stock available.',
-		status: 'error',
-		duration: 5000,
-		isClosable: true,
-	  });
-	  return;
-	}
+    if (comicError || !comicData) {
+      toast({
+        title: 'Error updating stock.',
+        description: 'There was an error updating the stock or insufficient stock available.',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
 
-	if (comicData.stock < quantity) {
-	  toast({
-		title: 'Error updating stock.',
-		description: 'Insufficient stock available.',
-		status: 'error',
-		duration: 5000,
-		isClosable: true,
-	  });
-	  return;
-	}
+    if (comicData.stock < quantity) {
+      toast({
+        title: 'Error updating stock.',
+        description: 'Insufficient stock available.',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
 
-	const existingItem = cart.find((item) => item.comicId === comicId);
+    const existingItem = cart.find((item) => item.comicId === comicId);
 
-	if (existingItem) {
-	  dispatch(updateCartQuantity({ comicId, quantity: existingItem.quantity + quantity }))
-		.unwrap()
-		.then(async () => {
-		  const { error: stockUpdateError } = await supabase
-			.from('comics-sell')
-			.update({ stock: comicData.stock - quantity })
-			.eq('id', comicId);
+    if (existingItem) {
+      const newQuantity = existingItem.quantity + quantity;
+      const stockDifference = quantity;
 
-		  if (stockUpdateError) {
-			toast({
-			  title: 'Error updating stock.',
-			  description: stockUpdateError.message,
-			  status: 'error',
-			  duration: 5000,
-			  isClosable: true,
-			});
-			return;
-		  }
+      dispatch(updateCartQuantity({ userId: user.id, comicId, quantity: newQuantity }))
+        .unwrap()
+        .then(() => {
+          updateStockMutation.mutate({ comicId, newStock: comicData.stock - stockDifference });
+          toast({
+            title: 'Cart updated.',
+            description: 'The stock has been updated.',
+            status: 'success',
+            duration: 5000,
+            isClosable: true,
+          });
+        })
+        .catch(() => {
+          toast({
+            title: 'Error updating cart.',
+            description: 'There was an error updating the cart.',
+            status: 'error',
+            duration: 5000,
+            isClosable: true,
+          });
+        });
+    } else {
+      const stockDifference = quantity;
 
-		  toast({
-			title: 'Cart updated.',
-			description: 'The stock has been updated.',
-			status: 'success',
-			duration: 5000,
-			isClosable: true,
-		  });
-		})
-		.catch(() => {
-		  toast({
-			title: 'Error updating cart.',
-			description: 'There was an error updating the cart.',
-			status: 'error',
-			duration: 5000,
-			isClosable: true,
-		  });
-		});
-	} else {
-	  dispatch(addToCart({
-		comicId,
-		quantity,
-		title: comicData.title,
-		image: comicData.image,
-		price: comicData.price,
-		currency: comicData.currency,
-		stock: comicData.stock - quantity
-	  }))
-		.unwrap()
-		.then(async () => {
-		  const { error: stockUpdateError } = await supabase
-			.from('comics-sell')
-			.update({ stock: comicData.stock - quantity })
-			.eq('id', comicId);
-
-		  if (stockUpdateError) {
-			toast({
-			  title: 'Error updating stock.',
-			  description: stockUpdateError.message,
-			  status: 'error',
-			  duration: 5000,
-			  isClosable: true,
-			});
-			return;
-		  }
-
-		  toast({
-			title: 'Added to cart.',
-			description: 'The comic has been added to your cart.',
-			status: 'success',
-			duration: 5000,
-			isClosable: true,
-		  });
-		})
-		.catch(() => {
-		  toast({
-			title: 'Error adding to cart.',
-			description: 'There was an error adding the comic to your cart.',
-			status: 'error',
-			duration: 5000,
-			isClosable: true,
-		  });
-		});
-	}
+      dispatch(addToCart({
+        userId: user.id,
+        comicId,
+        quantity,
+        title: comicData.title,
+        image: comicData.image,
+        price: comicData.price,
+        currency: comicData.currency,
+        stock: comicData.stock - stockDifference
+      }))
+        .unwrap()
+        .then(() => {
+          updateStockMutation.mutate({ comicId, newStock: comicData.stock - stockDifference });
+          toast({
+            title: 'Added to cart.',
+            description: 'The comic has been added to your cart.',
+            status: 'success',
+            duration: 5000,
+            isClosable: true,
+          });
+        })
+        .catch(() => {
+          toast({
+            title: 'Error adding to cart.',
+            description: 'There was an error adding the comic to your cart.',
+            status: 'error',
+            duration: 5000,
+            isClosable: true,
+          });
+        });
+    }
   };
-
 
   const toggleApproval = async () => {
     if (comic) {
@@ -433,4 +411,3 @@ const ComicDetail = () => {
 };
 
 export default ComicDetail;
-

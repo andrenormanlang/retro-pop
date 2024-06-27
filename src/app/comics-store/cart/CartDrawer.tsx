@@ -30,13 +30,16 @@ import { DeleteIcon } from "@chakra-ui/icons";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from 'next/navigation';
 import { RootState, AppDispatch } from "@/store/store";
-import { fetchCart, removeFromCart, updateCartQuantity } from "@/store/cartSlice";
+import { fetchCart, removeFromCart, updateCartQuantity, addToCart } from "@/store/cartSlice";
 import { CartItem } from "@/types/comics-store/comic-detail.type";
 import { useUser } from "../../../contexts/UserContext";
 import CheckoutForm from "@/components/CheckoutForm";
 import { Elements } from "@stripe/react-stripe-js";
 import getStripe from "@/utils/get-stripejs";
 import { updateStock, clearCart } from "@/lib/orders";
+import { supabase } from "@/utils/supabase/client";
+import { useUpdateStock } from "@/hooks/stock-management/useUpdateStock";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface OrderData {
   amount: number;
@@ -57,6 +60,8 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
   const loading = useSelector((state: RootState) => state.cart.loading);
   const error = useSelector((state: RootState) => state.cart.error);
   const toast = useToast();
+  const queryClient = useQueryClient();
+  const { mutate: updateStock, isLoading: updatingStock } = useUpdateStock();
 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedComicId, setSelectedComicId] = useState<string | null>(null);
@@ -71,15 +76,42 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
     if (user) {
       dispatch(fetchCart({ userId: user.id }));
     }
-	console.log( user);
   }, [user, dispatch]);
 
-  const handleRemoveFromCart = (comicId: string) => {
+  const handleRemoveFromCart = async (comicId: string) => {
     if (!user) return;
+
+    const existingItem = cartItems.find((item) => item.comicId === comicId);
+
+    if (!existingItem) return;
+
+    const { data: comicData, error: comicError } = await supabase
+      .from('comics-sell')
+      .select('stock')
+      .eq('id', comicId)
+      .single();
+
+    if (comicError || !comicData) {
+      toast({
+        title: 'Error updating stock.',
+        description: 'There was an error updating the stock or insufficient stock available.',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    const updatedStock = comicData.stock + existingItem.quantity;
 
     dispatch(removeFromCart({ userId: user.id, comicId }))
       .unwrap()
       .then(() => {
+        updateStock({ comicId, newStock: updatedStock }, {
+          onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['comics'] })
+          }
+        });
         toast({
           title: "Comic removed from cart.",
           description: "The comic has been removed from your cart.",
@@ -104,17 +136,19 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
     setIsDeleteDialogOpen(true);
   };
 
-  const handleStockChange = (comicId: string, newStock: number) => {
+  const handleStockChange = async (comicId: string, newQuantity: number) => {
     if (!user) return;
 
-    if (newStock < 1) {
+    const existingItem = cartItems.find((item) => item.comicId === comicId);
+
+    if (!existingItem) return;
+
+    if (newQuantity < 1) {
       confirmRemoveFromCart(comicId);
       return;
     }
 
-    const existingItem = cartItems.find((item) => item.comicId === comicId);
-
-    if (existingItem && newStock > existingItem.quantity) {
+    if (newQuantity > existingItem.stock) {
       toast({
         title: "Stock limit reached.",
         description: "You cannot add more of this comic to your cart.",
@@ -125,9 +159,16 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
       return;
     }
 
-    dispatch(updateCartQuantity({ userId: user.id, comicId, quantity: newStock }))
+    const stockDifference = newQuantity - existingItem.quantity;
+
+    dispatch(updateCartQuantity({ userId: user.id, comicId, quantity: newQuantity }))
       .unwrap()
       .then(() => {
+        updateStock({ comicId, newStock: existingItem.stock - stockDifference }, {
+          onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['comics'] })
+          }
+        });
         toast({
           title: 'Cart updated.',
           description: 'The quantity has been updated.',
@@ -252,7 +293,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
                       <Button
                         size="sm"
                         onClick={() => handleStockChange(item.comicId, item.quantity - 1)}
-                        disabled={item.quantity <= 1}
+                        disabled={item.quantity <= 1 || updatingStock}
                       >
                         -
                       </Button>
@@ -267,7 +308,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
                       <Button
                         size="sm"
                         onClick={() => handleStockChange(item.comicId, item.quantity + 1)}
-                        disabled={item.quantity >= item.stock}
+                        disabled={item.quantity >= item.stock || updatingStock}
                       >
                         +
                       </Button>
@@ -370,3 +411,4 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
 };
 
 export default CartDrawer;
+
