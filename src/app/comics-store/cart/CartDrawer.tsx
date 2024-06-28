@@ -41,6 +41,15 @@ import { supabase } from "@/utils/supabase/client";
 import { useUpdateStock } from "@/hooks/stock-management/useUpdateStock";
 import { useQueryClient } from "@tanstack/react-query";
 
+// Define a custom type for the event detail
+interface PaymentSuccessDetail {
+  userId: string;
+}
+
+interface PaymentSuccessEvent extends Event {
+  detail: PaymentSuccessDetail;
+}
+
 interface OrderData {
 	amount: number;
 	items: CartItem[];
@@ -76,7 +85,20 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
 		if (user) {
 			dispatch(fetchCart({ userId: user.id }));
 		}
-	}, [user, dispatch]);
+
+		// Listen for payment success events
+		const handlePaymentSuccess = (event: CustomEvent<PaymentSuccessDetail>) => {
+			if (event.detail.userId === user?.id) {
+				handleClearCartTest();
+			}
+		};
+
+		window.addEventListener('paymentSuccess', handlePaymentSuccess as EventListener);
+
+		return () => {
+			window.removeEventListener('paymentSuccess', handlePaymentSuccess as EventListener);
+		};
+	}, [user, dispatch, ]);
 
 	const handleRemoveFromCart = async (comicId: string) => {
 		if (!user) return;
@@ -290,6 +312,38 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
 
 	const defaultImageUrl = "/path/to/default-image.jpg";
 
+	// New clear cart test function
+	const handleClearCartTest = async () => {
+		if (!user) return;
+
+		console.log('Attempting to clear cart for user:', user.id);
+		const { error } = await supabase
+			.from('cart')
+			.delete()
+			.eq('user_id', user.id);
+
+		if (error) {
+			console.error('Error clearing cart:', error);
+			toast({
+				title: "Error clearing cart",
+				description: error.message,
+				status: "error",
+				duration: 5000,
+				isClosable: true,
+			});
+		} else {
+			console.log('Cart cleared successfully for user:', user.id);
+			dispatch(fetchCart({ userId: user.id }));
+			toast({
+				title: "Cart cleared successfully",
+				description: "All items have been removed from your cart.",
+				status: "success",
+				duration: 5000,
+				isClosable: true,
+			});
+		}
+	};
+
 	return (
 		<>
 			<Drawer isOpen={isOpen} placement="right" onClose={onClose} size={{ base: "full", md: "md" }}>
@@ -389,6 +443,10 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
 							</Flex>
 							<Button mt={4} colorScheme="blue" width="100%" onClick={handleCheckout}>
 								Go to Checkout
+							</Button>
+							{/* Clear Cart Test Button */}
+							<Button mt={4} colorScheme="red" width="100%" onClick={handleClearCartTest}>
+								Clear Cart (Test)
 							</Button>
 						</Box>
 					</DrawerFooter>

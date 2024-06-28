@@ -16,6 +16,26 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    // Check if a receipt already exists for this order
+    const { data: existingReceipt, error: existingReceiptError } = await supabase
+      .from('receipts')
+      .select('*')
+      .eq('order_id', orderId)
+      .single();
+
+    if (existingReceiptError && existingReceiptError.code !== 'PGRST116') { // 'PGRST116' is a Supabase specific error code for 'no rows found'
+      throw existingReceiptError;
+    }
+
+    if (existingReceipt) {
+      return new NextResponse(JSON.stringify({ message: 'Receipt already exists', receiptId: existingReceipt.id }), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    }
+
     // Fetch order details
     const { data: order, error: orderError } = await supabase
       .from('orders')
@@ -35,24 +55,22 @@ export async function GET(request: NextRequest) {
         currency: order.currency,
         items: order.items,
       })
-      .select()
-      .single();
+      .select();
 
     if (receiptError) throw receiptError;
 
-    if (!receiptData) {
-      throw new Error('Receipt data is null or undefined');
-    }
+        // Clear the cart
+		console.log('Attempting to clear cart for user:', userId);
+		const { error: clearCartError } = await supabase
+		  .from('cart')
+		  .delete()
+		  .eq('user_id', userId);
 
-    // Clear the cart
-    const { error: clearCartError } = await supabase
-      .from('cart')
-      .delete()
-      .eq('user_id', userId);
+		if (clearCartError) throw clearCartError;
 
-    if (clearCartError) throw clearCartError;
-
-    return new NextResponse(JSON.stringify({ message: 'Payment succeeded and receipt generated', receiptId: receiptData.id }), {
+		console.log('Cart cleared successfully for user:', userId);
+		
+    return new NextResponse(JSON.stringify({ message: 'Payment succeeded and receipt generated', receiptId: receiptData[0].id }), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
@@ -68,3 +86,4 @@ export async function GET(request: NextRequest) {
     });
   }
 }
+

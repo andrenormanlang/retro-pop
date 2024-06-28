@@ -1,5 +1,3 @@
-// components/CheckoutForm.tsx
-
 import React, { useState } from "react";
 import {
   useStripe,
@@ -16,6 +14,7 @@ import {
 } from "@chakra-ui/react";
 import { CartItem } from "@/types/comics-store/comic-detail.type";
 import { useUser } from "@/contexts/UserContext";
+
 
 interface CheckoutFormProps {
   amount: number;
@@ -78,12 +77,12 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ amount, cartItems, onPaymen
       return;
     }
 
-	const { error } = await stripe.confirmPayment({
-		elements,
-		confirmParams: {
-		  return_url: `${window.location.origin}/api/payment-success?orderId=${data.orderId}&userId=${user?.id}`,
-		},
-	  });
+    const { error } = await stripe.confirmPayment({
+      elements,
+      confirmParams: {
+        return_url: `${window.location.origin}/payment-success?orderId=${data.orderId}&userId=${user?.id}`,
+      },
+    });
 
     if (error) {
       console.error("Error confirming payment:", error);
@@ -105,6 +104,15 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ amount, cartItems, onPaymen
       });
 
       onPaymentSuccess(amount);
+
+      // Dispatch custom event
+      const paymentSuccessEvent = new CustomEvent('paymentSuccess', {
+        detail: {
+          userId: user?.id,
+          orderId: data.orderId,
+        },
+      });
+      window.dispatchEvent(paymentSuccessEvent);
     }
 
     setLoading(false);
@@ -139,5 +147,3 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ amount, cartItems, onPaymen
 };
 
 export default CheckoutForm;
-
-
