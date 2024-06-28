@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (existingReceipt) {
-      return new NextResponse(JSON.stringify({ message: 'Receipt already exists', receiptId: existingReceipt.id }), {
+      return new NextResponse(JSON.stringify({ message: 'Receipt already exists', receipt: existingReceipt }), {
         status: 200,
         headers: {
           'Content-Type': 'application/json',
@@ -59,18 +59,21 @@ export async function GET(request: NextRequest) {
 
     if (receiptError) throw receiptError;
 
-        // Clear the cart
-		console.log('Attempting to clear cart for user:', userId);
-		const { error: clearCartError } = await supabase
-		  .from('cart')
-		  .delete()
-		  .eq('user_id', userId);
+    // Log the receipt details
+    console.log('Receipt Details:', receiptData[0]);
 
-		if (clearCartError) throw clearCartError;
+    // Clear the cart
+    console.log('Attempting to clear cart for user:', userId);
+    const { error: clearCartError } = await supabase
+      .from('cart')
+      .delete()
+      .eq('user_id', userId);
 
-		console.log('Cart cleared successfully for user:', userId);
-		
-    return new NextResponse(JSON.stringify({ message: 'Payment succeeded and receipt generated', receiptId: receiptData[0].id }), {
+    if (clearCartError) throw clearCartError;
+
+    console.log('Cart cleared successfully for user:', userId);
+
+    return new NextResponse(JSON.stringify({ message: 'Payment succeeded and receipt generated', receipt: receiptData[0] }), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
@@ -86,4 +89,6 @@ export async function GET(request: NextRequest) {
     });
   }
 }
+
+
 
