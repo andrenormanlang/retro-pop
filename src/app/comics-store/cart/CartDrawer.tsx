@@ -445,9 +445,9 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
 								Go to Checkout
 							</Button>
 							{/* Clear Cart Test Button */}
-							<Button mt={4} colorScheme="red" width="100%" onClick={handleClearCartTest}>
+							{/* <Button mt={4} colorScheme="red" width="100%" onClick={handleClearCartTest}>
 								Clear Cart (Test)
-							</Button>
+							</Button> */}
 						</Box>
 					</DrawerFooter>
 				</DrawerContent>
