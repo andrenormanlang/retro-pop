@@ -1,12 +1,11 @@
 // pages/receipt.tsx
-
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Box, Text, Spinner, Center, List, ListItem, Heading, Stack, Divider, Image, useColorModeValue } from '@chakra-ui/react';
 
-const ReceiptPage = () => {
+const Receipt = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
@@ -15,6 +14,7 @@ const ReceiptPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Define color variables for light and dark modes
   const bg = useColorModeValue('gray.50', 'gray.800');
   const textColor = useColorModeValue('black', 'white');
   const headingColor = useColorModeValue('gray.900', 'gray.100');
@@ -31,7 +31,7 @@ const ReceiptPage = () => {
         if (data.error) {
           setError(data.error);
         } else {
-          setOrder(data.order);
+          setOrder(data.receipt);
         }
       } catch (err) {
         setError('Failed to fetch order details');
@@ -62,13 +62,11 @@ const ReceiptPage = () => {
   return (
     <Center>
       <Box bg={bg} p={8} rounded="md" shadow="md" maxW="md" width="100%">
-        <Heading size="lg" mb={4} textAlign="center" color={headingColor}>Thank you for your purchase, {order.user_name}!</Heading>
+        <Heading size="lg" mb={4} textAlign="center" color={headingColor}>Thank you for your purchase!</Heading>
         <Divider mb={4} />
         <Stack spacing={2} mb={4} color={textColor}>
           <Text fontWeight="bold">Order ID:</Text>
-          <Text>{order.id}</Text>
-          <Text fontWeight="bold">Currency:</Text>
-          <Text>{order.currency}</Text>
+          <Text>{order.order_id}</Text>
         </Stack>
         <Divider my={4} />
         <Heading size="md" mb={2} color={headingColor}>Items:</Heading>
@@ -99,4 +97,4 @@ const ReceiptPage = () => {
   );
 };
 
-export default ReceiptPage;
+export default Receipt;

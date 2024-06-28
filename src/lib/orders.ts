@@ -2,7 +2,6 @@ import { CartItem } from "@/types/comics-store/comic-detail.type";
 import { supabase } from "@/utils/supabaseClient";
 
 export async function createOrder(userId: string, amount: number, currency: string, cartItems: CartItem[]) {
-  // Fetch user details
   const { data: user, error: userError } = await supabase
     .from('profiles')
     .select('username')
@@ -35,6 +34,8 @@ export async function createOrder(userId: string, amount: number, currency: stri
     throw new Error("Order creation failed");
   }
 
+  console.log("Order created:", data);  // Add this line to log the order details
+
   return data;
 }
 
@@ -42,7 +43,7 @@ export const updateStock = async (cartItems: CartItem[]) => {
   try {
     for (const item of cartItems) {
       const { data, error } = await supabase
-        .from('comics_sell')
+        .from('comics-sell')
         .select('stock')
         .eq('id', item.comicId)
         .single();
@@ -54,7 +55,7 @@ export const updateStock = async (cartItems: CartItem[]) => {
       if (newStock < 0) throw new Error('Insufficient stock');
 
       const { error: updateError } = await supabase
-        .from('comics_sell')
+        .from('comics-sell')
         .update({ stock: newStock })
         .eq('id', item.comicId);
 

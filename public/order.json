@@ -1,0 +1,79 @@
+[
+  "id": "d41d7dc6-bf32-4827-b753-5d108157ddee",
+      "user_id": "6fe22c8f-f155-48de-8d7c-0f410bbd2e50",
+  {
+      
+      "comic_id": "cbcf1e7d-617e-49d2-9087-5faf70ff46ef",
+      "title": "Superaventuras Marvel #1",
+      "image": "https://okepievzdelqzjwhsueu.supabase.co/storage/v1/object/public/comics-images/4d9d554c-136d-412f-a4fe-1118162f6d2b.jpg",
+      "price": 350,
+      "currency": "BRL",
+      "quantity": 1
+  },
+  {
+      "id": "2a78a8ec-8e52-4634-8bae-d9830bdb293d",
+      "user_id": "6fe22c8f-f155-48de-8d7c-0f410bbd2e50",
+      "comic_id": "079e2412-e8a8-4a9c-9287-707a9a205ae2",
+      "quantity": 1,
+      "title": "Justice League of America, Vol. 1",
+      "image": "https://okepievzdelqzjwhsueu.supabase.co/storage/v1/object/public/comics-images/25b6a79e-5466-4c66-abe8-98a1cdbc1607.jpg",
+      "price": 600,
+      "currency": "SEK",
+      "stock": 1
+  },
+  {
+      "id": "4b98363e-7248-4de1-adaf-5744918a056b",
+      "user_id": "6fe22c8f-f155-48de-8d7c-0f410bbd2e50",
+      "comic_id": "cdc5e7e2-aee0-4d02-9985-f19946ab6fa8",
+      "quantity": 1,
+      "title": "Ghost Rider #10",
+      "image": "https://okepievzdelqzjwhsueu.supabase.co/storage/v1/object/public/comics-images/aa265ca2-d3cd-46da-8fda-64e26c348c0c.webp",
+      "price": 120,
+      "currency": "USD",
+      "stock": 1
+  },
+  {
+      "id": "6f86815d-6493-4e1b-a5d0-a816f5364321",
+      "user_id": "6fe22c8f-f155-48de-8d7c-0f410bbd2e50",
+      "comic_id": "8df414a3-e7af-4c18-a440-36f1fe080ac9",
+      "quantity": 3,
+      "title": "Spider-Man #1",
+      "image": "https://okepievzdelqzjwhsueu.supabase.co/storage/v1/object/public/comics-images/s-l1600.webp?t=2024-06-15T00%3A03%3A00.613Z",
+      "price": 19.99,
+      "currency": "USD",
+      "stock": 10
+  },
+  {
+      "id": "66cb0076-edc2-4171-8b1f-8c444427f876",
+      "user_id": "6fe22c8f-f155-48de-8d7c-0f410bbd2e50",
+      "comic_id": "b16066bb-f3cd-48c1-9594-538bc1e1c357",
+      "quantity": 1,
+      "title": " Giant-Size X-Men #1",
+      "image": "https://okepievzdelqzjwhsueu.supabase.co/storage/v1/object/public/comics-images/e19f6163-8227-4a02-90e1-12bfb9bded1b.webp",
+      "price": 2000,
+      "currency": "USD",
+      "stock": 1
+  },
+  {
+      "id": "3a624ca4-bfb8-4ccc-b565-f8b0fd993bde",
+      "user_id": "6fe22c8f-f155-48de-8d7c-0f410bbd2e50",
+      "comic_id": "37e47f0e-2e6b-4c36-8523-78e5fe0ff0aa",
+      "quantity": 1,
+      "title": "Silver Surfer #1",
+      "image": "https://okepievzdelqzjwhsueu.supabase.co/storage/v1/object/public/comics-images/Silver_Surfer_Vol_1_1.webp",
+      "price": 20,
+      "currency": "USD",
+      "stock": 1
+  },
+  {
+      "id": "15be3a67-a69d-41a2-a220-44d8a0149cbe",
+      "user_id": "6fe22c8f-f155-48de-8d7c-0f410bbd2e50",
+      "comic_id": "246a4921-caea-46ed-8ee8-aa414ca2aae8",
+      "quantity": 1,
+      "title": "X-Men (Neal Adams)",
+      "image": "https://okepievzdelqzjwhsueu.supabase.co/storage/v1/object/public/comics-images/c0f23217-75db-4812-bb63-e4d675838d5f.jpg",
+      "price": 300,
+      "currency": "SEK",
+      "stock": 1
+  }
+]

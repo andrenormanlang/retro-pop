@@ -1,4 +1,4 @@
-// src/app/api/orders/[id]/route.ts
+// src/app/api/generate-receipt/route.ts
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
@@ -8,7 +8,7 @@ const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const orderId = searchParams.get('id');
+  const orderId = searchParams.get('orderId');
 
   if (!orderId) {
     return new NextResponse(JSON.stringify({ error: 'Order ID is required' }), {
@@ -38,6 +38,8 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    // Clear the user's cart here if needed
+
     return new NextResponse(JSON.stringify({ order }), {
       status: 200,
       headers: {
@@ -54,3 +56,4 @@ export async function GET(request: NextRequest) {
     });
   }
 }
+

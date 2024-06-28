@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from "react";
+// components/CheckoutForm.tsx
+
+import React, { useState } from "react";
 import {
   useStripe,
   useElements,
@@ -12,7 +14,7 @@ import {
   Text,
   useToast,
 } from "@chakra-ui/react";
-import { CartItem } from "@/types/comics-store/comic-detail.type"; // Import CartItem type
+import { CartItem } from "@/types/comics-store/comic-detail.type";
 import { useUser } from "@/contexts/UserContext";
 
 interface CheckoutFormProps {
@@ -28,13 +30,35 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ amount, cartItems, onPaymen
   const { user } = useUser();
   const [errorMessage, setErrorMessage] = useState<string>();
   const [loading, setLoading] = useState(false);
-  const [orderData, setOrderData] = useState<{ orderId: number } | null>(null);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setLoading(true);
 
     if (!stripe || !elements) {
+      return;
+    }
+
+    const response = await fetch("/api/create-order", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ amount, userId: user?.id, cartItems }),
+    });
+
+    const data = await response.json();
+
+    if (data.error) {
+      console.error("Error creating payment intent:", data.error);
+      toast({
+        title: "Payment error",
+        description: data.error,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      setLoading(false);
       return;
     }
 
@@ -54,36 +78,12 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ amount, cartItems, onPaymen
       return;
     }
 
-    const response = await fetch("/api/create-payment-intent", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ amount, userId: user?.id, cartItems }),
-    });
-    const data = await response.json();
-
-    if (data.error) {
-      console.error("Error creating payment intent:", data.error);
-      toast({
-        title: "Payment error",
-        description: data.error,
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
-      setLoading(false);
-      return;
-    }
-
-    setOrderData({ orderId: data.orderId });
-
-    const { error } = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        return_url: `${window.location.origin}/payment-success?orderId=${data.orderId}`,
-      },
-    });
+	const { error } = await stripe.confirmPayment({
+		elements,
+		confirmParams: {
+		  return_url: `${window.location.origin}/api/payment-success?orderId=${data.orderId}&userId=${user?.id}`,
+		},
+	  });
 
     if (error) {
       console.error("Error confirming payment:", error);
@@ -96,6 +96,14 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ amount, cartItems, onPaymen
         isClosable: true,
       });
     } else {
+      await fetch("/api/confirm-payment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ orderId: data.orderId, cartItems }),
+      });
+
       onPaymentSuccess(amount);
     }
 
@@ -131,3 +139,5 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ amount, cartItems, onPaymen
 };
 
 export default CheckoutForm;
+
+
