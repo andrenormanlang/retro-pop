@@ -470,7 +470,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
 							<Button ref={cancelRef} onClick={() => setIsDeleteDialogOpen(false)}>
 								Cancel
 							</Button>
-							<Button
+							{/* <Button
 								colorScheme="red"
 								onClick={() => {
 									if (selectedComicId) {
@@ -481,7 +481,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
 								ml={3}
 							>
 								Delete
-							</Button>
+							</Button> */}
 						</AlertDialogFooter>
 					</AlertDialogContent>
 				</AlertDialogOverlay>
