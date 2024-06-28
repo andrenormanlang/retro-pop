@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Box, Spinner, Text, Center, List, ListItem, Heading, Stack, Divider, Image, useColorModeValue } from '@chakra-ui/react';
+import { Box, Spinner, Text, Center, List, ListItem, Heading, Stack, Divider, Image, useColorModeValue, Badge } from '@chakra-ui/react';
 import { createClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
@@ -23,6 +23,8 @@ const PaymentSuccess = () => {
   const textColor = useColorModeValue('black', 'white');
   const headingColor = useColorModeValue('gray.900', 'gray.100');
   const totalColor = useColorModeValue('teal.500', 'teal.200');
+  const badgeBg = useColorModeValue('blue.100', 'blue.700');
+  const badgeColor = useColorModeValue('blue.800', 'blue.200');
 
   useEffect(() => {
     const fetchReceiptDetails = async () => {
@@ -86,8 +88,12 @@ const PaymentSuccess = () => {
         </Heading>
         <Divider mb={4} />
         <Stack spacing={2} mb={4} color={textColor}>
-          <Text fontWeight="bold">Order ID:</Text>
-          <Text>{receipt.order_id}</Text>
+          <Text fontWeight="bold" fontSize="lg">
+            <Badge bg={badgeBg} color={badgeColor} mr={2}>Receipt #:</Badge> {receipt.id}
+          </Text>
+          <Text fontWeight="bold" fontSize="lg">
+            <Badge bg={badgeBg} color={badgeColor} mr={2}>Order ID:</Badge> {receipt.order_id}
+          </Text>
         </Stack>
         <Divider my={4} />
         <Heading size="md" mb={2} color={headingColor}>
@@ -105,8 +111,8 @@ const PaymentSuccess = () => {
               />
               <Box>
                 <Text fontWeight="bold">{item.title}</Text>
-                <Text>${(item.price / 100).toFixed(2)} x {item.quantity}</Text>
-                <Text>Total: ${((item.price * item.quantity) / 100).toFixed(2)}</Text>
+                <Text>${(item.price).toFixed(2)} x {item.quantity}</Text>
+                <Text>Total: ${((item.price * item.quantity)).toFixed(2)}</Text>
               </Box>
             </ListItem>
           ))}
