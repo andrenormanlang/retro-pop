@@ -29,6 +29,7 @@ interface AddToCartPayload {
 }
 
 interface AddToCartResponse {
+  userId: string;
   comicId: string;
   quantity: number;
   title: string;
@@ -55,72 +56,76 @@ interface RemoveFromCartPayload {
 
 export const addToCart = createAsyncThunk<AddToCartResponse, AddToCartPayload, { state: RootState }>(
   'cart/addToCart',
-  async ({ userId, comicId, quantity, title, image, price, currency, stock }) => {
-    const { data: comic, error } = await supabase
-      .from('comics-sell')
-      .select('id, title, image, price, currency, stock')
-      .eq('id', comicId)
-      .single();
+  async ({ userId, comicId, quantity, title, image, price, currency, stock }, { rejectWithValue }) => {
+    try {
+      const { data: comic, error } = await supabase
+        .from('comics-sell')
+        .select('id, title, image, price, currency, stock')
+        .eq('id', comicId)
+        .single();
 
-    if (error || !comic) {
-      throw new Error(error?.message || 'Comic not found');
-    }
+      if (error || !comic) {
+        throw new Error(error?.message || 'Comic not found');
+      }
 
-    if (comic.stock < quantity) {
-      throw new Error('Insufficient stock');
-    }
+      if (comic.stock < quantity) {
+        throw new Error('Insufficient stock');
+      }
 
-    const { data: existingCartItem, error: fetchError } = await supabase
-      .from('cart')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('comic_id', comicId)
-      .single();
-
-    if (fetchError && fetchError.code !== 'PGRST116') {
-      throw new Error(fetchError.message);
-    }
-
-    if (existingCartItem) {
-      const newQuantity = existingCartItem.quantity + quantity;
-      const { error: updateError } = await supabase
+      const { data: existingCartItem, error: fetchError } = await supabase
         .from('cart')
-        .update({ quantity: newQuantity })
+        .select('*')
         .eq('user_id', userId)
-        .eq('comic_id', comicId);
+        .eq('comic_id', comicId)
+        .single();
 
-      if (updateError) {
-        throw new Error(updateError.message);
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        throw new Error(fetchError.message);
       }
-    } else {
-      const { error: insertError } = await supabase
-        .from('cart')
-        .insert({
-          user_id: userId,
-          comic_id: comicId,
-          quantity,
-          title: comic.title,
-          image: comic.image,
-          price: comic.price,
-          currency: comic.currency,
-          stock: comic.stock,
-        });
 
-      if (insertError) {
-        throw new Error(insertError.message);
+      if (existingCartItem) {
+        const newQuantity = existingCartItem.quantity + quantity;
+        const { error: updateError } = await supabase
+          .from('cart')
+          .update({ quantity: newQuantity })
+          .eq('user_id', userId)
+          .eq('comic_id', comicId);
+
+        if (updateError) {
+          throw new Error(updateError.message);
+        }
+      } else {
+        const { error: insertError } = await supabase
+          .from('cart')
+          .insert({
+            user_id: userId,
+            comic_id: comicId,
+            quantity,
+            title: comic.title,
+            image: comic.image,
+            price: comic.price,
+            currency: comic.currency,
+            stock: comic.stock,
+          });
+
+        if (insertError) {
+          throw new Error(insertError.message);
+        }
       }
+
+      const { error: stockError } = await supabase
+        .from('comics-sell')
+        .update({ stock: comic.stock - quantity })
+        .eq('id', comicId);
+
+      if (stockError) {
+        throw new Error(stockError.message);
+      }
+
+      return { userId, comicId, quantity, title: comic.title, image: comic.image, price: comic.price, currency: comic.currency, stock: comic.stock };
+    } catch (error: any) {
+      return rejectWithValue(error.message);
     }
-
-    const { error: stockError } = await supabase
-      .from('comics-sell')
-      .update({ stock: comic.stock - quantity })
-      .eq('id', comicId);
-
-    if (stockError) {
-      throw new Error(stockError.message);
-    }
-
-    return { comicId, quantity, title: comic.title, image: comic.image, price: comic.price, currency: comic.currency, stock: comic.stock };
   }
 );
 
@@ -149,63 +154,66 @@ export const fetchCart = createAsyncThunk<CartItem[], FetchCartPayload>(
 );
 
 export const updateCartQuantity = createAsyncThunk(
-	'cart/updateCartQuantity',
-	async ({ userId, comicId, quantity }: UpdateCartQuantityPayload) => {
-	  const { data: comic, error } = await supabase
-		.from('comics-sell')
-		.select('*')
-		.eq('id', comicId)
-		.single();
+  'cart/updateCartQuantity',
+  async ({ userId, comicId, quantity }: UpdateCartQuantityPayload, { rejectWithValue }) => {
+    try {
+      const { data: comic, error } = await supabase
+        .from('comics-sell')
+        .select('*')
+        .eq('id', comicId)
+        .single();
 
-	  if (error || !comic) {
-		throw new Error(error?.message || 'Comic not found');
-	  }
+      if (error || !comic) {
+        throw new Error(error?.message || 'Comic not found');
+      }
 
-	  const { data: existingCartItem, error: fetchError } = await supabase
-		.from('cart')
-		.select('*')
-		.eq('user_id', userId)
-		.eq('comic_id', comicId)
-		.single();
+      const { data: existingCartItem, error: fetchError } = await supabase
+        .from('cart')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('comic_id', comicId)
+        .single();
 
-	  if (fetchError && fetchError.code !== 'PGRST116') {
-		throw new Error(fetchError.message);
-	  }
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        throw new Error(fetchError.message);
+      }
 
-	  if (existingCartItem) {
-		const newQuantity = quantity;
-		const stockDifference = newQuantity - existingCartItem.quantity;
+      if (existingCartItem) {
+        const newQuantity = quantity;
+        const stockDifference = newQuantity - existingCartItem.quantity;
 
-		if (comic.stock < stockDifference) {
-		  throw new Error('Insufficient stock');
-		}
+        if (comic.stock < stockDifference) {
+          throw new Error('Insufficient stock');
+        }
 
-		const { error: updateError } = await supabase
-		  .from('cart')
-		  .update({ quantity: newQuantity })
-		  .eq('user_id', userId)
-		  .eq('comic_id', comicId);
+        const { error: updateError } = await supabase
+          .from('cart')
+          .update({ quantity: newQuantity })
+          .eq('user_id', userId)
+          .eq('comic_id', comicId);
 
-		if (updateError) {
-		  throw new Error(updateError.message);
-		}
+        if (updateError) {
+          throw new Error(updateError.message);
+        }
 
-		const { error: stockError } = await supabase
-		  .from('comics-sell')
-		  .update({ stock: comic.stock - stockDifference })
-		  .eq('id', comicId);
+        const { error: stockError } = await supabase
+          .from('comics-sell')
+          .update({ stock: comic.stock - stockDifference })
+          .eq('id', comicId);
 
-		if (stockError) {
-		  throw new Error(stockError.message);
-		}
+        if (stockError) {
+          throw new Error(stockError.message);
+        }
 
-		return { userId, comicId, quantity };
-	  } else {
-		throw new Error('Item not found in cart');
-	  }
-	}
-  );
-
+        return { userId, comicId, quantity };
+      } else {
+        throw new Error('Item not found in cart');
+      }
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
 
 export const removeFromCart = createAsyncThunk(
   'cart/removeFromCart',
@@ -234,7 +242,7 @@ const cartSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(addToCart.fulfilled, (state, action: PayloadAction<AddToCartPayload>) => {
+      .addCase(addToCart.fulfilled, (state, action: PayloadAction<AddToCartResponse>) => {
         const { comicId, quantity, title, image, price, currency, stock } = action.payload;
         const existingItem = state.items.find(item => item.comicId === comicId);
         if (existingItem) {
@@ -246,7 +254,7 @@ const cartSlice = createSlice({
       })
       .addCase(addToCart.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to add to cart';
+        state.error = action.payload as string || 'Failed to add to cart';
       })
       .addCase(updateCartQuantity.pending, (state) => {
         state.loading = true;
@@ -254,7 +262,7 @@ const cartSlice = createSlice({
       })
       .addCase(updateCartQuantity.fulfilled, (state, action: PayloadAction<UpdateCartQuantityPayload>) => {
         const { userId, comicId, quantity } = action.payload;
-        const existingItem = state.items.find(item => item.comicId === comicId && item.userId === userId);
+        const existingItem = state.items.find(item => item.comicId === comicId);
         if (existingItem) {
           existingItem.quantity = quantity;
         }
@@ -262,7 +270,7 @@ const cartSlice = createSlice({
       })
       .addCase(updateCartQuantity.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to update cart quantity';
+        state.error = action.payload as string || 'Failed to update cart quantity';
       })
       .addCase(fetchCart.pending, (state) => {
         state.loading = true;
@@ -274,7 +282,7 @@ const cartSlice = createSlice({
       })
       .addCase(fetchCart.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to fetch cart';
+        state.error = action.payload as string || 'Failed to fetch cart';
       })
       .addCase(removeFromCart.pending, (state) => {
         state.loading = true;
@@ -286,7 +294,7 @@ const cartSlice = createSlice({
       })
       .addCase(removeFromCart.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to remove from cart';
+        state.error = action.payload as string || 'Failed to remove from cart';
       });
   },
 });
