@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
       .from('receipts')
       .select('*')
       .eq('order_id', orderId)
+      .eq('user_id', userId)
       .single();
 
     if (existingReceiptError && existingReceiptError.code !== 'PGRST116') { // 'PGRST116' is a Supabase specific error code for 'no rows found'
@@ -89,6 +90,8 @@ export async function GET(request: NextRequest) {
     });
   }
 }
+
+
 
 
 
