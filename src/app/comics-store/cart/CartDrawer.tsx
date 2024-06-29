@@ -389,7 +389,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
                       {item.title}
                     </Text>
                     <Text fontSize={{ base: "xs", md: "md" }}>
-                      Price: ${item.price } {item.currency}
+                      Price: ${(item.price / 100).toFixed(2)} {item.currency}
                     </Text>
                     <Flex alignItems="center">
                       <Button
@@ -425,17 +425,16 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
                 </Flex>
               ))
             )}
-          </DrawerBody>
-
-
-          <DrawerFooter position="sticky" width="100%" >
-            <Box width="100%">
-              <Button mt={4} colorScheme="blue" width="100%" onClick={handleCheckout}>
+			<Button mt={4} colorScheme="blue" width="100%" onClick={handleCheckout}>
                 Go to Checkout
               </Button>
+          </DrawerBody>
+
+          <DrawerFooter position="sticky" bottom="0" width="100%" bg="gray.800">
+            <Box width="100%">
               <Flex justifyContent="space-between" mt={2}>
                 <Text>Subtotal</Text>
-                <Text>${(calculateTotalAmount()).toFixed(2)}</Text>
+                <Text>${(calculateTotalAmount() / 100).toFixed(2)}</Text>
               </Flex>
               <Flex justifyContent="space-between" mt={2}>
                 <Text>Shipping</Text>
@@ -443,8 +442,11 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
               </Flex>
               <Flex justifyContent="space-between" mt={2} fontWeight="bold">
                 <Text>Total</Text>
-                <Text>${(calculateTotalAmount() ).toFixed(2)}</Text>
+                <Text>${(calculateTotalAmount() / 100).toFixed(2)}</Text>
               </Flex>
+              {/* <Button mt={4} colorScheme="blue" width="100%" onClick={handleCheckout}>
+                Go to Checkout
+              </Button> */}
             </Box>
           </DrawerFooter>
         </DrawerContent>
@@ -512,5 +514,6 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
 };
 
 export default CartDrawer;
+
 
 
