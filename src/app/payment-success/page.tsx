@@ -81,7 +81,7 @@ const PaymentSuccess = () => {
   }
 
   return (
-    <Center height="100vh">
+    <Center>
       <Box bg={bg} p={8} rounded="md" shadow="md" maxW="md" width="100%">
         <Heading size="lg" mb={4} textAlign="center" color={headingColor}>
           Thank you for your purchase!
