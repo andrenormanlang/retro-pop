@@ -19,6 +19,7 @@ import {
   Badge,
 } from "@chakra-ui/react";
 import { HamburgerIcon, CloseIcon, MoonIcon, SunIcon, ChevronDownIcon, ChevronUpIcon, AddIcon } from "@chakra-ui/icons";
+import ShoppingCartButton from "@/helpers/ShoppingCartButton";
 import { motion } from "framer-motion";
 import { createClient } from "@/utils/supabase/client";
 import RetroPopLogo from "@/helpers/RetroPopLogo";
@@ -352,15 +353,15 @@ const Navbar = () => {
             <Box position="relative" mr={3}>
               <IconButton
                 aria-label="Cart"
-                icon={<AddIcon />}
+                icon={<ShoppingCartButton />}
                 onClick={onDrawerOpen} // Open the Drawer
-                colorScheme="yellow"
+                colorScheme=""
                 size={{ base: "sm", md: "md" }}
               />
               <Badge
                 position="absolute"
                 top="0"
-                right="0"
+                right="2.5"
                 transform="translate(50%, -50%)"
                 borderRadius="full"
                 px="2"
