@@ -427,11 +427,12 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
             )}
           </DrawerBody>
 
-          <DrawerFooter position="fixed" bottom="0" width="100%" >
+
+          <DrawerFooter position="sticky" width="100%" >
             <Box width="100%">
               <Flex justifyContent="space-between" mt={2}>
                 <Text>Subtotal</Text>
-                <Text>${calculateTotalAmount()}</Text>
+                <Text>${(calculateTotalAmount()).toFixed(2)}</Text>
               </Flex>
               <Flex justifyContent="space-between" mt={2}>
                 <Text>Shipping</Text>
@@ -439,7 +440,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
               </Flex>
               <Flex justifyContent="space-between" mt={2} fontWeight="bold">
                 <Text>Total</Text>
-                <Text>${calculateTotalAmount()}</Text>
+                <Text>${(calculateTotalAmount() ).toFixed(2)}</Text>
               </Flex>
               <Button mt={4} colorScheme="blue" width="100%" onClick={handleCheckout}>
                 Go to Checkout
