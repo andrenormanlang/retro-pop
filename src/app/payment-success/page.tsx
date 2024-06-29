@@ -120,7 +120,7 @@ const PaymentSuccess = () => {
         <Divider my={4} />
         <Center>
           <Text fontWeight="bold" fontSize="2xl" color={totalColor}>
-            Total Amount: ${(receipt.total_amount / 100).toFixed(2)}
+            Total Amount: ${(receipt.total_amount).toFixed(2)}
           </Text>
         </Center>
       </Box>

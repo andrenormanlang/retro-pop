@@ -140,7 +140,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ amount, cartItems, onPaymen
         isDisabled={!stripe || loading}
         width="full"
       >
-        {!loading ? `Pay $${amount / 100}` : "Processing..."}
+        {!loading ? `Pay $${(amount) }` : "Processing..."}
       </Button>
     </Box>
   );
