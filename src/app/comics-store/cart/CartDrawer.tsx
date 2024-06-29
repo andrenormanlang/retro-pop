@@ -430,7 +430,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
               </Button>
           </DrawerBody>
 
-          <DrawerFooter position="sticky" bottom="0" width="100%" bg="gray.800">
+          <DrawerFooter position="sticky"  width="100%" >
             <Box width="100%">
               <Flex justifyContent="space-between" mt={2}>
                 <Text>Subtotal</Text>
