@@ -422,6 +422,9 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
 								</Flex>
 							))
 						)}
+						<Button mt={4} colorScheme="blue" width="100%" onClick={handleCheckout}>
+							Go to Checkout
+						</Button>
 					</DrawerBody>
 
 					<DrawerFooter position="sticky" width="100%">
@@ -440,9 +443,6 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
 							</Flex>
 						</Box>
 					</DrawerFooter>
-					<Button mt={4} colorScheme="blue" width="100%" onClick={handleCheckout}>
-						Go to Checkout
-					</Button>
 				</DrawerContent>
 			</Drawer>
 
