@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
   try {
     // Calculate the correct total amount (convert to subunits)
     const totalAmount = Math.round(amount);
-    const currency = cartItems[0].currency;
+    const currency = 'usd';
 
     // Create a payment intent
     const paymentIntent = await stripe.paymentIntents.create({

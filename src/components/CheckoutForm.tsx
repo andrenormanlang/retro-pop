@@ -127,7 +127,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ amount, cartItems, onPaymen
   }
 
   return (
-    <Box as="form" onSubmit={handleSubmit} bg="white" p={4} rounded="md" boxShadow="md">
+    <Box as="form" onSubmit={handleSubmit} bg="" p={4} rounded="md" boxShadow="md">
       <PaymentElement />
 
       {errorMessage && <Text color="red.500" mt={2}>{errorMessage}</Text>}
