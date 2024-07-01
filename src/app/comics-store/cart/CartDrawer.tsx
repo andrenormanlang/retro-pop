@@ -39,6 +39,7 @@ import { updateStock, clearCart } from "@/lib/orders";
 import { supabase } from "@/utils/supabase/client";
 import { useUpdateStock } from "@/hooks/stock-management/useUpdateStock";
 import { useQueryClient } from "@tanstack/react-query";
+import { Appearance } from "@stripe/stripe-js"; // Import the StripeAppearance type
 
 // Define a custom type for the event detail
 interface PaymentSuccessDetail {
@@ -340,6 +341,72 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
     }
   };
 
+// Stripe UI
+const appearance: Appearance = {
+	theme: 'night',
+	variables: {
+	  
+	  fontFamily: 'Ideal Sans, system-ui, sans-serif',
+	  fontSizeBase: '16px',
+	  fontSizeSm: '14px',
+	  fontSizeLg: '18px',
+	  fontWeightNormal: '400',
+	  fontWeightBold: '700',
+	  fontWeightLight: '300',
+	  colorPrimary: '#0570de',
+	  colorBackground: '#1a1a1a',
+	  colorText: '#e0e0e0',
+	  colorTextSecondary: '#b3b3b3',
+	  colorTextPlaceholder: '#a0a0a0',
+	  colorSuccess: '#24b47e',
+	  colorDanger: '#ef5350',
+	  colorWarning: '#ff9800',
+	  borderRadius: '6px',
+	  spacingUnit: '4px',
+	  gridRowSpacing: '20px',
+	  gridColumnSpacing: '16px',
+	  tabSpacing: '8px',
+	  accordionItemSpacing: '10px',
+	  focusBoxShadow: '0 0 0 2px rgba(5, 112, 222, 0.5)',
+	},
+	rules: {
+	  '.Tab': {
+		border: '1px solid #2c2c2c',
+		boxShadow: '0px 1px 1px rgba(0, 0, 0, 0.1), 0px 3px 6px rgba(18, 42, 66, 0.1)',
+		backgroundColor: '#2c2c2c',
+	  },
+	  '.Tab:hover': {
+		color: 'var(--colorText)',
+		backgroundColor: '#333333',
+	  },
+	  '.Tab--selected': {
+		borderColor: '#0570de',
+		boxShadow: '0px 1px 1px rgba(0, 0, 0, 0.1), 0px 3px 6px rgba(18, 42, 66, 0.1), 0 0 0 2px var(--colorPrimary)',
+	  },
+	  '.Input--invalid': {
+		boxShadow: '0 1px 1px 0 rgba(0, 0, 0, 0.1), 0 0 0 2px var(--colorDanger)',
+	  },
+	  '.Label': {
+		color: 'var(--colorTextSecondary)',
+	  },
+	  '.CheckboxInput': {
+		backgroundColor: '#2c2c2c',
+		borderColor: '#2c2c2c',
+		borderRadius: '4px',
+	  },
+	  '.CheckboxInput--checked': {
+		backgroundColor: 'var(--colorPrimary)',
+		borderColor: 'var(--colorPrimary)',
+	  },
+	  '.CheckboxLabel': {
+		color: 'var(--colorText)',
+	  },
+	},
+	labels: 'floating',
+  };
+
+
+
   return (
     <>
       <Drawer isOpen={isOpen} placement="right" onClose={onClose} size={{ base: "full", md: "md" }}>
@@ -487,9 +554,9 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
           <DrawerOverlay />
           <DrawerContent>
             <DrawerCloseButton />
-            <DrawerHeader>Checkout</DrawerHeader>
+            <DrawerHeader></DrawerHeader>
             <DrawerBody>
-              <Elements stripe={getStripe()} options={{ clientSecret }}>
+              <Elements stripe={getStripe()} options={{ clientSecret, appearance }}>
                 <CheckoutForm
                   amount={totalAmount}
                   cartItems={cartItems}
