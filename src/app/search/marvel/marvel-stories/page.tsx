@@ -10,7 +10,7 @@ import { useDebouncedCallback } from "use-debounce";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSearchParameters } from "@/hooks/useSearchParameters";
 import MarvelPagination from "@/components/MarvelPagination";
-import { MarvelSeries, MarvelStory } from "@/types/marvel/marvel-comic.type";
+import { MarvelSeriesTypes, MarvelStory } from "@/types/marvel/marvel-comic.type";
 import { useGetMarvelStories } from "@/hooks/marvel/useGetMarvelStories";
 
 const MarvelStories: NextPage = () => {

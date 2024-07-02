@@ -1,4 +1,4 @@
-export type MarvelComics = {
+export type MarvelComicsTypes = {
     id: number;
     digitalId: number;
     title: string;

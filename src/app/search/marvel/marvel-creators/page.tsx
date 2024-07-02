@@ -20,7 +20,7 @@ import SearchBox from "@/components/SearchBox";
 import { useDebouncedCallback } from "use-debounce";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSearchParameters } from "@/hooks/useSearchParameters";
-import { MarvelComics } from "@/types/marvel/marvel-comics.type";
+import { MarvelComicsTypes } from "@/types/marvel/marvel-comics.type";
 import MarvelPagination from "@/components/MarvelPagination";
 import { useGetMarvelCreators } from "@/hooks/marvel/useGetMarvelCreators";
 import { MarvelCreator, UrlItem } from "@/types/marvel/marvel-comic.type";
