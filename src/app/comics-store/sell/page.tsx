@@ -141,6 +141,7 @@ export default function ComicForm() {
   const publishers = [
     "Marvel Comics",
     "DC Comics",
+	"Vertigo",
     "Image Comics",
     "Dark Horse Comics",
     "IDW Publishing",

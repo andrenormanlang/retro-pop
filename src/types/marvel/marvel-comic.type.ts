@@ -80,7 +80,7 @@ export type MarvelCreator =  {
 	previous: MarvelEventSummary;
   }
 
-  export type MarvelSeries = {
+  export type MarvelSeriesTypes = {
 	id: number;
 	title: string;
 	description: string;

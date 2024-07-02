@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -12,16 +12,18 @@ import {
   Text,
   Center,
   Spinner,
-  useColorModeValue,
   useToast,
   InputGroup,
   InputRightElement,
   IconButton,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
 import { z, ZodError } from "zod";
+import { useDispatch } from 'react-redux';
+import { setAccessToken } from '@/store/authSlice';  // Make sure this path is correct
 
 // Define a Zod schema for password validation directly
 const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
@@ -32,6 +34,7 @@ const validationSchema = z.object({
 });
 
 export default function Login() {
+  const dispatch = useDispatch();
   const router = useRouter();
   const searchParams = useSearchParams();
   const message = searchParams.get("message");
@@ -105,6 +108,7 @@ export default function Login() {
       });
       router.push("/auth/login?message=Could not authenticate user");
     } else {
+      dispatch(setAccessToken(data.session.access_token));
       setIsAuthenticated(true);
       router.refresh();
       toast({

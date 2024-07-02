@@ -19,7 +19,7 @@ import { useDebouncedCallback } from "use-debounce";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSearchParameters } from "@/hooks/useSearchParameters";
 import MarvelPagination from "@/components/MarvelPagination";
-import { MarvelEvent, MarvelSeries } from "@/types/marvel/marvel-comic.type";
+import { MarvelEvent, MarvelSeriesTypes } from "@/types/marvel/marvel-comic.type";
 import { useGetMarvelSeries } from "@/hooks/marvel/useGetMarvelSeries";
 
 const MarvelSeries: NextPage = () => {
@@ -157,7 +157,7 @@ const MarvelSeries: NextPage = () => {
 				>
 					{data.data &&
 						Array.isArray(data.data.results) &&
-						data.data.results.map((marvelSeries: MarvelSeries) => (
+						data.data.results.map((marvelSeries: MarvelSeriesTypes) => (
 							<NextLink
 								href={`/search/marvel/marvel-series/${marvelSeries.id}?page=${currentPage}&query=${searchTerm}`}
 								passHref
