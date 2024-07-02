@@ -1,9 +1,16 @@
 export type User = {
 	id: string;
-	full_name: string;
 	username: string;
-	avatar_url: string;
 	email: string;
-	created: string;
-	last_sign_in: string;
+	avatar_url?: string;
+	created?: string;
+	last_sign_in?: string;
+	[key: string]: any;  // This line is the index signature
   }
+
+
+  export type SortConfig = {
+	key: keyof User;
+	direction: 'ascending' | 'descending';
+  }
+

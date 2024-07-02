@@ -1,5 +1,6 @@
 'use client';
 
+import SearchBar from "@/components/comics-store/search";
 import { useGetReceipts } from "@/hooks/comic-table/useGetReceipts";
 import {
   Table,
@@ -22,7 +23,7 @@ import {
   AccordionIcon,
   Box,
 } from "@chakra-ui/react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 type Receipt = {
   id: string;
@@ -38,6 +39,7 @@ type Receipt = {
 const ReceiptsListTable = () => {
   const { data: receipts, isLoading, isError, error } = useGetReceipts();
   const toast = useToast();
+  const [searchQuery, setSearchQuery] = useState("");
   const [localReceipts, setLocalReceipts] = useState<Receipt[]>([]);
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: string } | null>(null);
 
@@ -46,6 +48,14 @@ const ReceiptsListTable = () => {
       setLocalReceipts(receipts);
     }
   }, [receipts]);
+
+  const filteredReceipts = useMemo(() => {
+	return localReceipts.filter(receipt =>
+	  receipt.id.toString().includes(searchQuery) ||
+	  receipt.profiles.username.toLowerCase().includes(searchQuery.toLowerCase())
+	);
+  }, [localReceipts, searchQuery]);
+
 
   const getNestedValue = (obj: any, path: string) => {
     return path.split(".").reduce((value, key) => value[key], obj);
@@ -58,19 +68,22 @@ const ReceiptsListTable = () => {
     return `${date.toLocaleDateString("en-GB", dateOptions)} ${date.toLocaleTimeString("en-GB", timeOptions)}`;
   };
 
-  const sortedReceipts = localReceipts.sort((a, b) => {
-    if (!sortConfig) return 0;
-    const aValue = getNestedValue(a, sortConfig.key);
-    const bValue = getNestedValue(b, sortConfig.key);
+  const sortedAndFilteredReceipts = useMemo(() => {
+	return filteredReceipts.sort((a, b) => {
+	  if (!sortConfig) return 0;
+	  const aValue = getNestedValue(a, sortConfig.key);
+	  const bValue = getNestedValue(b, sortConfig.key);
 
-    if (aValue < bValue) {
-      return sortConfig.direction === "ascending" ? -1 : 1;
-    }
-    if (aValue > bValue) {
-      return sortConfig.direction === "ascending" ? 1 : -1;
-    }
-    return 0;
-  });
+	  if (aValue < bValue) {
+		return sortConfig.direction === "ascending" ? -1 : 1;
+	  }
+	  if (aValue > bValue) {
+		return sortConfig.direction === "ascending" ? 1 : -1;
+	  }
+	  return 0;
+	});
+  }, [filteredReceipts, sortConfig]);
+
 
   const requestSort = (key: string) => {
     let direction = "ascending";
@@ -110,6 +123,8 @@ const ReceiptsListTable = () => {
             <AccordionIcon />
           </AccordionButton>
           <AccordionPanel pb={4}>
+		  <SearchBar onSearch={setSearchQuery} searchQuery={searchQuery} totalResults={sortedAndFilteredReceipts.length} />
+
             <TableContainer>
               <Table variant="simple">
                 <Thead>
@@ -124,7 +139,7 @@ const ReceiptsListTable = () => {
                   </Tr>
                 </Thead>
                 <Tbody>
-                  {sortedReceipts.map((receipt: Receipt) => (
+                  {sortedAndFilteredReceipts.map((receipt: Receipt) => (
                     <Tr key={receipt.id}>
                       <Td textAlign="center">{receipt.id}</Td>
                       <Td textAlign="center">{receipt.order_id}</Td>

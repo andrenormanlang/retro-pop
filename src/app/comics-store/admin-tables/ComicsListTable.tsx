@@ -31,14 +31,17 @@ import {
 import { useGetComics } from "@/hooks/comic-table/useGetComics";
 import { Comic } from "@/types/comics-store/comic-detail.type";
 import { supabase } from "@/utils/supabaseClient";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useUpdateComics } from "@/hooks/comic-table/useUpdateComics";
+import SearchBar from "@/components/comics-store/search";
+
 
 type SortConfigKey = keyof Comic | "profiles.username" | "profiles.email";
 
 const ComicsListTable = () => {
   const { data: comics, isLoading, isError, error } = useGetComics();
   const toast = useToast();
+  const [searchQuery, setSearchQuery] = useState("");
   const [localComics, setLocalComics] = useState<Comic[]>([]);
   const [sortConfig, setSortConfig] = useState<{ key: SortConfigKey; direction: string } | null>(null);
   const [visibleColumns, setVisibleColumns] = useState<string[]>([
@@ -60,25 +63,33 @@ const ComicsListTable = () => {
     }
   }, [comics]);
 
+  const filteredComics = useMemo(() => {
+	return localComics.filter(comic =>
+	  comic.title.toLowerCase().includes(searchQuery.toLowerCase())
+	);
+  }, [localComics, searchQuery]);
+
+
   const getNestedValue = (obj: any, path: string) => {
     return path.split(".").reduce((value, key) => value[key], obj);
   };
 
-  const sortedComics = localComics
-    ? [...localComics].sort((a, b) => {
-        if (!sortConfig) return 0;
-        const aValue = getNestedValue(a, sortConfig.key);
-        const bValue = getNestedValue(b, sortConfig.key);
+  const sortedAndFilteredComics = useMemo(() => {
+	return filteredComics.sort((a, b) => {
+	  if (!sortConfig) return 0;
+	  const aValue = getNestedValue(a, sortConfig.key);
+	  const bValue = getNestedValue(b, sortConfig.key);
 
-        if (aValue < bValue) {
-          return sortConfig.direction === "ascending" ? -1 : 1;
-        }
-        if (aValue > bValue) {
-          return sortConfig.direction === "ascending" ? 1 : -1;
-        }
-        return 0;
-      })
-    : [];
+	  if (aValue < bValue) {
+		return sortConfig.direction === "ascending" ? -1 : 1;
+	  }
+	  if (aValue > bValue) {
+		return sortConfig.direction === "ascending" ? 1 : -1;
+	  }
+	  return 0;
+	});
+  }, [filteredComics, sortConfig]);
+
 
   const requestSort = (key: SortConfigKey) => {
     let direction = "ascending";
@@ -205,7 +216,8 @@ const ComicsListTable = () => {
             <AccordionIcon />
           </AccordionButton>
           <AccordionPanel pb={4}>
-            <TableContainer>
+		  <SearchBar onSearch={setSearchQuery} searchQuery={searchQuery} totalResults={sortedAndFilteredComics.length} />
+		  <TableContainer>
               <Table variant="simple">
                 <Thead>
                   <Tr>
@@ -238,7 +250,7 @@ const ComicsListTable = () => {
                   </Tr>
                 </Thead>
                 <Tbody>
-                  {sortedComics.map((comic: Comic) => (
+                  {sortedAndFilteredComics.map((comic: Comic) => (
                     <Tr key={comic.id}>
                       {visibleColumns.includes("title") && <Td textAlign="initial">{comic.title}</Td>}
                       {visibleColumns.includes("release_date") && <Td textAlign="center">{formatDateRelease(comic.release_date)}</Td>}
