@@ -1,19 +1,16 @@
 // src/helpers/AvatarNav.tsx
 import { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { Image, Box, Spinner, useColorModeValue, Text, useBreakpointValue } from '@chakra-ui/react';
-import { RootState } from '@/store/store';
 import { setAvatarUrl } from '@/store/avatarSlice';
 import { useGetAvatar } from '@/hooks/avatar-image/useGetAvatar';
 
-
-export default function AvatarNav({
-  uid,
-  size,
-}: {
+interface AvatarNavProps {
   uid: string | null;
   size: { base: number; md: number };
-}) {
+}
+
+export default function AvatarNav({ uid, size }: AvatarNavProps) {
   const { data: avatarUrl, isLoading, isError } = useGetAvatar(uid!);
   const dispatch = useDispatch();
   const borderColor = useColorModeValue('gray.300', 'gray.600');

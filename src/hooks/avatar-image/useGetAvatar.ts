@@ -1,4 +1,4 @@
-// src/hooks/useGetAvatar.ts
+// src/hooks/avatar-image/useGetAvatar.ts
 import { useQuery, UseQueryOptions } from '@tanstack/react-query';
 
 async function fetchAvatar(userId: string) {

@@ -89,7 +89,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
     // Listen for payment success events
     const handlePaymentSuccess = (event: CustomEvent<PaymentSuccessDetail>) => {
       if (event.detail.userId === user?.id) {
-        handleClearCartTest();
+        
       }
     };
 
@@ -312,40 +312,13 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
 
   const defaultImageUrl = "/path/to/default-image.jpg";
 
-  // New clear cart test function
-  const handleClearCartTest = async () => {
-    if (!user) return;
 
-    console.log("Attempting to clear cart for user:", user.id);
-    const { error } = await supabase.from("cart").delete().eq("user_id", user.id);
-
-    if (error) {
-      console.error("Error clearing cart:", error);
-      toast({
-        title: "Error clearing cart",
-        description: error.message,
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
-    } else {
-      console.log("Cart cleared successfully for user:", user.id);
-      dispatch(fetchCart({ userId: user.id }));
-      toast({
-        title: "Cart cleared successfully",
-        description: "All items have been removed from your cart.",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
-    }
-  };
 
 // Stripe UI
 const appearance: Appearance = {
 	theme: 'night',
 	variables: {
-	  
+
 	  fontFamily: 'Ideal Sans, system-ui, sans-serif',
 	  fontSizeBase: '16px',
 	  fontSizeSm: '14px',
