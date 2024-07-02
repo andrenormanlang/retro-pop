@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
 		throw error;
 	  }
 
-	  console.log('Avatar URL fetched successfully:', data.avatar_url);
+	//   console.log('Avatar URL fetched successfully:', data.avatar_url);
 	  return new NextResponse(JSON.stringify({ avatarUrl: data.avatar_url }), {
 		status: 200,
 		headers: { 'Content-Type': 'application/json' },

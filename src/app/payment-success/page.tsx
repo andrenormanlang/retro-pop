@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Box, Spinner, Text, Center, List, ListItem, Heading, Stack, Divider, Image, useColorModeValue, Badge } from '@chakra-ui/react';
+import { Box, Spinner, Text, Center, List, ListItem, Heading, Stack, Divider, Image, useColorModeValue, Badge, Button } from '@chakra-ui/react';
 import { createClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
@@ -122,6 +122,12 @@ const PaymentSuccess = () => {
           <Text fontWeight="bold" fontSize="2xl" color={totalColor}>
             Total Amount: ${(receipt.total_amount).toFixed(2)}
           </Text>
+        </Center>
+        <Divider my={4} />
+        <Center>
+          <Button colorScheme="teal" onClick={() => router.push('/')}>
+            Back to Store
+          </Button>
         </Center>
       </Box>
     </Center>

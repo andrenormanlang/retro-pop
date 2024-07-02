@@ -18,7 +18,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, searchQuery, totalResul
 
 	return (
 		<Center mb={4} width="100%">
-			<Box width={{ base: "100%", md: "50%" }}>
+			<Box width={{ base: "100%", md: "40%" }} mb={4}>
 				<InputGroup>
 					<InputLeftElement pointerEvents="none">
 						<Icon as={SearchIcon} color={borderColor} />

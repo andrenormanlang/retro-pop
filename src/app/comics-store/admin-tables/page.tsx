@@ -5,6 +5,7 @@ import { useUser } from "../../../contexts/UserContext";
 import { Center, Spinner, Alert, AlertIcon } from "@chakra-ui/react";
 import UserListTable from "./UserListTable";
 import ComicsListTable from "./ComicsListTable";
+import ReceiptsListTable from "./ReceiptsListTable";
 import { supabase } from "@/utils/supabase/client";
 
 const AdminPage = () => {
@@ -77,6 +78,7 @@ const AdminPage = () => {
     <div>
       <UserListTable />
       <ComicsListTable />
+      <ReceiptsListTable />
     </div>
   );
 };

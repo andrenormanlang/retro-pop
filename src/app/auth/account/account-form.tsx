@@ -80,40 +80,58 @@ export default function AccountForm({ user }: { user: User | null }) {
   }, [user, getProfile]);
 
   const updateProfile: SubmitHandler<FormData> = async ({ fullname, username, avatarUrl }) => {
-    try {
-      setLoading(true);
-      setError(null);
+	try {
+	  setLoading(true);
+	  setError(null);
 
-      const { error } = await supabase.from("profiles").upsert({
-        id: user?.id as string,
-        full_name: fullname,
-        username,
-        avatar_url: avatarUrl,
-        updated_at: new Date().toISOString(),
-      });
-      if (error) throw error;
-      toast({
-        title: "Profile updated.",
-        description: "Your profile has been updated successfully.",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-        position: "top",
-      });
-    } catch (error) {
-      setError("Error updating the data!");
-      toast({
-        title: "Profile update failed.",
-        description: "There was an error updating your profile.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-        position: "top",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }
+	  // Check if the username already exists for a different user
+	  const { data: existingUser, error: usernameError } = await supabase
+		.from('profiles')
+		.select('id')
+		.eq('username', username)
+		.neq('id', user?.id)
+		.single();
+
+	  if (usernameError && usernameError.code !== 'PGRST116') { // PGRST116 is the code for no results found
+		throw usernameError;
+	  }
+
+	  if (existingUser) {
+		throw new Error('Username already exists. Please choose another one.');
+	  }
+
+	  const { error } = await supabase.from("profiles").upsert({
+		id: user?.id as string,
+		full_name: fullname,
+		username,
+		avatar_url: avatarUrl,
+		updated_at: new Date().toISOString(),
+	  });
+
+	  if (error) throw error;
+
+	  toast({
+		title: "Profile updated.",
+		description: "Your profile has been updated successfully.",
+		status: "success",
+		duration: 5000,
+		isClosable: true,
+		position: "top",
+	  });
+	} catch (error: any) {
+	  setError("Error updating the data!");
+	  toast({
+		title: "Profile update failed.",
+		description: error.message || "There was an error updating your profile.",
+		status: "error",
+		duration: 5000,
+		isClosable: true,
+		position: "top",
+	  });
+	} finally {
+	  setLoading(false);
+	}
+  };
 
   const handleSignOut = async () => {
     try {

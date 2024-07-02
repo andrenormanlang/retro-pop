@@ -60,6 +60,10 @@ const ComicsListTable = () => {
     }
   }, [comics]);
 
+  const getNestedValue = (obj: any, path: string) => {
+    return path.split(".").reduce((value, key) => value[key], obj);
+  };
+
   const sortedComics = localComics
     ? [...localComics].sort((a, b) => {
         if (!sortConfig) return 0;
@@ -75,10 +79,6 @@ const ComicsListTable = () => {
         return 0;
       })
     : [];
-
-  const getNestedValue = (obj: any, path: string) => {
-    return path.split(".").reduce((value, key) => value[key], obj);
-  };
 
   const requestSort = (key: SortConfigKey) => {
     let direction = "ascending";
@@ -196,7 +196,7 @@ const ComicsListTable = () => {
   }
   return (
     <Box maxW="1300px" mx="auto" p={4}>
-      <Accordion allowToggle defaultIndex={[0]}>
+      <Accordion allowToggle>
         <AccordionItem>
           <AccordionButton>
             <Heading as="h1" size="xl" mb={6} flex="1" textAlign="left">
@@ -204,7 +204,7 @@ const ComicsListTable = () => {
             </Heading>
             <AccordionIcon />
           </AccordionButton>
-		  <AccordionPanel pb={4}>
+          <AccordionPanel pb={4}>
             <TableContainer>
               <Table variant="simple">
                 <Thead>
@@ -226,12 +226,11 @@ const ComicsListTable = () => {
                     </Th>
                   </Tr>
                   <Tr>
-                    {/* {visibleColumns.includes("title") && <Th textAlign="left" onClick={() => requestSort("title")} position="sticky" left={0} bg="black" zIndex={1}>Title</Th>} */}
                     {visibleColumns.includes("title") && <Th textAlign="left" onClick={() => requestSort("title")}>Title</Th>}
                     {visibleColumns.includes("release_date") && <Th textAlign="center" onClick={() => requestSort("release_date")}>Release Date</Th>}
                     {visibleColumns.includes("profiles.username") && <Th textAlign="center" onClick={() => requestSort("profiles.username")}>User</Th>}
                     {visibleColumns.includes("profiles.email") && <Th textAlign="center" onClick={() => requestSort("profiles.email")}>Email</Th>}
-                    {visibleColumns.includes("created_at") && <Th textAlign="center" onClick={() => requestSort("created_at")}>Date / Time Added</Th>}
+					{visibleColumns.includes("created_at") && <Th textAlign="center" onClick={() => requestSort("created_at")}>Date / Time Added</Th>}
                     {visibleColumns.includes("updated_at") && <Th textAlign="center" onClick={() => requestSort("updated_at")}>Date / Time Updated</Th>}
                     {visibleColumns.includes("stock") && <Th textAlign="center">Stock</Th>}
                     {visibleColumns.includes("price") && <Th textAlign="center">Price</Th>}
@@ -241,7 +240,6 @@ const ComicsListTable = () => {
                 <Tbody>
                   {sortedComics.map((comic: Comic) => (
                     <Tr key={comic.id}>
-                      {/* {visibleColumns.includes("title") && <Td textAlign="initial" position="sticky" left={0} bg="black" zIndex={1}>{comic.title}</Td>} */}
                       {visibleColumns.includes("title") && <Td textAlign="initial">{comic.title}</Td>}
                       {visibleColumns.includes("release_date") && <Td textAlign="center">{formatDateRelease(comic.release_date)}</Td>}
                       {visibleColumns.includes("profiles.username") && <Td textAlign="center">{comic.profiles?.username || "Unknown"}</Td>}
@@ -327,4 +325,3 @@ const ComicsListTable = () => {
 };
 
 export default ComicsListTable;
-
