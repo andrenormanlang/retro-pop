@@ -25,12 +25,19 @@ import {
   useToast,
   Flex,
 } from "@chakra-ui/react";
-import { Forum, Topic, Params } from "@/types/forum/forum.type";
+import { Forum, Topic } from "@/types/forum/forum.type";
 import { useUser } from "@/contexts/UserContext";
 import { DeleteIcon } from "@chakra-ui/icons";
 import { getRelativeTime } from "@/helpers/getRelativeTime";
 
-const ForumPage = ({ params }: Params) => {
+interface ParamsType {
+  params: {
+    id: string;
+    topicId?: string;
+  };
+}
+
+const ForumPage = ({ params }: ParamsType) => {
   const { id } = params;
   const [forum, setForum] = useState<Forum | null>(null);
   const [topics, setTopics] = useState<Topic[]>([]);
@@ -95,7 +102,7 @@ const ForumPage = ({ params }: Params) => {
               .eq('topic_id', topic.id);
 
             const postCountsTemp = postsSnapshot?.length || 0;
-            const voiceCountsTemp = new Set(postsSnapshot?.map((post) => post.user_id)).size;
+            const voiceCountsTemp = new Set(postsSnapshot?.map((post) => post.profiles.username)).size;
             const lastPostTime = postsSnapshot?.length
               ? getRelativeTime(postsSnapshot[postsSnapshot.length - 1].created_at)
               : 'No posts';
@@ -220,6 +227,5 @@ const ForumPage = ({ params }: Params) => {
 };
 
 export default ForumPage;
-
 
 

@@ -15,13 +15,12 @@ export interface Topic {
 	authorId: string;
 	voiceCount?: number;
 	postCount?: number;
-	lastPostTime?: string; 
+	lastPostTime?: string;
 	profiles: {
 	  username: string;
 	  avatar_url: string;
 	};
-  }
-
+}
 
 export type Post = {
     id: string;
@@ -42,7 +41,7 @@ export type User = {
 	avatar_url: string;
 	username: string;
 	is_admin?: boolean;
-  };
+};
 
 export type Params = {
     id: string;
