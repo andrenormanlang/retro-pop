@@ -1,10 +1,10 @@
 export type Forum = {
-    id: string;
-    image: string;
-    title: string;
-    description: string;
-    created_at: string;
-    updated_at: string;
+	id: string;
+	image: string;
+	title: string;
+	description: string;
+	created_at: string;
+	updated_at: string;
 };
 
 export interface Topic {
@@ -17,22 +17,22 @@ export interface Topic {
 	postCount?: number;
 	lastPostTime?: string;
 	profiles: {
-	  username: string;
-	  avatar_url: string;
+		username: string;
+		avatar_url: string;
 	};
 }
 
 export type Post = {
-    id: string;
-    topic_id: string;
-    content: string;
-    image_url?: string;
-    created_at: string;
-    profiles: {
-        username: string;
-        avatar_url: string;
+	id: string;
+	topic_id: string;
+	content: string;
+	image_url?: string;
+	created_at: string;
+	profiles: {
+		username: string;
+		avatar_url: string;
 		is_admin?: boolean;
-    };
+	};
 };
 
 export type User = {
@@ -44,9 +44,8 @@ export type User = {
 };
 
 export type Params = {
-    id: string;
-    params: {
-        id: string;
-        topicId?: string;
-    };
+	params: {
+		id: string;
+		topicId?: string;
+	};
 };

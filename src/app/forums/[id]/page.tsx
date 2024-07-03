@@ -25,19 +25,13 @@ import {
   useToast,
   Flex,
 } from "@chakra-ui/react";
-import { Forum, Topic } from "@/types/forum/forum.type";
+import { Forum, Params, Topic } from "@/types/forum/forum.type";
 import { useUser } from "@/contexts/UserContext";
 import { DeleteIcon } from "@chakra-ui/icons";
 import { getRelativeTime } from "@/helpers/getRelativeTime";
 
-interface ParamsType {
-  params: {
-    id: string;
-    topicId?: string;
-  };
-}
 
-const ForumPage = ({ params }: ParamsType) => {
+const ForumPage = ({ params }: Params) => {
   const { id } = params;
   const [forum, setForum] = useState<Forum | null>(null);
   const [topics, setTopics] = useState<Topic[]>([]);

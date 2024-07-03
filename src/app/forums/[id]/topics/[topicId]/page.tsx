@@ -23,7 +23,7 @@ import { Params, Post } from "@/types/forum/forum.type";
 import { useUser } from "@/contexts/UserContext";
 import { format } from "date-fns";
 
-const PostPage = ({ params }: Params) => {
+const PostPage = ({ params }: { params: Params['params'] }) => {
   const { id, topicId } = params;
   const [posts, setPosts] = useState<Post[]>([]);
   const [topicTitle, setTopicTitle] = useState<string>("");
@@ -167,4 +167,5 @@ const PostPage = ({ params }: Params) => {
 };
 
 export default PostPage;
+
 
