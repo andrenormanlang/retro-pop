@@ -5,6 +5,7 @@ export type User = {
 	avatar_url?: string;
 	created?: string;
 	last_sign_in?: string;
+	is_admin?: boolean;
 	[key: string]: any;  // This line is the index signature
   }
 

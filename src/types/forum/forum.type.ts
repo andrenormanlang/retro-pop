@@ -7,19 +7,21 @@ export type Forum = {
     updated_at: string;
 };
 
-export type Topic = {
-    id: string;
-    forum_id: string;
-    title: string;
-    description: string;
-    author_id: string;
-    created_at: string;
-    updated_at: string;
+export interface Topic {
+	id: string;
+	title: string;
+	description: string;
+	created_at: string;
+	authorId: string;
+	voiceCount?: number;
+	postCount?: number;
+	lastPostTime?: string; 
 	profiles: {
-        username: string;
-        avatar_url: string;
-    };
-};
+	  username: string;
+	  avatar_url: string;
+	};
+  }
+
 
 export type Post = {
     id: string;
@@ -30,6 +32,7 @@ export type Post = {
     profiles: {
         username: string;
         avatar_url: string;
+		is_admin?: boolean;
     };
 };
 
@@ -38,6 +41,7 @@ export type User = {
 	email: string | null;
 	avatar_url: string;
 	username: string;
+	is_admin?: boolean;
   };
 
 export type Params = {
