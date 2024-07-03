@@ -3,11 +3,27 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { supabase } from "@/utils/supabaseClient";
-import { Box, Button, Input, Spinner, Center, Text, FormControl, FormLabel, Textarea, VStack, Container, Heading, useToast, useColorModeValue } from "@chakra-ui/react";
-import { Params } from "@/types/forum/forum.type";
+import {
+  Box,
+  Button,
+  Input,
+  Spinner,
+  Center,
+  Text,
+  FormControl,
+  FormLabel,
+  Textarea,
+  VStack,
+  Container,
+  Heading,
+  useToast,
+  useColorModeValue,
+} from "@chakra-ui/react";
 
 interface CreateTopicProps {
-  params: Params;
+  params: {
+    id: string;
+  };
 }
 
 const CreateTopic: React.FC<CreateTopicProps> = ({ params }) => {
