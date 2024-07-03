@@ -87,7 +87,7 @@ const ForumList = () => {
                 {forums.map((forum) => (
                     <Box
                         key={forum.id}
-                        p={5}
+                        p={0}
                         shadow="md"
                         borderWidth="1px"
                         borderRadius="md"
@@ -104,16 +104,19 @@ const ForumList = () => {
                                 objectFit="cover"
                                 fallbackSrc="https://via.placeholder.com/400x200?text=Forum"
                             />
-                            <Heading fontSize="xl">{forum.title}</Heading>
-                            <Text>{forum.description}</Text>
-                            <Box alignSelf="flex-start">
-                                <Text>Topics: {forumDetails[forum.id]?.topicCount || 0}</Text>
-                                <Text>Posts: {forumDetails[forum.id]?.postCount || 0}</Text>
-                                <Text>Last Updated: {forumDetails[forum.id]?.lastUpdated || "No posts"}</Text>
+							<Box p={5}>
+                            <Heading fontSize="xl" mb="16px">{forum.title}</Heading>
+                            <Text mb="16px">{forum.description}</Text>
+                            <Box alignSelf="flex-start" mb="16px">
+                                <Text fontWeight={600}>Topics: {forumDetails[forum.id]?.topicCount || 0}</Text>
+                                <Text fontWeight={600}>Posts: {forumDetails[forum.id]?.postCount || 0}</Text>
+                                <Text fontWeight={600}>Last Updated: {forumDetails[forum.id]?.lastUpdated || "No posts"}</Text>
                             </Box>
-                            <Button colorScheme="teal" onClick={() => router.push(`/forums/${forum.id}`)}>
+                            <Button width="full" colorScheme="teal" onClick={() => router.push(`/forums/${forum.id}`)}>
                                 View Topics
                             </Button>
+
+							</Box>
                         </VStack>
                     </Box>
                 ))}
