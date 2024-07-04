@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/utils/supabaseClient";
-import { Box, Spinner, SimpleGrid, Heading, Text, Button, Image, VStack, Center, Container, useColorModeValue } from "@chakra-ui/react";
+import { Box, Spinner, SimpleGrid, Heading, Text, Button, Image, VStack, Center, Container, useColorModeValue, Spacer } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { Forum } from "@/types/forum/forum.type";
 import { getRelativeTime } from "@/helpers/getRelativeTime";
@@ -95,16 +95,21 @@ const ForumList = () => {
                         bg={cardBg}
                         _hover={{ shadow: "xl", bg: cardHover }}
                         transition="all 0.3s ease-in-out"
+                        height="100%"
+                        display="flex"
+                        flexDirection="column"
                     >
-                        <VStack spacing={4} align="stretch">
+                        <Box height="200px" width="100%" overflow="hidden">
                             <Image
-                                borderRadius="md"
                                 src={forum.image || 'https://via.placeholder.com/400x200?text=Forum'}
                                 alt={forum.title}
                                 objectFit="cover"
+                                height="100%"
+                                width="100%"
                                 fallbackSrc="https://via.placeholder.com/400x200?text=Forum"
                             />
-							<Box p={5}>
+                        </Box>
+                        <VStack spacing={4} align="stretch" flex="1" p={5}>
                             <Heading fontSize="xl" mb="16px">{forum.title}</Heading>
                             <Text mb="16px">{forum.description}</Text>
                             <Box alignSelf="flex-start" mb="16px">
@@ -112,11 +117,10 @@ const ForumList = () => {
                                 <Text fontWeight={600}>Posts: {forumDetails[forum.id]?.postCount || 0}</Text>
                                 <Text fontWeight={600}>Last Updated: {forumDetails[forum.id]?.lastUpdated || "No posts"}</Text>
                             </Box>
+                            <Spacer />
                             <Button width="full" colorScheme="teal" onClick={() => router.push(`/forums/${forum.id}`)}>
                                 View Topics
                             </Button>
-
-							</Box>
                         </VStack>
                     </Box>
                 ))}
