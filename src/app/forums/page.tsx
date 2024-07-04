@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/utils/supabaseClient";
-import { Box, Spinner, SimpleGrid, Heading, Text, Button, Image, VStack, Center, Container, useColorModeValue, Spacer } from "@chakra-ui/react";
+import { Box, Spinner, SimpleGrid, Heading, Text, Button, Image, VStack, Center, Container, useColorModeValue, Badge, Flex } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { Forum } from "@/types/forum/forum.type";
 import { getRelativeTime } from "@/helpers/getRelativeTime";
@@ -15,7 +15,6 @@ const ForumList = () => {
     const cardBg = useColorModeValue('white', 'gray.700');
     const cardText = useColorModeValue('gray.800', 'white');
     const cardHover = useColorModeValue('gray.100', 'gray.600');
-    const cardBorder = useColorModeValue('gray.200', 'gray.500');
 
     useEffect(() => {
         const fetchForums = async () => {
@@ -95,9 +94,9 @@ const ForumList = () => {
                         bg={cardBg}
                         _hover={{ shadow: "xl", bg: cardHover }}
                         transition="all 0.3s ease-in-out"
-                        height="100%"
                         display="flex"
                         flexDirection="column"
+                        height="100%"
                     >
                         <Box height="200px" width="100%" overflow="hidden">
                             <Image
@@ -109,19 +108,25 @@ const ForumList = () => {
                                 fallbackSrc="https://via.placeholder.com/400x200?text=Forum"
                             />
                         </Box>
-                        <VStack spacing={4} align="stretch" flex="1" p={5}>
-                            <Heading fontSize="xl" mb="16px">{forum.title}</Heading>
-                            <Text mb="16px">{forum.description}</Text>
-                            <Box alignSelf="flex-start" mb="16px">
-                                <Text fontWeight={600}>Topics: {forumDetails[forum.id]?.topicCount || 0}</Text>
-                                <Text fontWeight={600}>Posts: {forumDetails[forum.id]?.postCount || 0}</Text>
-                                <Text fontWeight={600}>Last Updated: {forumDetails[forum.id]?.lastUpdated || "No posts"}</Text>
-                            </Box>
-                            <Spacer />
-                            <Button width="full" colorScheme="teal" onClick={() => router.push(`/forums/${forum.id}`)}>
+                        <Flex direction="column" justify="space-between" flex="1" p={5}>
+                            <VStack spacing={4} align="stretch" flex="1">
+                                <Heading fontSize="xl">{forum.title}</Heading>
+                                <Text>{forum.description}</Text>
+                                <Box mt="auto">
+									<VStack align="initial">
+
+                                    <Badge colorScheme="teal" mb={1} variant="subtle" color={cardText}>Topics: {forumDetails[forum.id]?.topicCount || 0}</Badge>
+
+                                    <Badge colorScheme="blue" mb={1} variant="subtle" color={cardText}>Posts: {forumDetails[forum.id]?.postCount || 0}</Badge>
+
+                                    <Badge colorScheme="black" mb={1} variant="subtle" color={cardText}>Last Updated: {forumDetails[forum.id]?.lastUpdated || "No posts"}</Badge>
+									</VStack>
+                                </Box>
+                            </VStack>
+                            <Button mt={4} width="full" colorScheme="teal" onClick={() => router.push(`/forums/${forum.id}`)}>
                                 View Topics
                             </Button>
-                        </VStack>
+                        </Flex>
                     </Box>
                 ))}
             </SimpleGrid>
@@ -130,4 +135,3 @@ const ForumList = () => {
 };
 
 export default ForumList;
-
