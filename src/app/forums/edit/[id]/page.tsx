@@ -23,11 +23,12 @@ import {
   Heading,
 } from "@chakra-ui/react";
 import { ArrowBackIcon } from "@chakra-ui/icons";
-import ImageUpload from "./image-upload";
+import ImageUpload from "@/components/ImageUpload";
+
 
 const validationSchema = z.object({
-  title: z.string().min(1, { message: "Title is required" }),
-  description: z.string().min(1, { message: "Description is required" }),
+  title: z.string().min(6, { message: "Title is required" }),
+  description: z.string().min(6, { message: "Description is required" }),
   image: z.string().url({ message: "Image URL must be valid" }).optional(),
 });
 

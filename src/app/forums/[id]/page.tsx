@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -24,6 +24,14 @@ import {
   Tooltip,
   useToast,
   Flex,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
+  useDisclosure,
 } from "@chakra-ui/react";
 import { Forum, Params, Topic } from "@/types/forum/forum.type";
 import { useUser } from "@/contexts/UserContext";
@@ -37,8 +45,10 @@ const ForumPage = ({ params }: Params) => {
   const [loading, setLoading] = useState(true);
   const { user } = useUser();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [topicToDelete, setTopicToDelete] = useState<string | null>(null);
   const router = useRouter();
   const toast = useToast();
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const cardBg = useColorModeValue("white", "gray.700");
   const cardText = useColorModeValue("gray.800", "white");
@@ -126,16 +136,51 @@ const ForumPage = ({ params }: Params) => {
     }
   }, [id]);
 
-  const handleDelete = async (topicId: string) => {
-    const { error } = await supabase
-      .from("topics")
-      .delete()
-      .eq("id", topicId);
-    if (error) console.error("Error deleting topic:", error);
-    else {
-      // Refresh topics
-      setTopics((prevTopics) => prevTopics.filter((topic) => topic.id !== topicId));
-    }
+  const handleDelete = async () => {
+	if (!topicToDelete) return;
+
+	const topic = topics.find((t) => t.id === topicToDelete);
+
+	if (topic && (topic.postCount || 0) > 0) {
+	  toast({
+		title: "Error",
+		description: "You can't delete topics that have posts. Please delete all posts first.",
+		status: "error",
+		duration: 5000,
+		isClosable: true,
+	  });
+	  return;
+	}
+
+	try {
+	  const { error } = await supabase.from("topics").delete().eq("id", topicToDelete);
+	  if (error) throw error;
+	  setTopics((prevTopics) => prevTopics.filter((topic) => topic.id !== topicToDelete));
+	  toast({
+		title: "Topic deleted.",
+		description: "The topic has been deleted successfully.",
+		status: "success",
+		duration: 5000,
+		isClosable: true,
+	  });
+	} catch (error) {
+	  console.error("Error deleting topic:", error);
+	  toast({
+		title: "Error",
+		description: "There was an error deleting the topic.",
+		status: "error",
+		duration: 5000,
+		isClosable: true,
+	  });
+	} finally {
+	  setTopicToDelete(null);
+	  onClose();
+	}
+  };
+
+  const openDeleteModal = (topicId: string) => {
+    setTopicToDelete(topicId);
+    onOpen();
   };
 
   const handleCreateTopic = () => {
@@ -221,7 +266,7 @@ const ForumPage = ({ params }: Params) => {
                 <Td>{topic.lastPostTime}</Td>
                 {isAdmin && (
                   <Td>
-                    <Button colorScheme="red" size="sm" onClick={() => handleDelete(topic.id)}>
+                    <Button colorScheme="red" size="sm" onClick={() => openDeleteModal(topic.id)}>
                       <DeleteIcon />
                     </Button>
                   </Td>
@@ -231,9 +276,27 @@ const ForumPage = ({ params }: Params) => {
           </Tbody>
         </Table>
       </Box>
+
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Delete Topic</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Text>Are you sure you want to delete this topic?</Text>
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme="red" mr={3} onClick={handleDelete}>
+              Yes, Delete
+            </Button>
+            <Button variant="ghost" onClick={onClose}>Cancel</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Container>
   );
 };
 
 export default ForumPage;
+
 

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -18,19 +18,31 @@ import {
   Image,
   useToast,
   Flex,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
+  useDisclosure,
 } from "@chakra-ui/react";
 import { Params, Post } from "@/types/forum/forum.type";
 import { useUser } from "@/contexts/UserContext";
 import { format } from "date-fns";
+import { DeleteIcon } from "@chakra-ui/icons";
 
 const PostPage = ({ params }: { params: Params['params'] }) => {
   const { id, topicId } = params;
   const [posts, setPosts] = useState<Post[]>([]);
   const [topicTitle, setTopicTitle] = useState<string>("");
   const [loading, setLoading] = useState(true);
+  const [postToDelete, setPostToDelete] = useState<string | null>(null);
   const { user } = useUser();
+  const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
   const toast = useToast();
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const fetchPostsAndTopic = async () => {
     try {
@@ -80,6 +92,57 @@ const PostPage = ({ params }: { params: Params['params'] }) => {
     }
   }, [topicId]);
 
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (user) {
+        const { data, error } = await supabase.from("profiles").select("is_admin").eq("id", user.id).single();
+        if (error) {
+          console.error("Error fetching profile:", error.message);
+          return;
+        }
+        if (data && data.is_admin) {
+          setIsAdmin(true);
+        }
+      }
+    };
+
+    fetchUserProfile();
+  }, [user]);
+
+  const handleDeletePost = async () => {
+    if (!postToDelete) return;
+
+    try {
+      const { error } = await supabase.from("posts").delete().eq("id", postToDelete);
+      if (error) throw error;
+      setPosts((prevPosts) => prevPosts.filter((post) => post.id !== postToDelete));
+      toast({
+        title: "Post deleted.",
+        description: "The post has been deleted successfully.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      toast({
+        title: "Error",
+        description: "There was an error deleting the post.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setPostToDelete(null);
+      onClose();
+    }
+  };
+
+  const openDeleteModal = (postId: string) => {
+    setPostToDelete(postId);
+    onOpen();
+  };
+
   const bg = useColorModeValue("white", "gray.700");
   const color = useColorModeValue("gray.800", "white");
   const hoverBg = useColorModeValue("gray.100", "gray.600");
@@ -87,17 +150,17 @@ const PostPage = ({ params }: { params: Params['params'] }) => {
   const avatarBg = useColorModeValue("gray.100", "gray.800");
 
   const handleCreatePost = () => {
-    if (user) {
-      router.push(`/forums/${id}/topics/${topicId}/create-post`);
-    } else {
+    if (!user) {
       toast({
-        title: "Access denied.",
+        title: "Error",
         description: "You need to be signed in to create a post.",
         status: "error",
         duration: 5000,
         isClosable: true,
       });
+      return;
     }
+    router.push(`/forums/${id}/topics/${topicId}/create-post`);
   };
 
   if (loading)
@@ -135,7 +198,7 @@ const PostPage = ({ params }: { params: Params['params'] }) => {
             borderColor={borderColor}
             transition="all 0.3s ease-in-out"
             width="100%"
-            alignItems="stretch"  // Ensure children stretch to the height of the Flex container
+            alignItems="stretch"
           >
             <Box
               width="120px"
@@ -144,7 +207,7 @@ const PostPage = ({ params }: { params: Params['params'] }) => {
               p={4}
               borderRadius="md"
               marginRight={4}
-              alignSelf="stretch"  // Make the Box stretch to the height of the Flex container
+              alignSelf="stretch"
             >
               <Avatar size="lg" src={post.profiles.avatar_url} mb={4} />
               <Text fontWeight="bold">{post.profiles.username}</Text>
@@ -159,13 +222,41 @@ const PostPage = ({ params }: { params: Params['params'] }) => {
               </Text>
               {post.image_url && <Image src={post.image_url} alt="Post image" />}
             </Box>
+            {isAdmin && (
+              <Button
+                ml={2}
+                colorScheme="red"
+                onClick={() => openDeleteModal(post.id)}
+                alignSelf="flex-start"
+              >
+                <DeleteIcon />
+              </Button>
+            )}
           </Flex>
         ))}
       </VStack>
+
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Delete Post</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Text>Are you sure you want to delete this post?</Text>
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme="red" mr={3} onClick={handleDeletePost}>
+              Yes, Delete
+            </Button>
+            <Button variant="ghost" onClick={onClose}>Cancel</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Container>
   );
 };
 
 export default PostPage;
+
 
 

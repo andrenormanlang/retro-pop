@@ -1,20 +1,48 @@
 'use client';
 
-import { useState } from "react";
+import React, { useState } from 'react';
 import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabaseClient";
-import { Box, Button, Container, Heading, Textarea, VStack, useToast } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Container,
+  Heading,
+  Textarea,
+  VStack,
+  useToast,
+  FormControl,
+  FormLabel,
+  FormErrorMessage,
+  Input,
+  Flex,
+} from "@chakra-ui/react";
 import { useUser } from "@/contexts/UserContext";
+import ImageUpload from "@/components/ImageUpload";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 
-const CreatePostPage = ({ params }: { params: { forumId: string, topicId: string } }) => {
-  const { forumId, topicId } = params;
-  const [content, setContent] = useState("");
-  const [image, setImage] = useState<File | null>(null);
+// Define Zod schema
+const postSchema = z.object({
+  content: z.string().min(6, "Content is required"),
+  imageUrl: z.string().optional(),
+});
+
+type PostFormData = z.infer<typeof postSchema>;
+
+const CreatePostPage = ({ params }: { params: { id: string; topicId: string } }) => {
+  const { id, topicId } = params; // Using id instead of forumId
   const { user } = useUser();
   const router = useRouter();
   const toast = useToast();
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
 
-  const handleSubmit = async () => {
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm<PostFormData>({
+    resolver: zodResolver(postSchema),
+  });
+
+  const onSubmit = async (data: PostFormData) => {
     if (!user) {
       toast({
         title: "Error",
@@ -26,9 +54,9 @@ const CreatePostPage = ({ params }: { params: { forumId: string, topicId: string
       return;
     }
 
-    const { data, error } = await supabase
+    const { data: postData, error } = await supabase
       .from("posts")
-      .insert([{ topic_id: topicId, content, image_url: image ? URL.createObjectURL(image) : null, created_by: user.id }]);
+      .insert([{ topic_id: topicId, content: data.content, image_url: imageUrl, created_by: user.id }]);
 
     if (error) {
       console.error(error);
@@ -47,32 +75,40 @@ const CreatePostPage = ({ params }: { params: { forumId: string, topicId: string
         duration: 5000,
         isClosable: true,
       });
-      router.push(`/forums/${forumId}/topics/${topicId}`);
+      router.push(`/forums/${id}/topics/${topicId}`);
     }
   };
 
   return (
     <Container maxW="container.md" py={8}>
-      <Heading mb={4}>Create Post</Heading>
-      <VStack spacing={4} align="stretch">
-        <Textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder="Content"
-          size="sm"
-        />
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => setImage(e.target.files ? e.target.files[0] : null)}
-        />
-        <Button colorScheme="teal" onClick={handleSubmit}>
-          Create Post
+      <Flex justifyContent="space-between" mb={4}>
+        <Button colorScheme="teal" onClick={() => router.push(`/forums/${id}/topics/${topicId}`)}>
+          Back to Posts
         </Button>
-      </VStack>
+      </Flex>
+      <Heading mb={4}>Create Post</Heading>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <VStack spacing={4} align="stretch">
+          <FormControl isInvalid={!!errors.content}>
+            <FormLabel>Content</FormLabel>
+            <Textarea
+              {...register("content")}
+              placeholder="Content"
+              size="sm"
+            />
+            <FormErrorMessage>{errors.content && errors.content.message}</FormErrorMessage>
+          </FormControl>
+          <ImageUpload onUpload={(url) => {
+            setImageUrl(url);
+            setValue("imageUrl", url);
+          }} />
+          <Button colorScheme="teal" type="submit">
+            Create Post
+          </Button>
+        </VStack>
+      </form>
     </Container>
   );
 };
 
 export default CreatePostPage;
-
