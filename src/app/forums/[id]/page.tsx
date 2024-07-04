@@ -30,7 +30,6 @@ import { useUser } from "@/contexts/UserContext";
 import { DeleteIcon } from "@chakra-ui/icons";
 import { getRelativeTime } from "@/helpers/getRelativeTime";
 
-
 const ForumPage = ({ params }: Params) => {
   const { id } = params;
   const [forum, setForum] = useState<Forum | null>(null);
@@ -41,10 +40,10 @@ const ForumPage = ({ params }: Params) => {
   const router = useRouter();
   const toast = useToast();
 
-  const cardBg = useColorModeValue('white', 'gray.700');
-  const cardText = useColorModeValue('gray.800', 'white');
-  const cardHover = useColorModeValue('gray.100', 'gray.600');
-  const cardBorder = useColorModeValue('gray.200', 'gray.500');
+  const cardBg = useColorModeValue("white", "gray.700");
+  const cardText = useColorModeValue("gray.800", "white");
+  const cardHover = useColorModeValue("gray.100", "gray.600");
+  const cardBorder = useColorModeValue("gray.200", "gray.500");
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -76,7 +75,7 @@ const ForumPage = ({ params }: Params) => {
 
     const fetchTopics = async () => {
       const { data, error } = await supabase
-        .from('topics')
+        .from("topics")
         .select(`
           *,
           profiles (
@@ -84,22 +83,29 @@ const ForumPage = ({ params }: Params) => {
             avatar_url
           )
         `)
-        .eq('forum_id', id);
+        .eq("forum_id", id);
       if (error) {
-        console.error('Error fetching topics:', error);
+        console.error("Error fetching topics:", error);
       } else {
         const enrichedTopics = await Promise.all(
           data.map(async (topic) => {
             const { data: postsSnapshot, error: postsError } = await supabase
-              .from('posts')
-              .select('*')
-              .eq('topic_id', topic.id);
+              .from("posts")
+              .select("*, profiles (username)")
+              .eq("topic_id", topic.id);
+
+            if (postsError) {
+              console.error("Error fetching posts:", postsError);
+              return topic;
+            }
 
             const postCountsTemp = postsSnapshot?.length || 0;
-            const voiceCountsTemp = new Set(postsSnapshot?.map((post) => post.profiles.username)).size;
+            const voiceCountsTemp = new Set(
+              postsSnapshot?.map((post) => post.profiles?.username).filter((username) => username)
+            ).size;
             const lastPostTime = postsSnapshot?.length
               ? getRelativeTime(postsSnapshot[postsSnapshot.length - 1].created_at)
-              : 'No posts';
+              : "No posts";
 
             return {
               ...topic,
@@ -122,10 +128,10 @@ const ForumPage = ({ params }: Params) => {
 
   const handleDelete = async (topicId: string) => {
     const { error } = await supabase
-      .from('topics')
+      .from("topics")
       .delete()
-      .eq('id', topicId);
-    if (error) console.error('Error deleting topic:', error);
+      .eq("id", topicId);
+    if (error) console.error("Error deleting topic:", error);
     else {
       // Refresh topics
       setTopics((prevTopics) => prevTopics.filter((topic) => topic.id !== topicId));
@@ -146,21 +152,30 @@ const ForumPage = ({ params }: Params) => {
     router.push(`/forums/${id}/create-topic`);
   };
 
-  if (loading) return (
-    <Center height="100vh">
-      <Spinner size="xl" />
-    </Center>
-  );
+  if (loading)
+    return (
+      <Center height="100vh">
+        <Spinner size="xl" />
+      </Center>
+    );
 
   if (!forum) return <Text>Forum not found</Text>;
 
   return (
     <Container maxW="container.lg" py={8}>
-      <Heading mb={4} textAlign="center">{forum.title}</Heading>
-      <Text mb={8} textAlign="center">{forum.description}</Text>
+      <Heading mb={4} textAlign="center">
+        {forum.title}
+      </Heading>
+      <Text mb={8} textAlign="center">
+        {forum.description}
+      </Text>
       <Flex justify="space-between" mb={4}>
-        <Button colorScheme="teal" onClick={() => router.push(`/forums`)}>Back to Forums</Button>
-        <Button colorScheme="teal" onClick={handleCreateTopic}>Create Topic</Button>
+        <Button colorScheme="teal" onClick={() => router.push(`/forums`)}>
+          Back to Forums
+        </Button>
+        <Button colorScheme="teal" onClick={handleCreateTopic}>
+          Create Topic
+        </Button>
       </Flex>
       <Box overflowX="auto">
         <Table variant="simple">
@@ -221,5 +236,4 @@ const ForumPage = ({ params }: Params) => {
 };
 
 export default ForumPage;
-
 
