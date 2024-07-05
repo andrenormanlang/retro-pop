@@ -30,7 +30,7 @@ import { Comic } from "@/types/comics-store/comic-detail.type";
 import { useUpdateComics } from "@/hooks/comic-table/useUpdateComics";
 
 // Dynamically import ReactQuill to prevent SSR issues
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false, loading: () => <p>Loading editor...</p> });
 import 'react-quill/dist/quill.snow.css';
 
 // Import Quill and the color picker enhancement
@@ -297,7 +297,7 @@ const EditComic = () => {
             <Input type="text" {...register("main_artist")} />
             {errors.main_artist && <Text color="red.500">{errors.main_artist.message}</Text>}
           </FormControl>
-          <FormControl isInvalid={!!errors.main_writer}>
+          <FormControl isInvalid={(!!errors.main_writer)}>
             <FormLabel>Main Writer</FormLabel>
             <Input type="text" {...register("main_writer")} />
             {errors.main_writer && <Text color="red.500">{errors.main_writer.message}</Text>}

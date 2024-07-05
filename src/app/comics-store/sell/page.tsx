@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
@@ -28,16 +28,8 @@ import { useUser } from "../../../contexts/UserContext";
 import dynamic from "next/dynamic";
 
 // Dynamically import ReactQuill to prevent SSR issues
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
-import 'react-quill/dist/quill.snow.css';
-
-// Import Quill and the color picker enhancement
-import Quill from 'quill';
-import { SnowTheme } from 'quill-color-picker-enhance';
-import 'quill-color-picker-enhance/dist/index.css';
-
-// Register the enhanced theme
-Quill.register('themes/snow-quill-color-picker-enhance', SnowTheme);
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false, loading: () => <p>Loading editor...</p> });
+import 'react-quill/dist/quill.snow.css'; // Import Quill styles
 
 // Define validation schema
 const validationSchema = z.object({
@@ -272,7 +264,7 @@ export default function ComicForm() {
               <Input type="text" {...register("main_writer")} />
               {errors.main_writer && <Text color="red.500">{errors.main_writer.message}</Text>}
             </FormControl>
-            <FormControl isInvalid={!!errors.description}>
+            <FormControl isInvalid={(!!errors.description)}>
               <FormLabel>Description</FormLabel>
               <ReactQuill
                 value={watch("description")}
@@ -296,21 +288,16 @@ export default function ComicForm() {
                   'color', 'background', // Include formats for color and marker
                 ]}
                 theme="snow-quill-color-picker-enhance" // Use the enhanced theme
-				max-height="200px"
-
+                style={{ height: "400px", marginBottom: "20px" }}
               />
               {errors.description && <Text color="red.500">{errors.description.message}</Text>}
             </FormControl>
-			<Box>
             <Button colorScheme="teal" width="300px" type="submit" isDisabled={loading}>
               {loading ? "Loading ..." : "Post Comic"}
             </Button>
-
-			</Box>
           </VStack>
         )}
       </Box>
     </Center>
   );
 }
-
