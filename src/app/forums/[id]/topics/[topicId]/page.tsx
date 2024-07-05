@@ -220,7 +220,7 @@ const PostPage = ({ params }: { params: Params['params'] }) => {
               <Text mt={2} mb={2}>
                 {post.content}
               </Text>
-              {post.image_url && <Image src={post.image_url} alt="Post image" />}
+              {post.image_url && <Image src={post.image_url} alt="Post image" maxWidth="500px" />}
             </Box>
             {isAdmin && (
               <Button
