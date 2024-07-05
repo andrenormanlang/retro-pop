@@ -1,5 +1,6 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import React, { useState } from 'react';
 import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabaseClient";
@@ -8,13 +9,11 @@ import {
   Button,
   Container,
   Heading,
-  Textarea,
   VStack,
   useToast,
   FormControl,
   FormLabel,
   FormErrorMessage,
-  Input,
   Flex,
 } from "@chakra-ui/react";
 import { useUser } from "@/contexts/UserContext";
@@ -22,6 +21,18 @@ import ImageUpload from "@/components/ImageUpload";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+
+// Dynamically import ReactQuill to prevent SSR issues
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+import 'react-quill/dist/quill.snow.css';
+
+// Import Quill and the color picker enhancement
+import Quill from 'quill';
+import { SnowTheme } from 'quill-color-picker-enhance';
+import 'quill-color-picker-enhance/dist/index.css';
+
+// Register the enhanced theme
+Quill.register('themes/snow-quill-color-picker-enhance', SnowTheme);
 
 // Define Zod schema
 const postSchema = z.object({
@@ -38,7 +49,7 @@ const CreatePostPage = ({ params }: { params: { id: string; topicId: string } })
   const toast = useToast();
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm<PostFormData>({
+  const { register, handleSubmit, setValue, formState: { errors }, watch } = useForm<PostFormData>({
     resolver: zodResolver(postSchema),
   });
 
@@ -91,10 +102,28 @@ const CreatePostPage = ({ params }: { params: { id: string; topicId: string } })
         <VStack spacing={4} align="stretch">
           <FormControl isInvalid={!!errors.content}>
             <FormLabel>Content</FormLabel>
-            <Textarea
-              {...register("content")}
-              placeholder="Content"
-              size="sm"
+            <ReactQuill
+              value={watch("content")}
+              onChange={(value) => setValue("content", value)}
+              modules={{
+                toolbar: [
+                  [{ 'header': '1'}, {'header': '2'}, { 'font': [] }],
+                  [{ size: [] }],
+                  ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                  [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'indent': '-1'}, { 'indent': '+1' }],
+                  ['link', 'image'],
+                  [{ 'color': [] }, { 'background': [] }], // Color and marker options
+                  ['clean'],
+                ],
+              }}
+              formats={[
+                'header', 'font', 'size',
+                'bold', 'italic', 'underline', 'strike', 'blockquote',
+                'list', 'bullet', 'indent',
+                'link', 'image',
+                'color', 'background', // Include formats for color and marker
+              ]}
+              theme="snow-quill-color-picker-enhance" // Use the enhanced theme
             />
             <FormErrorMessage>{errors.content && errors.content.message}</FormErrorMessage>
           </FormControl>

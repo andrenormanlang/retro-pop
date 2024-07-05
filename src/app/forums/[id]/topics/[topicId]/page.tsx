@@ -217,9 +217,9 @@ const PostPage = ({ params }: { params: Params['params'] }) => {
               <Text fontSize="sm" color="gray.500">
                 {format(new Date(post.created_at), 'MMM d, yyyy, h:mm:ss a')}
               </Text>
-              <Text mt={2} mb={2}>
-                {post.content}
-              </Text>
+              <Box mt={2} mb={2}>
+                <Text dangerouslySetInnerHTML={{ __html: post.content }} />
+              </Box>
               {post.image_url && <Image src={post.image_url} alt="Post image" maxWidth={{ base: "100%", md: "350px" }} />}
             </Box>
             {isAdmin && (

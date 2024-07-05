@@ -1,7 +1,8 @@
-"use client";
+'use client';
 
-import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import dynamic from 'next/dynamic';
+import React, { useState, useCallback, useEffect } from 'react';
+import { useRouter, usePathname } from "next/navigation";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,12 +23,23 @@ import {
   Flex,
   Heading,
   Image,
-  Textarea,
 } from "@chakra-ui/react";
 import { ArrowBackIcon } from "@chakra-ui/icons";
 import ImageUpload from "./image-upload";
 import { Comic } from "@/types/comics-store/comic-detail.type";
 import { useUpdateComics } from "@/hooks/comic-table/useUpdateComics";
+
+// Dynamically import ReactQuill to prevent SSR issues
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+import 'react-quill/dist/quill.snow.css';
+
+// Import Quill and the color picker enhancement
+import Quill from 'quill';
+import { SnowTheme } from 'quill-color-picker-enhance';
+import 'quill-color-picker-enhance/dist/index.css';
+
+// Register the enhanced theme
+Quill.register('themes/snow-quill-color-picker-enhance', SnowTheme);
 
 const validationSchema = z.object({
   image: z.string().optional(),
@@ -62,6 +74,7 @@ const EditComic = () => {
     formState: { errors },
     setValue,
     reset,
+    watch,
   } = useForm<FormData>({
     resolver: zodResolver(validationSchema),
     defaultValues: {
@@ -85,6 +98,7 @@ const EditComic = () => {
   const publishers = [
     "Marvel Comics",
     "DC Comics",
+	"Vertigo",
     "Image Comics",
     "Dark Horse Comics",
     "IDW Publishing",
@@ -215,9 +229,6 @@ const EditComic = () => {
           />
         </Box>
         <VStack as="form" onSubmit={handleSubmit(onSubmit)} flex="2" align="start" spacing={4} p={4}>
-          {/* <Heading as="h1" size="xl" color="tomato">
-            Edit Comic
-          </Heading> */}
           <FormControl isInvalid={!!errors.title}>
             <FormLabel>Title</FormLabel>
             <Input type="text" {...register("title")} />
@@ -244,7 +255,7 @@ const EditComic = () => {
             <Input type="date" {...register("release_date")} />
             {errors.release_date && <Text color="red.500">{errors.release_date.message}</Text>}
           </FormControl>
-		  <FormControl isInvalid={!!errors.stock}>
+          <FormControl isInvalid={!!errors.stock}>
             <FormLabel>Stock</FormLabel>
             <Input type="number" {...register("stock", { valueAsNumber: true })} />
             {errors.stock && <Text color="red.500">{errors.stock.message}</Text>}
@@ -293,11 +304,28 @@ const EditComic = () => {
           </FormControl>
           <FormControl isInvalid={!!errors.description}>
             <FormLabel>Description</FormLabel>
-            <Textarea
-              {...register("description")}
-              placeholder="Enter comic description"
-              size="sm"
-              rows={5} // Default number of rows, it will expand automatically with input
+            <ReactQuill
+              value={watch("description")}
+              onChange={(value) => setValue("description", value)}
+              modules={{
+                toolbar: [
+                  [{ 'header': '1'}, {'header': '2'}, { 'font': [] }],
+                  [{ size: [] }],
+                  ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                  [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'indent': '-1'}, { 'indent': '+1' }],
+                  ['link', 'image'],
+                  [{ 'color': [] }, { 'background': [] }], // Color and marker options
+                  ['clean'],
+                ],
+              }}
+              formats={[
+                'header', 'font', 'size',
+                'bold', 'italic', 'underline', 'strike', 'blockquote',
+                'list', 'bullet', 'indent',
+                'link', 'image',
+                'color', 'background', // Include formats for color and marker
+              ]}
+              theme="snow-quill-color-picker-enhance" // Use the enhanced theme
             />
             {errors.description && <Text color="red.500">{errors.description.message}</Text>}
           </FormControl>

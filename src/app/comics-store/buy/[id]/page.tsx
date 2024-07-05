@@ -19,7 +19,6 @@ import {
   Flex,
   Switch,
   useToast,
-  IconButton
 } from "@chakra-ui/react";
 import { ArrowBackIcon, AddIcon } from "@chakra-ui/icons";
 import { Comic } from "@/types/comics-store/comic-detail.type";
@@ -28,7 +27,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { addToCart, updateCartQuantity } from '@/store/cartSlice';
 import { AppDispatch, RootState } from '@/store/store';
 import { useUpdateStock } from "@/hooks/stock-management/useUpdateStock";
-
 
 const ComicDetail = () => {
   const pathname = usePathname();
@@ -401,9 +399,14 @@ const ComicDetail = () => {
           borderWidth="1px"
           borderColor="gray.700"
         >
-          <Text fontSize={{ base: "sm", md: "lg" }} color="white" textAlign="start">
-            {comic.description || "No description available."}
-          </Text>
+          <Box width="100%">
+            <Text
+              fontSize={{ base: "sm", md: "lg" }}
+              color="white"
+              textAlign="start"
+              dangerouslySetInnerHTML={{ __html: comic.description }}
+            />
+          </Box>
         </Flex>
       </Container>
     </>
@@ -411,3 +414,4 @@ const ComicDetail = () => {
 };
 
 export default ComicDetail;
+

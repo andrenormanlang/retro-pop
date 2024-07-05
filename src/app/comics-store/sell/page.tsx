@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
@@ -21,11 +21,23 @@ import {
   Text,
   Select,
   useToast,
-  Textarea,
 } from "@chakra-ui/react";
 import ImageUpload from "./image-upload";
 import { v4 as uuidv4 } from "uuid";
 import { useUser } from "../../../contexts/UserContext";
+import dynamic from "next/dynamic";
+
+// Dynamically import ReactQuill to prevent SSR issues
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+import 'react-quill/dist/quill.snow.css';
+
+// Import Quill and the color picker enhancement
+import Quill from 'quill';
+import { SnowTheme } from 'quill-color-picker-enhance';
+import 'quill-color-picker-enhance/dist/index.css';
+
+// Register the enhanced theme
+Quill.register('themes/snow-quill-color-picker-enhance', SnowTheme);
 
 // Define validation schema
 const validationSchema = z.object({
@@ -35,12 +47,12 @@ const validationSchema = z.object({
   release_date: z.string().min(1, { message: "Release date is required" }),
   price: z.preprocess((val) => parseFloat(val as string), z.number().positive({ message: "Price is required must be positive" })),
   stock: z.preprocess((val) => parseFloat(val as string), z.number().positive({ message: "Stock is required and must be positive" })),
-  pages: z.preprocess((val) => parseInt(val as string), z.number().positive({ message: "Pages are required and must be positive" })), // Add pages
+  pages: z.preprocess((val) => parseInt(val as string), z.number().positive({ message: "Pages are required and must be positive" })),
   main_artist: z.string().min(1, { message: "Main artist is required" }),
   main_writer: z.string().min(1, { message: "Main writer is required" }),
-  description: z.string().min(20, { message: "Description is required and should be at least 10 characters" }),
-  currency: z.string().min(1, { message: "Currency is required" }), // Add currency validation
-  genre: z.string().min(1, { message: "Genre is required" }), // Add genre validation
+  description: z.string().min(20, { message: "Description is required and should be at least 20 characters" }),
+  currency: z.string().min(1, { message: "Currency is required" }),
+  genre: z.string().min(1, { message: "Genre is required" }),
 });
 
 type FormData = z.infer<typeof validationSchema>;
@@ -59,6 +71,8 @@ export default function ComicForm() {
     handleSubmit,
     formState: { errors },
     reset,
+    setValue,
+    watch,
   } = useForm<FormData>({
     resolver: zodResolver(validationSchema),
     defaultValues: {
@@ -68,12 +82,12 @@ export default function ComicForm() {
       release_date: "",
       description: "",
       price: 0,
-	  stock: 0,
+      stock: 0,
       image: "",
       main_writer: "",
-      pages: 0, // Add default value for pages
-      currency: "", // Add default value for currency
-      genre: "", // Add default value for genre
+      pages: 0,
+      currency: "",
+      genre: "",
     },
   });
 
@@ -84,7 +98,6 @@ export default function ComicForm() {
     }
 
     try {
-      // Fetch the user profile to check if the user is an admin
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("is_admin")
@@ -93,19 +106,10 @@ export default function ComicForm() {
 
       if (profileError) throw profileError;
 
-      const approvedStatus = profile.is_admin; // Directly use the is_admin flag from user profile
+      const approvedStatus = profile.is_admin;
 
       setLoading(true);
       const comicId = uuidv4();
-      console.log("Submitting data:", {
-        id: comicId,
-        ...data,
-        image: imageURL,
-        user_id: user.id,
-        is_approved: approvedStatus,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      });
       const { error } = await supabase.from("comics-sell").insert([
         {
           id: comicId,
@@ -126,9 +130,9 @@ export default function ComicForm() {
         status: "success",
         duration: 5000,
         isClosable: true,
-		position: "top"
+        position: "top",
       });
-      reset(); // Reset the form fields
+      reset();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
       setError("Error submitting comic book: " + errorMessage);
@@ -137,18 +141,16 @@ export default function ComicForm() {
     }
   };
 
-
   const publishers = [
     "Marvel Comics",
     "DC Comics",
-	"Vertigo",
+    "Vertigo",
     "Image Comics",
     "Dark Horse Comics",
     "IDW Publishing",
     "Valiant Comics",
     "Dynamite Entertainment",
     "Boom! Studios",
-    // Add more publishers as needed
   ];
 
   const currencies = [
@@ -272,20 +274,43 @@ export default function ComicForm() {
             </FormControl>
             <FormControl isInvalid={!!errors.description}>
               <FormLabel>Description</FormLabel>
-              <Textarea
-                {...register("description")}
-                placeholder="Enter comic description"
-                size="sm"
-                rows={5} // Default number of rows, it will expand automatically with input
+              <ReactQuill
+                value={watch("description")}
+                onChange={(value) => setValue("description", value)}
+                modules={{
+                  toolbar: [
+                    [{ 'header': '1'}, {'header': '2'}, { 'font': [] }],
+                    [{ size: [] }],
+                    ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'indent': '-1'}, { 'indent': '+1' }],
+                    ['link', 'image'],
+                    [{ 'color': [] }, { 'background': [] }], // Color and marker options
+                    ['clean'],
+                  ],
+                }}
+                formats={[
+                  'header', 'font', 'size',
+                  'bold', 'italic', 'underline', 'strike', 'blockquote',
+                  'list', 'bullet', 'indent',
+                  'link', 'image',
+                  'color', 'background', // Include formats for color and marker
+                ]}
+                theme="snow-quill-color-picker-enhance" // Use the enhanced theme
+				max-height="200px"
+
               />
               {errors.description && <Text color="red.500">{errors.description.message}</Text>}
             </FormControl>
+			<Box>
             <Button colorScheme="teal" width="300px" type="submit" isDisabled={loading}>
               {loading ? "Loading ..." : "Post Comic"}
             </Button>
+
+			</Box>
           </VStack>
         )}
       </Box>
     </Center>
   );
 }
+
