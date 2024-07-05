@@ -287,8 +287,8 @@ export default function ComicForm() {
                   'link', 'image',
                   'color', 'background', // Include formats for color and marker
                 ]}
-                theme="snow-quill-color-picker-enhance" // Use the enhanced theme
-                style={{ height: "400px", marginBottom: "20px" }}
+                // theme="snow-quill-color-picker-enhance" // Use the enhanced theme
+                // style={{ height: "400px", marginBottom: "20px" }}
               />
               {errors.description && <Text color="red.500">{errors.description.message}</Text>}
             </FormControl>
