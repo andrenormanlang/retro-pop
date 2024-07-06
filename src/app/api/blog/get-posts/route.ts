@@ -4,37 +4,49 @@ import { createClient } from "@supabase/supabase-js";
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+export async function GET() {
+  try {
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-export async function GET(request: NextRequest) {
-    try {
-        const { searchParams } = new URL(request.url);
-        const authorId = searchParams.get('authorId');
-        let query = supabase.from('blog_posts').select('*');
+    // Fetch posts from the 'blog_posts' table
+    const { data: postsData, error: postsError } = await supabase
+      .from("blog_posts")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-        if (authorId) {
-            query = query.eq('author_id', authorId);
-        }
+    if (postsError) throw postsError;
 
-        const { data: posts, error } = await query;
+    // Process posts to remove HTML tags and handle images
+    const processedPosts = postsData.map(post => {
+      // Regex to remove image tags
+      const imgRegex = /<img[^>]*>/g;
+      let contentWithoutImages = post.content.replace(imgRegex, '');
 
-        if (error) throw error;
+      // Strip other HTML tags
+      contentWithoutImages = contentWithoutImages.replace(/<\/?[^>]+(>|$)/g, "");
 
-        return new NextResponse(JSON.stringify(posts), {
-            status: 200,
-            headers: {
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*",
-            },
-        });
-    } catch (error: any) {
-        console.error("Error fetching posts:", error);
-        return new NextResponse(JSON.stringify({ error: error.message }), {
-            status: 500,
-            headers: {
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*",
-            },
-        });
-    }
+      return {
+        ...post,
+        content: contentWithoutImages,
+        images: [], // Ignore images
+      };
+    });
+
+    return new NextResponse(JSON.stringify(processedPosts), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      },
+    });
+  } catch (error: any) {
+    console.error("Error fetching posts:", error);
+    return new NextResponse(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      },
+    });
+  }
 }
