@@ -246,16 +246,16 @@ const Navbar = () => {
 		letterSpacing: "-0.15rem",
 	};
 
-	const storeSubmenu: SubmenuType[] = [{ name: "Buy", href: "/" }];
-	if (user) {
-		storeSubmenu.push({ name: "Sell", href: "/comics-store/sell" });
-	}
+	// const storeSubmenu: SubmenuType[] = [{ name: "Buy", href: "/" }];
+	// if (user) {
+	// 	storeSubmenu.push({ name: "Sell", href: "/comics-store/sell" });
+	// }
 
 	const menuItems: MenuType[] = [
-		{
-			name: "Store",
-			submenu: storeSubmenu,
-		},
+		// {
+		// 	name: "Store",
+		// 	submenu: storeSubmenu,
+		// },
 		{
 			name: "Search",
 			submenu: [
@@ -461,6 +461,17 @@ const Navbar = () => {
 								</Button>
 							</>
 						)}
+						{user && (
+							<>
+								<Button as={Link} href="/comics-store/sell" {...buttonStyle}>
+									Tip Us!
+								</Button>
+
+							</>
+						)}
+						<Button as={Link} href="/blog" {...buttonStyle}>
+							Blog
+						</Button>
 						{menuItems.map((item, index) => (item.submenu ? renderMenuItem(item, index) : null))}
 						<Button as={Link} href="/forums" {...buttonStyle}>
 							Forums
