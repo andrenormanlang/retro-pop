@@ -1,3 +1,5 @@
+// EditBlogPost.tsx
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -20,10 +22,12 @@ import {
 } from '@chakra-ui/react';
 import dynamic from 'next/dynamic';
 import ImageUpload from '@/components/ImageUpload';
+import 'quill/dist/quill.snow.css';
+import ReactQuill, { Quill } from 'react-quill';
+import QuillResizeImage from 'quill-resize-image';
 
-// Dynamically import ReactQuill to prevent SSR issues
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
-import 'react-quill/dist/quill.snow.css';
+// Register the image resize module with Quill
+Quill.register('modules/resize', QuillResizeImage);
 
 // Define Zod schema
 const postSchema = z.object({
@@ -188,6 +192,9 @@ const EditBlogPost = () => {
                   [{ 'color': [] }, { 'background': [] }],
                   ['clean'],
                 ],
+                resize: {
+                  locale: {},
+                }
               }}
               formats={[
                 'header', 'font', 'size',

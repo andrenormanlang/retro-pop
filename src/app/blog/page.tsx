@@ -117,7 +117,7 @@ const BlogPostList = () => {
   return (
     <Container maxW="container.md" py={8}>
       <Flex justifyContent="space-between" mb={4}>
-        <Heading>Blog</Heading>
+        {/* <Heading>Blog</Heading> */}
         {isAdmin && <Button onClick={() => router.push('/blog/create')}>New Post</Button>}
       </Flex>
       <VStack spacing={4} align="stretch">
