@@ -100,24 +100,16 @@ const BlogPostList = () => {
 
   if (loading) {
     return (
-      <Container maxW="container.md" py={8}>
-        <Center>
-          <Spinner
-            thickness="4px"
-            speed="0.65s"
-            emptyColor="gray.200"
-            color="red.500"
-            size="xl"
-          />
-        </Center>
-      </Container>
+      <Center h="100vh">
+        <Spinner size="xl" color="teal.500" />
+      </Center>
     );
   }
 
   return (
     <Container maxW="container.md" py={8}>
       <Flex justifyContent="space-between" mb={4}>
-        {/* <Heading>Blog</Heading> */}
+        <Heading>Blog</Heading>
         {isAdmin && <Button onClick={() => router.push('/blog/create')}>New Post</Button>}
       </Flex>
       <VStack spacing={4} align="stretch">
@@ -128,32 +120,36 @@ const BlogPostList = () => {
             shadow="md"
             borderWidth="1px"
             display="flex"
+            flexDirection={{ base: 'column', md: 'row' }}
             alignItems="center"
-            cursor="pointer"
-            _hover={{ shadow: 'lg', transform: 'translateY(-2px)' }}
-            onClick={() => router.push(`/blog/${post.id}`)}
+            _hover={{ transform: 'scale(1.05)', transition: 'transform 0.3s' }}
           >
             {post.imageUrl && (
               <Image
                 src={post.imageUrl}
                 alt={post.title}
-                boxSize="150px"
+                boxSize={{ base: '100%', md: '150px' }}
                 objectFit="cover"
-                mr={4}
+                mb={{ base: 4, md: 0 }}
+                mr={{ md: 4 }}
               />
             )}
-            <Box flex="1">
-              <Heading fontSize={'1.5rem'} fontFamily="Bangers, sans-serif" fontWeight="normal">{post.title}</Heading>
-              <Text fontSize="sm" color="gray.500">
+            <Box flex="1" textAlign={{ base: 'left', md: 'left' }}>
+              <Heading fontSize={'1.5rem'} fontFamily="Bangers, sans-serif" fontWeight="normal">
+                {post.title}
+              </Heading>
+              <Text fontSize="sm" color="gray.500" mb={2}>
                 {new Date(post.created_at).toLocaleDateString()} {new Date(post.created_at).toLocaleTimeString()}
               </Text>
-              <Box mt={4} noOfLines={3} dangerouslySetInnerHTML={{ __html: post.content }} />
-              {isAdmin && (
-                <Flex mt={4} justifyContent="space-between">
-                  <Button onClick={(e) => { e.stopPropagation(); router.push(`/blog/edit/${post.id}`); }}>Edit</Button>
-                  <Button onClick={(e) => { e.stopPropagation(); deletePost(post.id); }} colorScheme="red">Delete</Button>
-                </Flex>
-              )}
+              <Box noOfLines={3} dangerouslySetInnerHTML={{ __html: post.content }} />
+              <Flex mt={4} justifyContent={{ base: 'center', md: 'flex-start' }}>
+                {isAdmin && (
+                  <>
+                    <Button onClick={() => router.push(`/blog/edit/${post.id}`)}>Edit</Button>
+                    <Button onClick={() => deletePost(post.id)} colorScheme="red" ml={2}>Delete</Button>
+                  </>
+                )}
+              </Flex>
             </Box>
           </Box>
         ))}
