@@ -18,6 +18,7 @@ import {
   Image,
   useToast,
   Flex,
+  Badge,
   Modal,
   ModalOverlay,
   ModalContent,
@@ -53,7 +54,8 @@ const PostPage = ({ params }: { params: Params['params'] }) => {
           *,
           profiles (
             username,
-            avatar_url
+            avatar_url,
+            is_admin
           )
         `
         )
@@ -208,10 +210,24 @@ const PostPage = ({ params }: { params: Params['params'] }) => {
               borderRadius="md"
               marginRight={4}
               alignSelf="stretch"
+              position="relative"
             >
-              <Avatar size="lg" src={post.profiles.avatar_url} mb={4} />
+              <Avatar size="lg" src={post.profiles.avatar_url} mt={2} mb={4} />
               <Text fontWeight="bold">{post.profiles.username}</Text>
-              <Text color="gray.500">{post.profiles.is_admin ? "Admin" : "Member"}</Text>
+              {post.profiles.is_admin && (
+                <Badge
+                  colorScheme="red.500"
+				  variant="solid"
+				  bg="red.500"
+                  position="absolute"
+                  top={2}
+                  right={8}
+				  mt={2}
+                >
+                  Admin
+                </Badge>
+              )}
+              {/* <Text color="gray.500">{post.profiles.is_admin ? "Admin" : "Member"}</Text> */}
             </Box>
             <Box flex="1" p={2}>
               <Text fontSize="sm" color="gray.500">
@@ -257,5 +273,3 @@ const PostPage = ({ params }: { params: Params['params'] }) => {
 };
 
 export default PostPage;
-
-
