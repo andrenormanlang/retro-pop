@@ -61,7 +61,7 @@ To get started with the project, follow these steps:
 
 ## Contributing
 
-We welcome contributions from the community! If you'd like to contribute, please fork the repository and create a pull request. We appreciate your help in making Retro Pop Comics better for everyone.
+ If you'd like to contribute, please fork the repository and create a pull request. We appreciate your help in making Retro Pop Comics better for everyone.
 
 ## License
 
