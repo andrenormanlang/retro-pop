@@ -2,12 +2,14 @@
 
 import React, { useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
+import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createClient } from '@/utils/supabase/client';
 import {
   Box,
   Button,
+  Center,
   Container,
   FormControl,
   FormLabel,
@@ -22,6 +24,7 @@ import ImageUpload from '@/components/ImageUpload';
 // Dynamically import ReactQuill to prevent SSR issues
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 import 'react-quill/dist/quill.snow.css';
+import ComicSpinner from '@/helpers/ComicSpinner';
 
 // Define Zod schema
 const postSchema = z.object({
@@ -34,6 +37,7 @@ type PostFormData = z.infer<typeof postSchema>;
 
 const CreateBlogPostPage = () => {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const {
     register,
     handleSubmit,
@@ -43,6 +47,7 @@ const CreateBlogPostPage = () => {
   } = useForm<PostFormData>({
     resolver: zodResolver(postSchema),
   });
+  const router = useRouter();
 
   const toast = useToast();
   const supabase = createClient();
@@ -71,9 +76,21 @@ const CreateBlogPostPage = () => {
     }
   };
 
+//   if (loading) {
+//     return (
+//       <Center h="100vh">
+//         <ComicSpinner />
+//       </Center>
+//     );
+//   }
+
+
   return (
     <Container maxW="container.md" py={8}>
-      <Heading mb={4}>Create Blog Post</Heading>
+      {/* <Heading mb={4}>Create Blog Post</Heading> */}
+	  <Button mt={4} mb={4} onClick={() => router.back()}>
+          Back
+        </Button>
       <form onSubmit={handleSubmit(onSubmit)}>
         <VStack spacing={4} align="stretch">
           <FormControl isInvalid={!!errors.title}>

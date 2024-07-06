@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/utils/supabase/client';
+import { supabase } from "@/utils/supabase/client";
 import {
   Box,
   Button,
@@ -15,21 +15,27 @@ import {
   useToast,
   Spinner,
   Center,
+  IconButton,
 } from '@chakra-ui/react';
+import { EditIcon, DeleteIcon } from '@chakra-ui/icons';
 import { BlogPost } from '@/types/blog/blog.type';
+import ComicSpinner from '@/helpers/ComicSpinner';
+import { useUser } from '@/contexts/UserContext';
 
 const BlogPostList = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
   const toast = useToast();
-  const supabase = createClient();
+  const { user } = useUser();  // Get user from context
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     fetchPosts();
-    checkAdminStatus();
-  }, []);
+    if (user) {
+      checkAdminStatus(user.id);
+    }
+  }, [user]);
 
   const fetchPosts = async () => {
     const { data, error } = await supabase.from('blog_posts').select('*').order('created_at', { ascending: false });
@@ -47,25 +53,21 @@ const BlogPostList = () => {
     setLoading(false);
   };
 
-  const checkAdminStatus = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('id', user.id)
-        .single();
+  const checkAdminStatus = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', userId)
+      .single();
 
-      if (error) {
-        console.error('Error checking admin status:', error);
-      } else if (data && data.is_admin) {
-        setIsAdmin(true);
-      }
+    if (error) {
+      console.error('Error checking admin status:', error);
+    } else if (data && data.is_admin) {
+      setIsAdmin(true);
     }
   };
 
   const deletePost = async (id: string) => {
-    const { data: { user } } = await supabase.auth.getUser();
     if (!user || !isAdmin) {
       toast({
         title: 'Error',
@@ -101,7 +103,7 @@ const BlogPostList = () => {
   if (loading) {
     return (
       <Center h="100vh">
-        <Spinner size="xl" color="teal.500" />
+        <ComicSpinner />
       </Center>
     );
   }
@@ -109,7 +111,7 @@ const BlogPostList = () => {
   return (
     <Container maxW="container.md" py={8}>
       <Flex justifyContent="space-between" mb={4}>
-        <Heading>Blog</Heading>
+        {/* <Heading>Blog</Heading> */}
         {isAdmin && <Button onClick={() => router.push('/blog/create')}>New Post</Button>}
       </Flex>
       <VStack spacing={4} align="stretch">
@@ -146,8 +148,18 @@ const BlogPostList = () => {
               <Flex mt={4} justifyContent={{ base: 'center', md: 'flex-start' }}>
                 {isAdmin && (
                   <>
-                    <Button onClick={(e) => { e.stopPropagation(); router.push(`/blog/edit/${post.id}`); }}>Edit</Button>
-                    <Button onClick={(e) => { e.stopPropagation(); deletePost(post.id); }} colorScheme="red" ml={2}>Delete</Button>
+                    <IconButton
+                      icon={<EditIcon />}
+                      onClick={(e) => { e.stopPropagation(); router.push(`/blog/edit/${post.id}`); }}
+                      aria-label="Edit Post"
+                      mr={2}
+                    />
+                    <IconButton
+                      icon={<DeleteIcon />}
+                      onClick={(e) => { e.stopPropagation(); deletePost(post.id); }}
+                      aria-label="Delete Post"
+                      colorScheme="red"
+                    />
                   </>
                 )}
               </Flex>

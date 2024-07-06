@@ -5,6 +5,8 @@ import { useRouter, useParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { Box, Container, Heading, useToast, Button, Spinner, Center, Text } from '@chakra-ui/react';
 import { BlogPost } from '@/types/blog/blog.type';
+import ComicSpinner from '@/helpers/ComicSpinner';
+
 
 const BlogPostDetail = () => {
   const { id } = useParams();
@@ -49,10 +51,11 @@ const BlogPostDetail = () => {
   if (loading) {
     return (
       <Center h="100vh">
-        <Spinner size="xl" />
+        <ComicSpinner />
       </Center>
     );
   }
+
 
   if (!post) {
     return (

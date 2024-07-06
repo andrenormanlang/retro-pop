@@ -25,6 +25,7 @@ import ImageUpload from '@/components/ImageUpload';
 import 'quill/dist/quill.snow.css';
 import ReactQuill, { Quill } from 'react-quill';
 import QuillResizeImage from 'quill-resize-image';
+import ComicSpinner from '@/helpers/ComicSpinner';
 
 // Register the image resize module with Quill
 Quill.register('modules/resize', QuillResizeImage);
@@ -160,10 +161,11 @@ const EditBlogPost = () => {
   if (loading) {
     return (
       <Center h="100vh">
-        <Spinner size="xl" />
+        <ComicSpinner />
       </Center>
     );
   }
+
 
   return (
     <Container maxW="container.md" py={8}>
