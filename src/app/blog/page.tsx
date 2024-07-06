@@ -122,7 +122,8 @@ const BlogPostList = () => {
             display="flex"
             flexDirection={{ base: 'column', md: 'row' }}
             alignItems="center"
-            _hover={{ transform: 'scale(1.05)', transition: 'transform 0.3s' }}
+            _hover={{ transform: 'scale(1.05)', transition: 'transform 0.3s', cursor: 'pointer' }}
+            onClick={() => router.push(`/blog/${post.id}`)}
           >
             {post.imageUrl && (
               <Image
@@ -145,8 +146,8 @@ const BlogPostList = () => {
               <Flex mt={4} justifyContent={{ base: 'center', md: 'flex-start' }}>
                 {isAdmin && (
                   <>
-                    <Button onClick={() => router.push(`/blog/edit/${post.id}`)}>Edit</Button>
-                    <Button onClick={() => deletePost(post.id)} colorScheme="red" ml={2}>Delete</Button>
+                    <Button onClick={(e) => { e.stopPropagation(); router.push(`/blog/edit/${post.id}`); }}>Edit</Button>
+                    <Button onClick={(e) => { e.stopPropagation(); deletePost(post.id); }} colorScheme="red" ml={2}>Delete</Button>
                   </>
                 )}
               </Flex>
