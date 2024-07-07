@@ -61,3 +61,20 @@ h1, h2, h3, h4, h5, h6 {
   font-family: "Bangers", system-ui;
 }
 
+
+@keyframes halftoneBackground {
+	0% {
+	  background-position: 0% 50%;
+	}
+	50% {
+	  background-position: 100% 50%;
+	}
+	100% {
+	  background-position: 0% 50%;
+	}
+  }
+
+  .halftone-animation {
+	animation: halftoneBackground 10s ease infinite;
+  }
+

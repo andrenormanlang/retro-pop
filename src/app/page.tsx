@@ -3,23 +3,90 @@
 import { Box, Container, Heading } from '@chakra-ui/react';
 import ComicsBuy from './comics-store/buy/page';
 import { NextPage } from 'next';
-
+import { Global } from '@emotion/react';
 
 const HomePage: NextPage = () => {
   return (
-    <Container maxW="container.xl" p={4}>
-      <Heading as="h1" size="xl" mb={6}>
-        {/* Welcome to RetroPop! */}
-      </Heading>
-      <Box>
-        {/* ComicsBuy Component as a Child Component */}
-        <ComicsBuy />
+    <>
+      <Global
+        styles={`
+          @keyframes halftoneBackground {
+            0% {
+              background-position: 0% 50%;
+            }
+            50% {
+              background-position: 100% 50%;
+            }
+            100% {
+              background-position: 0% 50%;
+            }
+          }
+
+          .halftone-animation {
+            animation: halftoneBackground 30s ease infinite;
+          }
+        `}
+      />
+      <Box
+        width="100vw"
+        minHeight="100vh"
+        bgImage="url('/halftone-background.svg')"
+        bgSize="cover"
+        bgPosition="center"
+        className="halftone-animation"
+        display="flex"
+        alignItems="center"
+      >
+        <Container maxW="container.xl" p={4}>
+          <Heading as="h1" size="xl" mb={6}>
+            {/* Welcome to RetroPop! */}
+          </Heading>
+          <Box>
+            {/* ComicsBuy Component as a Child Component */}
+            <ComicsBuy />
+          </Box>
+        </Container>
       </Box>
-    </Container>
+    </>
   );
 };
 
 export default HomePage;
+
+
+
+// 'use client'
+
+// import { Box, Container, Heading } from '@chakra-ui/react';
+// import ComicsBuy from './comics-store/buy/page';
+// import { NextPage } from 'next';
+
+
+// const HomePage: NextPage = () => {
+//   return (
+//     <Box
+//       width="100vw"
+//       minHeight="100vh"
+//       bgImage="url('/halftone-background.svg')"
+//       bgSize="cover"
+//       bgPosition="center"
+//       display="flex"
+//       alignItems="center"
+//     >
+//       <Container maxW="container.xl" p={4}>
+//         <Heading as="h1" size="xl" mb={6}>
+//           {/* Welcome to RetroPop! */}
+//         </Heading>
+//         <Box>
+//           {/* ComicsBuy Component as a Child Component */}
+//           <ComicsBuy />
+//         </Box>
+//       </Container>
+//     </Box>
+//   );
+// };
+
+// export default HomePage;
 
 // 'use client';
 
