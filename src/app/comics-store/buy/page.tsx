@@ -130,7 +130,26 @@ const ComicsBuy: NextPage = () => {
 	};
 
 	const handleStockChange = async (comicId: string, quantity: number) => {
-		if (!user) return;
+		if (!user) {
+			toast({
+				render: () => (
+				  <Box
+					bg="red.500" // Set the background color according to the status (warning, error, etc.)
+					color="white" // Text color
+					p={3}
+					borderRadius="md"
+					textAlign="center"
+				  >
+					<strong>📚Login required!📚</strong>
+					<p>🦹‍♂️You need to register and log in to add comics to your cart.🦸</p>
+				  </Box>
+				),
+				status: "warning",
+				duration: 5000,
+				isClosable: true,
+			  });
+			return;
+		}
 
 		setLoadingComicIds((prev) => [...prev, comicId]);
 
