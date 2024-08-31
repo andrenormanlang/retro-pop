@@ -141,8 +141,12 @@ const BlogPostList = () => {
               <Heading fontSize={'1.5rem'} fontFamily="Bangers, sans-serif" fontWeight="normal">
                 {post.title}
               </Heading>
-              <Text fontSize="sm" color="gray.500" mb={2}>
-                {new Date(post.created_at).toLocaleDateString()} {new Date(post.created_at).toLocaleTimeString()}
+			  <Text fontSize="sm" color="gray.500" mb={2}>
+                {new Intl.DateTimeFormat('en-US', {
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric'
+                }).format(new Date(post.created_at))}
               </Text>
               <Box noOfLines={3} dangerouslySetInnerHTML={{ __html: post.content }} />
               <Flex mt={4} justifyContent={{ base: 'center', md: 'flex-start' }}>
