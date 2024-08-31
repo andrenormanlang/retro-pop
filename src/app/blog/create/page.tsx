@@ -20,9 +20,12 @@ import dynamic from 'next/dynamic';
 import ImageUpload from '@/components/ImageUpload';
 import { useUser } from '@/contexts/UserContext';  // Import the user context
 import ComicSpinner from '@/helpers/ComicSpinner';
-
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+import ReactQuill, { Quill } from 'react-quill';
+import QuillResizeImage from 'quill-resize-image';
 import 'react-quill/dist/quill.snow.css';
+
+// Register the image resize module with Quill
+Quill.register('modules/resize', QuillResizeImage);
 
 // Updated Zod schema (removed author_name as it will be set automatically)
 const postSchema = z.object({
@@ -103,7 +106,6 @@ const CreateBlogPostPage = () => {
     }
 };
 
-
   if (loading) {
     return (
       <Center h="100vh">
@@ -143,6 +145,9 @@ const CreateBlogPostPage = () => {
                   [{ 'color': [] }, { 'background': [] }],
                   ['clean'],
                 ],
+                resize: {
+                  locale: {},
+                }
               }}
               formats={[
                 'header', 'font', 'size',
