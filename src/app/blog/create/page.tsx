@@ -17,12 +17,15 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import dynamic from 'next/dynamic';
+import  { Quill } from 'react-quill';
+import QuillResizeImage from 'quill-resize-image';
 import ImageUpload from '@/components/ImageUpload';
 import { useUser } from '@/contexts/UserContext';  // Import the user context
 import ComicSpinner from '@/helpers/ComicSpinner';
 
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 import 'react-quill/dist/quill.snow.css';
+
 
 // Updated Zod schema (removed author_name as it will be set automatically)
 const postSchema = z.object({
@@ -49,6 +52,13 @@ const CreateBlogPostPage = () => {
   const router = useRouter();
   const toast = useToast();
   const supabase = createClient();
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+        Quill.register('modules/resize', QuillResizeImage);
+    }
+}, []);
+
 
   useEffect(() => {
     if (!user) {
