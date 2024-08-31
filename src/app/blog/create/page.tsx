@@ -1,32 +1,30 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createClient } from '@/utils/supabase/client';
 import {
-  Box,
   Button,
   Center,
   Container,
   FormControl,
   FormLabel,
-  Heading,
   Input,
   VStack,
   useToast,
 } from '@chakra-ui/react';
 import dynamic from 'next/dynamic';
 import ImageUpload from '@/components/ImageUpload';
-
-// Dynamically import ReactQuill to prevent SSR issues
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
-import 'react-quill/dist/quill.snow.css';
+import { useUser } from '@/contexts/UserContext';  // Import the user context
 import ComicSpinner from '@/helpers/ComicSpinner';
 
-// Define Zod schema
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+import 'react-quill/dist/quill.snow.css';
+
+// Updated Zod schema (removed author_name as it will be set automatically)
 const postSchema = z.object({
   title: z.string().min(10, 'Title is required'),
   content: z.string().min(100, 'Content is required'),
@@ -37,7 +35,8 @@ type PostFormData = z.infer<typeof postSchema>;
 
 const CreateBlogPostPage = () => {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const { user } = useUser();  // Get user from context
   const {
     register,
     handleSubmit,
@@ -48,49 +47,80 @@ const CreateBlogPostPage = () => {
     resolver: zodResolver(postSchema),
   });
   const router = useRouter();
-
   const toast = useToast();
   const supabase = createClient();
 
+  useEffect(() => {
+    if (!user) {
+      // Redirect to login page if user is not signed in
+      router.push('/login');
+    }
+  }, [user, router]);
+
   const onSubmit: SubmitHandler<PostFormData> = async (data) => {
+    if (!user) {
+        toast({
+            title: 'Error',
+            description: 'You must be signed in to create a post.',
+            status: 'error',
+            duration: 5000,
+            isClosable: true,
+        });
+        return;
+    }
+
+    const authorName = user.username || user.email || "Anonymous"; // Ensure author_name is never null
+
+    setLoading(true);
     const { error } = await supabase
-      .from('blog_posts')
-      .insert([{ ...data, imageUrl }]);
+        .from('blog_posts')
+        .insert([{
+            ...data,
+            imageUrl,
+            author_name: authorName,
+            author_id: user.id
+        }]);
+
+    setLoading(false);
 
     if (error) {
-      toast({
-        title: 'Error',
-        description: error.message,
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
+        toast({
+            title: 'Error',
+            description: error.message,
+            status: 'error',
+            duration: 5000,
+            isClosable: true,
+        });
     } else {
-      toast({
-        title: 'Success',
-        description: 'Post created successfully.',
-        status: 'success',
-        duration: 5000,
-        isClosable: true,
-      });
+        toast({
+            title: 'Success',
+            description: 'Post created successfully.',
+            status: 'success',
+            duration: 5000,
+            isClosable: true,
+        });
+        router.push('/'); // Redirect to home page or blog list page
     }
-  };
+};
 
-//   if (loading) {
-//     return (
-//       <Center h="100vh">
-//         <ComicSpinner />
-//       </Center>
-//     );
-//   }
 
+  if (loading) {
+    return (
+      <Center h="100vh">
+        <ComicSpinner />
+      </Center>
+    );
+  }
+
+  if (!user) {
+    return null; // or a loading spinner, as the useEffect will redirect
+  }
 
   return (
     <Container maxW="container.md" py={8}>
-      {/* <Heading mb={4}>Create Blog Post</Heading> */}
-	  <Button mt={4} mb={4} onClick={() => router.back()}>
-          Back
-        </Button>
+      <Button mt={4} mb={4} onClick={() => router.back()}>
+        Back
+      </Button>
       <form onSubmit={handleSubmit(onSubmit)}>
         <VStack spacing={4} align="stretch">
           <FormControl isInvalid={!!errors.title}>
