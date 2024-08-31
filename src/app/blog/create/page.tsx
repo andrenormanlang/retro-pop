@@ -99,7 +99,7 @@ const CreateBlogPostPage = () => {
             duration: 5000,
             isClosable: true,
         });
-        router.push('/'); // Redirect to home page or blog list page
+        router.push('/blog'); 
     }
 };
 
