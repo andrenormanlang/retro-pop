@@ -154,7 +154,7 @@ const EditBlogPost = () => {
         duration: 5000,
         isClosable: true,
       });
-      router.push(`/blog/${id}`);
+      router.push(`/blog`);
     }
   };
 
