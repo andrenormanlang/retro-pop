@@ -99,7 +99,7 @@ const CreateBlogPostPage = () => {
             duration: 5000,
             isClosable: true,
         });
-        router.push('/blog'); 
+        router.push('/blog');
     }
 };
 
