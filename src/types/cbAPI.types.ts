@@ -18,6 +18,7 @@
 
 
 export type ComicBooksAPI = {
+	id: string;
 	title: string;
 	coverPage: string;
 	description: string;

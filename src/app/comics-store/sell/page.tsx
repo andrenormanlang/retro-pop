@@ -28,7 +28,7 @@ import { useUser } from "../../../contexts/UserContext";
 import dynamic from "next/dynamic";
 
 // Dynamically import ReactQuill to prevent SSR issues
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false, loading: () => <p>Loading editor...</p> });
+const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false, loading: () => <p>Loading editor...</p> });
 import 'react-quill/dist/quill.snow.css'; // Import Quill styles
 
 // Define validation schema

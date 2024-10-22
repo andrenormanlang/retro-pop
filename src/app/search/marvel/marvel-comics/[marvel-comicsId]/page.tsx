@@ -108,7 +108,7 @@ const MarvelComic: NextPage = () => {
 		result?.description || "No description available.";
 
 	return (
-		<Suspense
+        (<Suspense
 			fallback={
 				<div
 					style={{
@@ -130,7 +130,7 @@ const MarvelComic: NextPage = () => {
 				</div>
 			}
 		>
-			<Container maxW="1100px" p={4}>
+            <Container maxW="1100px" p={4}>
 				<Box mb={4}>
 					<Button
 						leftIcon={<ArrowBackIcon />}
@@ -278,19 +278,19 @@ const MarvelComic: NextPage = () => {
 									);
 
 									return (
-										// Assuming you have a route set up for comic details
-										<NextLink
+                                        // Assuming you have a route set up for comic details
+                                        (<NextLink
 											href={`/search/marvel/marvel-characters/${comicId}`}
 											passHref
 											key={charactersItem.name}
 										>
-											<FlexContainer as="a" p={2} boxShadow="md" borderRadius="md" _hover={linkHoverStyle}>
+                                            <FlexContainer as="a" p={2} boxShadow="md" borderRadius="md" _hover={linkHoverStyle}>
 												<Text textAlign="start">
 													{charactersItem.name}
 												</Text>
 											</FlexContainer>
-										</NextLink>
-									);
+                                        </NextLink>)
+                                    );
 								}
 							)}
 							</SimpleGrid>
@@ -318,19 +318,19 @@ const MarvelComic: NextPage = () => {
 										);
 
 										return (
-											// Assuming you have a route set up for comic details
-											<NextLink
+                                            // Assuming you have a route set up for comic details
+                                            (<NextLink
 												href={`/search/marvel/marvel-series/${comicId}`}
 												passHref
 												key={seriesItem.name}
 											>
-												<FlexContainer as="a" p={2} boxShadow="md" borderRadius="md" _hover={linkHoverStyle}>
+                                                <FlexContainer as="a" p={2} boxShadow="md" borderRadius="md" _hover={linkHoverStyle}>
 													<Text textAlign="start">
 														{seriesItem.name}
 													</Text>
 												</FlexContainer>
-											</NextLink>
-										);
+                                            </NextLink>)
+                                        );
 									}
 								)}
 							</SimpleGrid>
@@ -356,19 +356,19 @@ const MarvelComic: NextPage = () => {
 										);
 
 										return (
-											// Assuming you have a route set up for comic details
-											<NextLink
+                                            // Assuming you have a route set up for comic details
+                                            (<NextLink
 												href={`/search/marvel/marvel-events/${comicId}`}
 												passHref
 												key={eventItem.name}
 											>
-												<FlexContainer as="a" p={2} boxShadow="md" borderRadius="md" _hover={linkHoverStyle}>
+                                                <FlexContainer as="a" p={2} boxShadow="md" borderRadius="md" _hover={linkHoverStyle}>
 													<Text textAlign="start">
 														{eventItem.name}
 													</Text>
 												</FlexContainer>
-											</NextLink>
-										);
+                                            </NextLink>)
+                                        );
 									}
 								)}
 							</SimpleGrid>
@@ -394,19 +394,19 @@ const MarvelComic: NextPage = () => {
 										);
 
 										return (
-											// Assuming you have a route set up for comic details
-											<NextLink
+                                            // Assuming you have a route set up for comic details
+                                            (<NextLink
 												href={`/search/marvel/marvel-stories/${comicId}`}
 												passHref
 												key={storyItem.name}
 											>
-												<FlexContainer as="a" p={2} boxShadow="md" borderRadius="md" _hover={linkHoverStyle}>
+                                                <FlexContainer as="a" p={2} boxShadow="md" borderRadius="md" _hover={linkHoverStyle}>
 													<Text textAlign="start">
 														{storyItem.name}
 													</Text>
 												</FlexContainer>
-											</NextLink>
-										);
+                                            </NextLink>)
+                                        );
 									}
 								)}
 							</SimpleGrid>
@@ -415,8 +415,8 @@ const MarvelComic: NextPage = () => {
 				</Flex>
 				</VStack>
 			</Container>
-		</Suspense>
-	);
+        </Suspense>)
+    );
 };
 
 export default MarvelComic;

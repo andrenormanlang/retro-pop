@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/utils/supabaseClient';
 import {
@@ -33,7 +33,7 @@ if (typeof window !== 'undefined' && Quill) {
 }
 
 // Dynamically import ReactQuill to prevent SSR issues
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 import 'react-quill/dist/quill.snow.css';
 
 // Define Zod schema
@@ -44,7 +44,8 @@ const postSchema = z.object({
 
 type PostFormData = z.infer<typeof postSchema>;
 
-const CreatePostPage = ({ params }: { params: { id: string; topicId: string } }) => {
+const CreatePostPage = (props: { params: Promise<{ id: string; topicId: string }> }) => {
+  const params = use(props.params);
   const { id, topicId } = params; // Using id instead of forumId
   const { user } = useUser();
   const router = useRouter();

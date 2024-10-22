@@ -35,7 +35,7 @@ const BlogPostList = () => {
     if (user) {
       checkAdminStatus(user.id);
     }
-  }, [user]);
+  }, []);
 
   const fetchPosts = async () => {
     const { data, error } = await supabase.from('blog_posts').select('*').order('created_at', { ascending: false });

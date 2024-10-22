@@ -127,7 +127,7 @@ const MarvelCharacter: NextPage = () => {
 	const solicitationText = result?.description || "No description available.";
 
 	return (
-		<Suspense
+        (<Suspense
 			fallback={
 				<div
 					style={{
@@ -149,7 +149,7 @@ const MarvelCharacter: NextPage = () => {
 				</div>
 			}
 		>
-			<Container maxW="1100px" p={4}>
+            <Container maxW="1100px" p={4}>
 				<Box mb={4}>
 					<Button leftIcon={<ArrowBackIcon />} colorScheme="teal" variant="outline" onClick={handleBack}>
 						Back to Grid
@@ -244,13 +244,13 @@ const MarvelCharacter: NextPage = () => {
 										const comicId = extractIdFromURI(comicItem.resourceURI);
 
 										return (
-											// Assuming you have a route set up for comic details
-											<NextLink
+                                            // Assuming you have a route set up for comic details
+                                            (<NextLink
 												href={`/search/marvel/marvel-comics/${comicId}`}
 												passHref
 												key={comicItem.name}
 											>
-												<FlexContainer
+                                                <FlexContainer
 													as="a"
 													p={2}
 													boxShadow="md"
@@ -259,8 +259,8 @@ const MarvelCharacter: NextPage = () => {
 												>
 													<Text textAlign="start">{comicItem.name}</Text>
 												</FlexContainer>
-											</NextLink>
-										);
+                                            </NextLink>)
+                                        );
 									})}
 								</SimpleGrid>
 							</Box>
@@ -274,13 +274,13 @@ const MarvelCharacter: NextPage = () => {
 										const comicId = extractIdFromURI(eventItem.resourceURI);
 
 										return (
-											// Assuming you have a route set up for comic details
-											<NextLink
+                                            // Assuming you have a route set up for comic details
+                                            (<NextLink
 												href={`/search/marvel/marvel-events/${comicId}`}
 												passHref
 												key={eventItem.name}
 											>
-												<FlexContainer
+                                                <FlexContainer
 													as="a"
 													p={2}
 													boxShadow="md"
@@ -289,8 +289,8 @@ const MarvelCharacter: NextPage = () => {
 												>
 													<Text textAlign="start">{eventItem.name}</Text>
 												</FlexContainer>
-											</NextLink>
-										);
+                                            </NextLink>)
+                                        );
 									})}
 								</SimpleGrid>
 							</Box>
@@ -304,13 +304,13 @@ const MarvelCharacter: NextPage = () => {
 										const comicId = extractIdFromURI(creatorItem.resourceURI);
 
 										return (
-											// Assuming you have a route set up for comic details
-											<NextLink
+                                            // Assuming you have a route set up for comic details
+                                            (<NextLink
 												href={`/search/marvel/marvel-creators/${comicId}`}
 												passHref
 												key={creatorItem.name}
 											>
-												<FlexContainer
+                                                <FlexContainer
 													as="a"
 													p={2}
 													boxShadow="md"
@@ -319,8 +319,8 @@ const MarvelCharacter: NextPage = () => {
 												>
 													<Text textAlign="start">{creatorItem.name}</Text>
 												</FlexContainer>
-											</NextLink>
-										);
+                                            </NextLink>)
+                                        );
 									})}
 								</SimpleGrid>
 							</Box>
@@ -334,13 +334,13 @@ const MarvelCharacter: NextPage = () => {
 										const comicId = extractIdFromURI(seriesItem.resourceURI);
 
 										return (
-											// Assuming you have a route set up for comic details
-											<NextLink
+                                            // Assuming you have a route set up for comic details
+                                            (<NextLink
 												href={`/search/marvel/marvel-series/${comicId}`}
 												passHref
 												key={seriesItem.name}
 											>
-												<FlexContainer
+                                                <FlexContainer
 													as="a"
 													p={2}
 													boxShadow="md"
@@ -349,8 +349,8 @@ const MarvelCharacter: NextPage = () => {
 												>
 													<Text textAlign="start">{seriesItem.name}</Text>
 												</FlexContainer>
-											</NextLink>
-										);
+                                            </NextLink>)
+                                        );
 									})}
 								</SimpleGrid>
 							</Box>
@@ -364,13 +364,13 @@ const MarvelCharacter: NextPage = () => {
 										const comicId = extractIdFromURI(storyItem.resourceURI);
 
 										return (
-											// Assuming you have a route set up for comic details
-											<NextLink
+                                            // Assuming you have a route set up for comic details
+                                            (<NextLink
 												href={`/search/marvel/marvel-stories/${comicId}`}
 												passHref
 												key={storyItem.name}
 											>
-												<FlexContainer
+                                                <FlexContainer
 													as="a"
 													p={2}
 													boxShadow="md"
@@ -379,8 +379,8 @@ const MarvelCharacter: NextPage = () => {
 												>
 													<Text textAlign="start">{storyItem.name}</Text>
 												</FlexContainer>
-											</NextLink>
-										);
+                                            </NextLink>)
+                                        );
 									})}
 								</SimpleGrid>
 							</Box>
@@ -388,8 +388,8 @@ const MarvelCharacter: NextPage = () => {
 					</Flex>
 				</VStack>
 			</Container>
-		</Suspense>
-	);
+        </Suspense>)
+    );
 };
 
 export default MarvelCharacter;

@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, use } from "react";
 import { supabase } from "@/utils/supabaseClient";
 import {
   Box,
@@ -39,7 +39,8 @@ interface CreateTopicProps {
   };
 }
 
-const CreateTopic: React.FC<CreateTopicProps> = ({ params }) => {
+const CreateTopic: React.FC<CreateTopicProps> = props => {
+  const params = use(props.params);
   const { id } = params;
   const router = useRouter();
   const { user } = useUser();

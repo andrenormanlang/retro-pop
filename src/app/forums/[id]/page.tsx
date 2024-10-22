@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { supabase } from "@/utils/supabaseClient";
 import {
   Box,
@@ -38,7 +38,8 @@ import { useUser } from "@/contexts/UserContext";
 import { DeleteIcon } from "@chakra-ui/icons";
 import { getRelativeTime } from "@/helpers/getRelativeTime";
 
-const ForumPage = ({ params }: Params) => {
+const ForumPage = (props: Params) => {
+  const params = use(props.params);
   const { id } = params;
   const [forum, setForum] = useState<Forum | null>(null);
   const [topics, setTopics] = useState<Topic[]>([]);

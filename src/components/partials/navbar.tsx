@@ -323,7 +323,7 @@ const Navbar = () => {
 				{item.submenu?.map((subItem, subIndex) =>
 					subItem.submenu ? (
 						// For items with further nested submenus (recursive call for deeper levels)
-						renderMenuItem(subItem, `${index}-${subIndex}`)
+						(renderMenuItem(subItem, `${index}-${subIndex}`))
 					) : (
 						<Link key={subIndex} href={subItem.href} style={{ textDecoration: "none", width: "100%" }}>
 							<MenuItem {...buttonStyle}>{subItem.name}</MenuItem>

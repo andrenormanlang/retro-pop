@@ -121,311 +121,308 @@ const MarvelEvent: NextPage = () => {
 		result?.description || "No description available.";
 
 	return (
+        (<Container maxW="1100px" p={4}>
+            <Box mb={4}>
+                <Button
+                    leftIcon={<ArrowBackIcon />}
+                    colorScheme="teal"
+                    variant="outline"
+                    onClick={handleBack}
+                >
+                    Back to Grid
+                </Button>
+            </Box>
+            <VStack spacing={2}>
+                {/* Content Box */}
+                <Flex
+                    bg={bgColor}
+                    p={4}
+                    borderRadius="md"
+                    borderWidth="1px"
+                    borderColor={borderColor}
+                    direction={{ base: "column", md: "row" }}
+                    align="" // Center align items for better responsiveness
+                    justify=""
+                    width={{ base: "100%", md: "90%", lg: "1100px" }} // Responsive width
+                >
+                    {/* Image */}
+                    <Image
+                        src={`${result?.thumbnail.path}/portrait_uncanny.jpg`}
+                        alt={data?.data?.results?.[0]?.title || "No Title"}
+                        maxW="300px"
+                        maxH="450px"
+                        objectFit="cover"
+                        mb={{ base: 4, md: 0 }}
+                        alignSelf={{ base: "center", md: "auto" }} // Center on mobile, default alignment on larger screens
+                        justifySelf={{ base: "center", md: "auto" }} // Center on mobile, default alignment on larger screens
+                        mx={{ base: "auto", md: 0 }} // Horizontal margin auto for mobile to center the image
+                    />
 
-			<Container maxW="1100px" p={4}>
-				<Box mb={4}>
-					<Button
-						leftIcon={<ArrowBackIcon />}
-						colorScheme="teal"
-						variant="outline"
-						onClick={handleBack}
-					>
-						Back to Grid
-					</Button>
-				</Box>
+                    <VStack
+                        spacing={4}
+                        align="start"
+                        maxW="1000px"
+                        marginLeft={4}
+                    >
+                        {/* <Tag
+                            size="lg"
+                            colorScheme="blue"
+                        >{`Issue #${result?.issueNumber}`}</Tag> */}
+                        <Flex>
 
-				<VStack spacing={2}>
-					{/* Content Box */}
-					<Flex
-						bg={bgColor}
-						p={4}
-						borderRadius="md"
-						borderWidth="1px"
-						borderColor={borderColor}
-						direction={{ base: "column", md: "row" }}
-						align="" // Center align items for better responsiveness
-						justify=""
-						width={{ base: "100%", md: "90%", lg: "1100px" }} // Responsive width
-					>
-						{/* Image */}
-						<Image
-							src={`${result?.thumbnail.path}/portrait_uncanny.jpg`}
-							alt={data?.data?.results?.[0]?.title || "No Title"}
-							maxW="300px"
-							maxH="450px"
-							objectFit="cover"
-							mb={{ base: 4, md: 0 }}
-							alignSelf={{ base: "center", md: "auto" }} // Center on mobile, default alignment on larger screens
-							justifySelf={{ base: "center", md: "auto" }} // Center on mobile, default alignment on larger screens
-							mx={{ base: "auto", md: 0 }} // Horizontal margin auto for mobile to center the image
-						/>
+                        <Tag size="lg" colorScheme="green">
+                            START: {formatDate(
+                                result?.start
+                            )}
+                        </Tag>
 
-						<VStack
-							spacing={4}
-							align="start"
-							maxW="1000px"
-							marginLeft={4}
-						>
-							{/* <Tag
-								size="lg"
-								colorScheme="blue"
-							>{`Issue #${result?.issueNumber}`}</Tag> */}
-							<Flex>
+                        <Tag size="lg" colorScheme="red" ml={2}>
+                                END: {formatDate(
+                                result?.end
+                            )}
+                        </Tag>
+                        </Flex>
+                        <Heading
+                            fontFamily="Bangers"
+                            letterSpacing="0.05em"
+                            color="tomato"
+                            size="lg"
+                        >
+                            {result?.title || "Unknown Event"}
+                        </Heading>
+                        <Text
+                            p={4}
+                            bg={bgColor}
+                            borderRadius="md"
+                            // borderWidth="1px"
+                            borderColor={borderColor}
+                        >
+                            {solicitationText}
+                            <Flex justify="space-between" mt={4}>
+                            {result.previous && (
+<Tag colorScheme="purple" mr={2} minH="40px" _hover={linkHoverStylePrevious}>
+  <NextLink href={createEventNavigationUrl(result.previous.resourceURI)} passHref>
+    PREVIOUS: {result.previous.name}
+  </NextLink>
+</Tag>
+)}
+{result.next && (
+<Tag colorScheme="teal" minH="40px" _hover={linkHoverStyleNext}>
+  <NextLink href={createEventNavigationUrl(result.next.resourceURI)} passHref>
+    NEXT: {result.next.name}
+  </NextLink>
+</Tag>
+)}
+    </Flex>
+                        </Text>
+                    </VStack>
+                </Flex>
 
-							<Tag size="lg" colorScheme="green">
-								START: {formatDate(
-									result?.start
-								)}
-							</Tag>
+                <Flex
+                bg={bgColor}
+                p={4}
+                borderRadius="md"
+                borderWidth="1px"
+                borderColor={borderColor}
+                direction={{ base: "column", md: "row" }}
+                align="flex-start"
+                justify="space-between"
+                width={{ base: "100%", md: "90%", lg: "1100px" }}
+            >
+                <VStack spacing={4} align="stretch">
+                    <Box>
+                        <Heading
+                            size="md"
+                            fontFamily="Bangers"
+                            letterSpacing="0.05em"
+                            color="orange"
+                        >
+                            Creators:
+                        </Heading>
+                        <SimpleGrid
+                            columns={{ base: 2, md: 3 }}
+                            spacing={1}
+                        >
+                            {result?.creators?.items?.map(
+                                (creator: CreatorItem) => {
+                                    const comicId = extractIdFromURI(
+                                        creator.resourceURI
+                                    );
 
-							<Tag size="lg" colorScheme="red" ml={2}>
-									END: {formatDate(
-									result?.end
-								)}
-							</Tag>
-							</Flex>
-							<Heading
-								fontFamily="Bangers"
-								letterSpacing="0.05em"
-								color="tomato"
-								size="lg"
-							>
-								{result?.title || "Unknown Event"}
-							</Heading>
-							<Text
-								p={4}
-								bg={bgColor}
-								borderRadius="md"
-								// borderWidth="1px"
-								borderColor={borderColor}
-							>
-								{solicitationText}
-								<Flex justify="space-between" mt={4}>
-								{result.previous && (
-    <Tag colorScheme="purple" mr={2} minH="40px" _hover={linkHoverStylePrevious}>
-      <NextLink href={createEventNavigationUrl(result.previous.resourceURI)} passHref>
-        PREVIOUS: {result.previous.name}
-      </NextLink>
-    </Tag>
-  )}
-  {result.next && (
-    <Tag colorScheme="teal" minH="40px" _hover={linkHoverStyleNext}>
-      <NextLink href={createEventNavigationUrl(result.next.resourceURI)} passHref>
-        NEXT: {result.next.name}
-      </NextLink>
-    </Tag>
-  )}
-        </Flex>
-							</Text>
-						</VStack>
-					</Flex>
+                                    // Wrap with NextLink for navigation
+                                    return (
+                                        <NextLink
+                                            href={`/search/marvel/marvel-creators/${comicId}`}
+                                            passHref
+                                            key={creator.name}
+                                        >
+                                             <FlexContainer as="a" p={2} boxShadow="md" borderRadius="md" _hover={linkHoverStyle}>
+                                                <Text textAlign="start">{`${creator.name} - ${creator.role}`}</Text>
+                                            </FlexContainer>
+                                        </NextLink>
+                                    );
+                                }
+                            )}
+                        </SimpleGrid>
+                    </Box>
+                    <Box>
+                        <Heading
+                            size="md"
+                            fontFamily="Bangers"
+                            letterSpacing="0.05em"
+                            color="orange"
+                        >
+                            Characters:
+                        </Heading>
+                        <SimpleGrid
+                            columns={{ base: 2, md: 3 }}
+                            spacing={4}
+                        >	{result?.characters?.items?.map(
+                            (charactersItem: CharacterItem) => {
+                                // Extract the ID inside the map callback function
+                                const comicId = extractIdFromURI(
+                                    charactersItem.resourceURI
+                                );
 
-					<Flex
-					bg={bgColor}
-					p={4}
-					borderRadius="md"
-					borderWidth="1px"
-					borderColor={borderColor}
-					direction={{ base: "column", md: "row" }}
-					align="flex-start"
-					justify="space-between"
-					width={{ base: "100%", md: "90%", lg: "1100px" }}
-				>
-					<VStack spacing={4} align="stretch">
-						<Box>
-							<Heading
-								size="md"
-								fontFamily="Bangers"
-								letterSpacing="0.05em"
-								color="orange"
-							>
-								Creators:
-							</Heading>
-							<SimpleGrid
-								columns={{ base: 2, md: 3 }}
-								spacing={1}
-							>
-								{result?.creators?.items?.map(
-									(creator: CreatorItem) => {
-										const comicId = extractIdFromURI(
-											creator.resourceURI
-										);
+                                return (
+                                    // Assuming you have a route set up for comic details
+                                    (<NextLink
+                                        href={`/search/marvel/marvel-characters/${comicId}`}
+                                        passHref
+                                        key={charactersItem.name}
+                                    >
+                                        <FlexContainer as="a" p={2} boxShadow="md" borderRadius="md" _hover={linkHoverStyle}>
+                                            <Text textAlign="start">
+                                                {charactersItem.name}
+                                            </Text>
+                                        </FlexContainer>
+                                    </NextLink>)
+                                );
+                            }
+                        )}
+                        </SimpleGrid>
+                    </Box>
+                    <Box>
+                        <Heading
+                            size="md"
+                            fontFamily="Bangers"
+                            letterSpacing="0.05em"
+                            color="orange"
+                        >
+                            Comics:
+                        </Heading>
+                        <SimpleGrid
+                            columns={{ base: 2, md: 3 }}
+                            spacing={1}
 
-										// Wrap with NextLink for navigation
-										return (
-											<NextLink
-												href={`/search/marvel/marvel-creators/${comicId}`}
-												passHref
-												key={creator.name}
-											>
-												 <FlexContainer as="a" p={2} boxShadow="md" borderRadius="md" _hover={linkHoverStyle}>
-													<Text textAlign="start">{`${creator.name} - ${creator.role}`}</Text>
-												</FlexContainer>
-											</NextLink>
-										);
-									}
-								)}
-							</SimpleGrid>
-						</Box>
-						<Box>
-							<Heading
-								size="md"
-								fontFamily="Bangers"
-								letterSpacing="0.05em"
-								color="orange"
-							>
-								Characters:
-							</Heading>
-							<SimpleGrid
-								columns={{ base: 2, md: 3 }}
-								spacing={4}
-							>	{result?.characters?.items?.map(
-								(charactersItem: CharacterItem) => {
-									// Extract the ID inside the map callback function
-									const comicId = extractIdFromURI(
-										charactersItem.resourceURI
-									);
+                        >
+                            {result?.comics?.items?.map(
+                                (comicItem: ComicItem) => {
+                                    // Extract the ID inside the map callback function
+                                    const comicId = extractIdFromURI(
+                                        comicItem.resourceURI
+                                    );
 
-									return (
-										// Assuming you have a route set up for comic details
-										<NextLink
-											href={`/search/marvel/marvel-characters/${comicId}`}
-											passHref
-											key={charactersItem.name}
-										>
-											<FlexContainer as="a" p={2} boxShadow="md" borderRadius="md" _hover={linkHoverStyle}>
-												<Text textAlign="start">
-													{charactersItem.name}
-												</Text>
-											</FlexContainer>
-										</NextLink>
-									);
-								}
-							)}
-							</SimpleGrid>
-						</Box>
-						<Box>
-							<Heading
-								size="md"
-								fontFamily="Bangers"
-								letterSpacing="0.05em"
-								color="orange"
-							>
-								Comics:
-							</Heading>
-							<SimpleGrid
-								columns={{ base: 2, md: 3 }}
-								spacing={1}
+                                    return (
+                                        // Assuming you have a route set up for comic details
+                                        (<NextLink
+                                            href={`/search/marvel/marvel-comics/${comicId}`}
+                                            passHref
+                                            key={comicItem.name}
+                                        >
+                                            <FlexContainer as="a" p={2} boxShadow="md" borderRadius="md" _hover={linkHoverStyle}>
+                                                <Text textAlign="start">
+                                                    {comicItem.name}
+                                                </Text>
+                                            </FlexContainer>
+                                        </NextLink>)
+                                    );
+                                }
+                            )}
+                        </SimpleGrid>
+                    </Box>
+                    <Box>
+                        <Heading
+                            size="md"
+                            fontFamily="Bangers"
+                            letterSpacing="0.05em"
+                            color="orange"
+                        >
+                            Series:
+                        </Heading>
+                        <SimpleGrid
+                            columns={{ base: 2, md: 3 }}
+                            spacing={1}
 
-							>
-								{result?.comics?.items?.map(
-									(comicItem: ComicItem) => {
-										// Extract the ID inside the map callback function
-										const comicId = extractIdFromURI(
-											comicItem.resourceURI
-										);
+                        >
+                            {result?.comics?.items?.map(
+                                (seriesItem: SeriesItem) => {
+                                    // Extract the ID inside the map callback function
+                                    const comicId = extractIdFromURI(
+                                        seriesItem.resourceURI
+                                    );
 
-										return (
-											// Assuming you have a route set up for comic details
-											<NextLink
-												href={`/search/marvel/marvel-comics/${comicId}`}
-												passHref
-												key={comicItem.name}
-											>
-												<FlexContainer as="a" p={2} boxShadow="md" borderRadius="md" _hover={linkHoverStyle}>
-													<Text textAlign="start">
-														{comicItem.name}
-													</Text>
-												</FlexContainer>
-											</NextLink>
-										);
-									}
-								)}
-							</SimpleGrid>
-						</Box>
-						<Box>
-							<Heading
-								size="md"
-								fontFamily="Bangers"
-								letterSpacing="0.05em"
-								color="orange"
-							>
-								Series:
-							</Heading>
-							<SimpleGrid
-								columns={{ base: 2, md: 3 }}
-								spacing={1}
+                                    return (
+                                        // Assuming you have a route set up for comic details
+                                        (<NextLink
+                                            href={`/search/marvel/marvel-comics/${comicId}`}
+                                            passHref
+                                            key={seriesItem.name}
+                                        >
+                                            <FlexContainer as="a" p={2} boxShadow="md" borderRadius="md" _hover={linkHoverStyle}>
+                                                <Text textAlign="start">
+                                                    {seriesItem.name}
+                                                </Text>
+                                            </FlexContainer>
+                                        </NextLink>)
+                                    );
+                                }
+                            )}
+                        </SimpleGrid>
+                    </Box>
+                    <Box>
+                        <Heading
+                            size="md"
+                            fontFamily="Bangers"
+                            letterSpacing="0.05em"
+                            color="orange"
+                        >
+                            Stories:
+                        </Heading>
+                        <SimpleGrid
+                            columns={{ base: 2, md: 3 }}
+                            spacing={1}
+                        >
+                            {result?.stories?.items?.map(
+                                (storyItem: StoryItems) => {
+                                    // Extract the ID inside the map callback function
+                                    const comicId = extractIdFromURI(
+                                        storyItem.resourceURI
+                                    );
 
-							>
-								{result?.comics?.items?.map(
-									(seriesItem: SeriesItem) => {
-										// Extract the ID inside the map callback function
-										const comicId = extractIdFromURI(
-											seriesItem.resourceURI
-										);
-
-										return (
-											// Assuming you have a route set up for comic details
-											<NextLink
-												href={`/search/marvel/marvel-comics/${comicId}`}
-												passHref
-												key={seriesItem.name}
-											>
-												<FlexContainer as="a" p={2} boxShadow="md" borderRadius="md" _hover={linkHoverStyle}>
-													<Text textAlign="start">
-														{seriesItem.name}
-													</Text>
-												</FlexContainer>
-											</NextLink>
-										);
-									}
-								)}
-							</SimpleGrid>
-						</Box>
-						<Box>
-							<Heading
-								size="md"
-								fontFamily="Bangers"
-								letterSpacing="0.05em"
-								color="orange"
-							>
-								Stories:
-							</Heading>
-							<SimpleGrid
-								columns={{ base: 2, md: 3 }}
-								spacing={1}
-							>
-								{result?.stories?.items?.map(
-									(storyItem: StoryItems) => {
-										// Extract the ID inside the map callback function
-										const comicId = extractIdFromURI(
-											storyItem.resourceURI
-										);
-
-										return (
-											// Assuming you have a route set up for comic details
-											<NextLink
-												href={`/search/marvel/marvel-stories/${comicId}`}
-												passHref
-												key={storyItem.name}
-											>
-												<FlexContainer as="a" p={2} boxShadow="md" borderRadius="md" _hover={linkHoverStyle}>
-													<Text textAlign="start">
-														{storyItem.name}
-													</Text>
-												</FlexContainer>
-											</NextLink>
-										);
-									}
-								)}
-							</SimpleGrid>
-						</Box>
-					</VStack>
-				</Flex>
-				</VStack>
-			</Container>
-
-	);
+                                    return (
+                                        // Assuming you have a route set up for comic details
+                                        (<NextLink
+                                            href={`/search/marvel/marvel-stories/${comicId}`}
+                                            passHref
+                                            key={storyItem.name}
+                                        >
+                                            <FlexContainer as="a" p={2} boxShadow="md" borderRadius="md" _hover={linkHoverStyle}>
+                                                <Text textAlign="start">
+                                                    {storyItem.name}
+                                                </Text>
+                                            </FlexContainer>
+                                        </NextLink>)
+                                    );
+                                }
+                            )}
+                        </SimpleGrid>
+                    </Box>
+                </VStack>
+            </Flex>
+            </VStack>
+        </Container>)
+    );
 };
 
 export default MarvelEvent;

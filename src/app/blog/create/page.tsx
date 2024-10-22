@@ -21,7 +21,7 @@ import ImageUpload from '@/components/ImageUpload';
 import { useUser } from '@/contexts/UserContext';  // Import the user context
 import ComicSpinner from '@/helpers/ComicSpinner';
 
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 import 'react-quill/dist/quill.snow.css';
 
 // Updated Zod schema (removed author_name as it will be set automatically)
@@ -168,3 +168,4 @@ const CreateBlogPostPage = () => {
 };
 
 export default CreateBlogPostPage;
+

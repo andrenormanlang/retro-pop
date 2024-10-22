@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { supabase } from "@/utils/supabaseClient";
 import {
   Box,
@@ -33,7 +33,8 @@ import { useUser } from "@/contexts/UserContext";
 import { format } from "date-fns";
 import { DeleteIcon } from "@chakra-ui/icons";
 
-const PostPage = ({ params }: { params: Params['params'] }) => {
+const PostPage = (props: { params: Promise<Params['params']> }) => {
+  const params = use(props.params);
   const { id, topicId } = params;
   const [posts, setPosts] = useState<Post[]>([]);
   const [topicTitle, setTopicTitle] = useState<string>("");

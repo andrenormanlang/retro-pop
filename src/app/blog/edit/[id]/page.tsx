@@ -1,5 +1,3 @@
-// EditBlogPost.tsx
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -20,10 +18,9 @@ import {
   Spinner,
   Center,
 } from '@chakra-ui/react';
-import dynamic from 'next/dynamic';
 import ImageUpload from '@/components/ImageUpload';
 import 'quill/dist/quill.snow.css';
-import ReactQuill, { Quill } from 'react-quill';
+import ReactQuill, { Quill } from 'react-quill-new';
 import QuillResizeImage from 'quill-resize-image';
 import ComicSpinner from '@/helpers/ComicSpinner';
 

@@ -31,7 +31,7 @@ import { Comic } from "@/types/comics-store/comic-detail.type";
 import { useUpdateComics } from "@/hooks/comic-table/useUpdateComics";
 
 // Dynamically import ReactQuill to prevent SSR issues
-const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
+const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
 import "react-quill/dist/quill.snow.css";
 
 // Import Quill and the color picker enhancement

@@ -109,14 +109,13 @@ const MarvelStory: NextPage = () => {
 	const solicitationText = result?.title || "No description available.";
 
 	return (
-		<Container maxW="1100px" p={4}>
-			<Box mb={4}>
+        (<Container maxW="1100px" p={4}>
+            <Box mb={4}>
 				<Button leftIcon={<ArrowBackIcon />} colorScheme="teal" variant="outline" onClick={handleBack}>
 					Back to Grid
 				</Button>
 			</Box>
-
-			<VStack spacing={2}>
+            <VStack spacing={2}>
 				{/* Content Box */}
 				<Flex
 					bg={bgColor}
@@ -277,13 +276,13 @@ const MarvelStory: NextPage = () => {
 									const comicId = extractIdFromURI(charactersItem.resourceURI);
 
 									return (
-										// Assuming you have a route set up for comic details
-										<NextLink
+                                        // Assuming you have a route set up for comic details
+                                        (<NextLink
 											href={`/search/marvel/marvel-characters/${comicId}`}
 											passHref
 											key={charactersItem.name}
 										>
-											<FlexContainer
+                                            <FlexContainer
 												as="a"
 												p={2}
 												boxShadow="md"
@@ -292,8 +291,8 @@ const MarvelStory: NextPage = () => {
 											>
 												<Text textAlign="start">{charactersItem.name}</Text>
 											</FlexContainer>
-										</NextLink>
-									);
+                                        </NextLink>)
+                                    );
 								})}
 							</SimpleGrid>
 						</Box>
@@ -307,13 +306,13 @@ const MarvelStory: NextPage = () => {
 									const comicId = extractIdFromURI(comicItem.resourceURI);
 
 									return (
-										// Assuming you have a route set up for comic details
-										<NextLink
+                                        // Assuming you have a route set up for comic details
+                                        (<NextLink
 											href={`/search/marvel/marvel-comics/${comicId}`}
 											passHref
 											key={comicItem.name}
 										>
-											<FlexContainer
+                                            <FlexContainer
 												as="a"
 												p={2}
 												boxShadow="md"
@@ -322,8 +321,8 @@ const MarvelStory: NextPage = () => {
 											>
 												<Text textAlign="start">{comicItem.name}</Text>
 											</FlexContainer>
-										</NextLink>
-									);
+                                        </NextLink>)
+                                    );
 								})}
 							</SimpleGrid>
 						</Box>
@@ -337,13 +336,13 @@ const MarvelStory: NextPage = () => {
 									const comicId = extractIdFromURI(eventItem.resourceURI);
 
 									return (
-										// Assuming you have a route set up for comic details
-										<NextLink
+                                        // Assuming you have a route set up for comic details
+                                        (<NextLink
 											href={`/search/marvel/marvel-events/${comicId}`}
 											passHref
 											key={eventItem.name}
 										>
-											<FlexContainer
+                                            <FlexContainer
 												as="a"
 												p={2}
 												boxShadow="md"
@@ -352,8 +351,8 @@ const MarvelStory: NextPage = () => {
 											>
 												<Text textAlign="start">{eventItem.name}</Text>
 											</FlexContainer>
-										</NextLink>
-									);
+                                        </NextLink>)
+                                    );
 								})}
 							</SimpleGrid>
 						</Box>
@@ -367,13 +366,13 @@ const MarvelStory: NextPage = () => {
 									const comicId = extractIdFromURI(storyItem.resourceURI);
 
 									return (
-										// Assuming you have a route set up for comic details
-										<NextLink
+                                        // Assuming you have a route set up for comic details
+                                        (<NextLink
 											href={`/search/marvel/marvel-stories/${comicId}`}
 											passHref
 											key={storyItem.name}
 										>
-											<FlexContainer
+                                            <FlexContainer
 												as="a"
 												p={2}
 												boxShadow="md"
@@ -382,16 +381,16 @@ const MarvelStory: NextPage = () => {
 											>
 												<Text textAlign="start">{storyItem.name}</Text>
 											</FlexContainer>
-										</NextLink>
-									);
+                                        </NextLink>)
+                                    );
 								})}
 							</SimpleGrid>
 						</Box>
 					</VStack>
 				</Flex>
 			</VStack>
-		</Container>
-	);
+        </Container>)
+    );
 };
 
 export default MarvelStory;
