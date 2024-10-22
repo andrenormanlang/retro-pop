@@ -1,7 +1,7 @@
 'use client';
 
-import { useRouter } from "next/navigation";
-import { useState, use } from "react";
+import { useRouter, useParams } from "next/navigation"; // Import useParams
+import { useState } from "react";
 import { supabase } from "@/utils/supabaseClient";
 import {
   Box,
@@ -33,15 +33,9 @@ const topicSchema = z.object({
 
 type TopicFormData = z.infer<typeof topicSchema>;
 
-interface CreateTopicProps {
-  params: {
-    id: string;
-  };
-}
-
-const CreateTopic: React.FC<CreateTopicProps> = props => {
-  const params = use(props.params);
-  const { id } = params;
+const CreateTopic: React.FC = () => { // No props
+  const params = useParams(); // Correct usage of useParams
+  const { id } = params; // Destructure 'id' from params
   const router = useRouter();
   const { user } = useUser();
   const toast = useToast();
@@ -157,3 +151,4 @@ const CreateTopic: React.FC<CreateTopicProps> = props => {
 };
 
 export default CreateTopic;
+
