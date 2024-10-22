@@ -1,7 +1,7 @@
 'use client';
 
-import { useRouter } from "next/navigation";
-import { useEffect, useState, use } from "react";
+import { useRouter, useParams } from "next/navigation"; // Import useParams
+import { useEffect, useState } from "react"; // Removed 'use'
 import { supabase } from "@/utils/supabaseClient";
 import {
   Box,
@@ -33,14 +33,14 @@ import {
   ModalFooter,
   useDisclosure,
 } from "@chakra-ui/react";
-import { Forum, Params, Topic } from "@/types/forum/forum.type";
+import { Forum, Topic } from "@/types/forum/forum.type"; // Removed Params import
 import { useUser } from "@/contexts/UserContext";
 import { DeleteIcon } from "@chakra-ui/icons";
 import { getRelativeTime } from "@/helpers/getRelativeTime";
 
-const ForumPage = (props: Params) => {
-  const params = use(props.params);
-  const { id } = params;
+const ForumPage = () => { // Removed props parameter
+  const params = useParams(); // Correct usage of useParams
+  const { id, topicId } = params; // Destructure 'id' and 'topicId' if needed
   const [forum, setForum] = useState<Forum | null>(null);
   const [topics, setTopics] = useState<Topic[]>([]);
   const [loading, setLoading] = useState(true);
@@ -138,45 +138,45 @@ const ForumPage = (props: Params) => {
   }, [id]);
 
   const handleDelete = async () => {
-	if (!topicToDelete) return;
+    if (!topicToDelete) return;
 
-	const topic = topics.find((t) => t.id === topicToDelete);
+    const topic = topics.find((t) => t.id === topicToDelete);
 
-	if (topic && (topic.postCount || 0) > 0) {
-	  toast({
-		title: "Error",
-		description: "You can't delete topics that have posts. Please delete all posts first.",
-		status: "error",
-		duration: 5000,
-		isClosable: true,
-	  });
-	  return;
-	}
+    if (topic && (topic.postCount || 0) > 0) {
+      toast({
+        title: "Error",
+        description: "You can't delete topics that have posts. Please delete all posts first.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
 
-	try {
-	  const { error } = await supabase.from("topics").delete().eq("id", topicToDelete);
-	  if (error) throw error;
-	  setTopics((prevTopics) => prevTopics.filter((topic) => topic.id !== topicToDelete));
-	  toast({
-		title: "Topic deleted.",
-		description: "The topic has been deleted successfully.",
-		status: "success",
-		duration: 5000,
-		isClosable: true,
-	  });
-	} catch (error) {
-	  console.error("Error deleting topic:", error);
-	  toast({
-		title: "Error",
-		description: "There was an error deleting the topic.",
-		status: "error",
-		duration: 5000,
-		isClosable: true,
-	  });
-	} finally {
-	  setTopicToDelete(null);
-	  onClose();
-	}
+    try {
+      const { error } = await supabase.from("topics").delete().eq("id", topicToDelete);
+      if (error) throw error;
+      setTopics((prevTopics) => prevTopics.filter((topic) => topic.id !== topicToDelete));
+      toast({
+        title: "Topic deleted.",
+        description: "The topic has been deleted successfully.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error("Error deleting topic:", error);
+      toast({
+        title: "Error",
+        description: "There was an error deleting the topic.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setTopicToDelete(null);
+      onClose();
+    }
   };
 
   const openDeleteModal = (topicId: string) => {
