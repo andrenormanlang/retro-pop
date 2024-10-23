@@ -75,8 +75,8 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
 
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 	const [selectedComicId, setSelectedComicId] = useState<string | null>(null);
-	const cancelRef = useRef(null);
-	const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+	const cancelRef = useRef<HTMLButtonElement>(null);
+		const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 	const [totalAmount, setTotalAmount] = useState(0);
 	const [clientSecret, setClientSecret] = useState("");
 	const [orderData, setOrderData] = useState<OrderData | null>(null);
@@ -512,11 +512,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
 				</DrawerContent>
 			</Drawer>
 
-			<AlertDialog
-				isOpen={isDeleteDialogOpen}
-				leastDestructiveRef={cancelRef}
-				onClose={() => setIsDeleteDialogOpen(false)}
-			>
+			<AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef as React.RefObject<HTMLElement>} onClose={onClose}>
 				<AlertDialogOverlay>
 					<AlertDialogContent>
 						<AlertDialogHeader fontSize="lg" fontWeight="bold">

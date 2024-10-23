@@ -57,7 +57,7 @@ const ComicsBuy: NextPage = () => {
 	const [selectedComic, setSelectedComic] = useState<Comic | null>(null);
 	const [isOpen, setIsOpen] = useState(false);
 	const [loadingComicIds, setLoadingComicIds] = useState<string[]>([]);
-	const cancelRef = useRef(null);
+	const cancelRef = useRef<HTMLButtonElement>(null);
 	const { user } = useUser();
 	const router = useRouter();
 	const dispatch: AppDispatch = useDispatch();
@@ -133,21 +133,21 @@ const ComicsBuy: NextPage = () => {
 		if (!user) {
 			toast({
 				render: () => (
-				  <Box
-					bg="red.500" // Set the background color according to the status (warning, error, etc.)
-					color="white" // Text color
-					p={3}
-					borderRadius="md"
-					textAlign="center"
-				  >
-					<strong>📚Login required!📚</strong>
-					<p>🦹‍♂️You need to register and log in to add comics to your cart.🦸</p>
-				  </Box>
+					<Box
+						bg="red.500" // Set the background color according to the status (warning, error, etc.)
+						color="white" // Text color
+						p={3}
+						borderRadius="md"
+						textAlign="center"
+					>
+						<strong>📚Login required!📚</strong>
+						<p>🦹‍♂️You need to register and log in to add comics to your cart.🦸</p>
+					</Box>
 				),
 				status: "warning",
 				duration: 5000,
 				isClosable: true,
-			  });
+			});
 			return;
 		}
 
@@ -457,7 +457,12 @@ const ComicsBuy: NextPage = () => {
 				</>
 			)}
 
-			<AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={onClose}>
+			<AlertDialog
+				isOpen={isOpen}
+				leastDestructiveRef={cancelRef as React.RefObject<HTMLElement>}
+				onClose={onClose}
+			>
+				{" "}
 				<AlertDialogOverlay>
 					<AlertDialogContent>
 						<AlertDialogHeader fontSize="lg" fontWeight="bold">

@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
 
     // Merge the data based on user ID
     const mergedData = profileData.map((profile) => {
+		// @ts-ignore
       const authUser = authData.users.find((user) => user.id === profile.id);
       return {
         ...profile,

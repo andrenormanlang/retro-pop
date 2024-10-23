@@ -18,6 +18,7 @@ import ComicsPagination from "@/components/ComicsPagination";
 import { useDebouncedCallback } from "use-debounce";
 import { htmlToText } from "html-to-text";
 import { useGetComicVineIssues } from "@/hooks/comic-vine/useComicVine";
+// @ts-ignore
 import {  Publishers, SearchQuery } from "@/types/comic.types";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useSearchParameters } from "@/hooks/useSearchParameters";

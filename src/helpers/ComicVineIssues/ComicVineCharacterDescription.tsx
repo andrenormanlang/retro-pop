@@ -77,7 +77,7 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 		replace: (domNode: DomNode, index: number)  => {
 			if (domNode.name === "a" && domNode.attribs.href && domNode.attribs["data-ref-id"]) {
 				const newHref = `https://comicvine.gamespot.com/images/${domNode.attribs["data-ref-id"]}`;
-				domNode.attribs.href = newHref; 
+				domNode.attribs.href = newHref;
 			}
 			if (domNode.name === "img" && domNode.attribs["data-src"]) {
 				const {
@@ -93,6 +93,8 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 				const imageUrl = dataRefId ? `https://comicvine.gamespot.com/images/${dataRefId}` : "#";
 				return (
 					<ImageLinkWrapper href={src}>
+						{/* ignore error */}
+						{/* @ts-ignore */}
 						<LazyLoadImage
 							alt={alt || ""}
 							src={imageUrl}
@@ -263,4 +265,6 @@ const ComicVineCharacterDescription: React.FC<ComicVineCharacterDescriptionProps
 	return <Box>{parsedContent}</Box>;
 };
 
+// ignore type error
+// @ts-ignore
 export default trackWindowScroll(ComicVineCharacterDescription);

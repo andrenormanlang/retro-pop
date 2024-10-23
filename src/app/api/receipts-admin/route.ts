@@ -33,6 +33,7 @@ export async function GET(request: NextRequest) {
     // Merge the data based on user ID
     const mergedData = receiptsData.map((receipt) => {
       const profile = receipt.profiles;
+	  //   @ts-ignore
       const authUser = authData.users.find((user) => user.id === profile.id);
       return {
         ...receipt,

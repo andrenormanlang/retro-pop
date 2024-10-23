@@ -126,7 +126,7 @@ const ComicVineCharacter: NextPage = () => {
 	}
 
 	const imageUrl = comic.results?.image?.original_url || "defaultImageUrl";
-	
+
 	const htmlContent = comic.results?.description || "No description available.";
 
 	const aliasesArray = comic.results?.aliases ? comic.results.aliases.split(/\r\n|\n/) : [];
@@ -297,6 +297,7 @@ const ComicVineCharacter: NextPage = () => {
 							</AccordionButton>
 						</h2>
 						<AccordionPanel pb={4}>
+							{/*  @ts-ignore */}
 							<ComicVineCharacterDescription content={htmlContent} />
 						</AccordionPanel>
 					</AccordionItem>

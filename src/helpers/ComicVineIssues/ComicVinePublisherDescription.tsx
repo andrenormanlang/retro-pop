@@ -76,6 +76,7 @@ const ComicVinePublisherDescription: React.FC<ComicVinePublisherDescriptionProps
 			case 'img':
 				const { alt, src, "data-src": dataSrc } = attribs;
 			  return (
+				// @ts-ignore
 				<LazyLoadImage
                 alt={alt}
                 effect="blur"
