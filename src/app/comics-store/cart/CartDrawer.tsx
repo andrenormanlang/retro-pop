@@ -28,7 +28,6 @@ import {
 } from "@chakra-ui/react";
 import { DeleteIcon } from "@chakra-ui/icons";
 import { useDispatch, useSelector } from "react-redux";
-import { useRouter } from "next/navigation";
 import { RootState, AppDispatch } from "@/store/store";
 import { fetchCart, removeFromCart, updateCartQuantity } from "@/store/cartSlice";
 import { CartItem } from "@/types/comics-store/comic-detail.type";
@@ -36,19 +35,13 @@ import { useUser } from "../../../contexts/UserContext";
 import CheckoutForm from "@/components/CheckoutForm";
 import { Elements } from "@stripe/react-stripe-js";
 import getStripe from "@/utils/get-stripejs";
-import { updateStock, clearCart } from "@/lib/orders";
 import { supabase } from "@/utils/supabase/client";
 import { useUpdateStock } from "@/hooks/stock-management/useUpdateStock";
 import { useQueryClient } from "@tanstack/react-query";
-import { Appearance } from "@stripe/stripe-js"; // Import the StripeAppearance type
+import { Appearance } from "@stripe/stripe-js";
 
-// Define a custom type for the event detail
 interface PaymentSuccessDetail {
 	userId: string;
-}
-
-interface PaymentSuccessEvent extends Event {
-	detail: PaymentSuccessDetail;
 }
 
 interface OrderData {
@@ -64,7 +57,6 @@ interface CartDrawerProps {
 
 const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
 	const dispatch = useDispatch<AppDispatch>();
-	const router = useRouter();
 	const { user } = useUser();
 	const cartItems = useSelector((state: RootState) => state.cart.items);
 	const loading = useSelector((state: RootState) => state.cart.loading);
@@ -76,11 +68,10 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 	const [selectedComicId, setSelectedComicId] = useState<string | null>(null);
 	const cancelRef = useRef<HTMLButtonElement>(null);
-		const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+	const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 	const [totalAmount, setTotalAmount] = useState(0);
 	const [clientSecret, setClientSecret] = useState("");
 	const [orderData, setOrderData] = useState<OrderData | null>(null);
-	const [isPaymentSuccessOpen, setIsPaymentSuccessOpen] = useState(false);
 
 	useEffect(() => {
 		if (user) {
@@ -93,11 +84,9 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
 			}
 		};
 
-		// Add event listener
 		window.addEventListener("paymentSuccess", handlePaymentSuccess as EventListener);
 
 		return () => {
-			// Remove event listener
 			window.removeEventListener("paymentSuccess", handlePaymentSuccess as EventListener);
 		};
 	}, [user, dispatch]);
@@ -268,61 +257,16 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
 		} else {
 			setClientSecret(data.clientSecret);
 			setOrderData({ amount, items: cartItems, orderId: data.orderId });
-
-			// Iterate through cartItems to update stock for each item
-			cartItems.forEach((item) => {
-				updateStock(
-					{ comicId: item.comicId, newStock: item.stock - item.quantity },
-					{
-						onSuccess: () => {
-							queryClient.invalidateQueries({ queryKey: ["comics"] });
-						},
-					}
-				);
-			});
-
 			setIsCheckoutOpen(true);
 		}
 	};
 
-	const handlePaymentSuccess = async () => {
-		if (!user) return;
-		setIsCheckoutOpen(false);
-
-		cartItems.forEach((item) => {
-			updateStock(
-				{ comicId: item.comicId, newStock: item.stock - item.quantity },
-				{
-					onSuccess: () => {
-						queryClient.invalidateQueries({ queryKey: ["comics"] });
-					},
-				}
-			);
-		});
-
-		setIsPaymentSuccessOpen(true);
-		await clearCart(user.id);
-		dispatch(fetchCart({ userId: user.id }));
-		toast({
-			title: "Payment Successful",
-			description: "Thank you for your purchase.",
-			status: "success",
-			duration: 5000,
-			isClosable: true,
-		});
-	};
-
-	const defaultImageUrl = "/path/to/default-image.jpg";
-
-	// New clear cart test function
 	const handleClearCart = async () => {
 		if (!user) return;
 
-		console.log("Attempting to clear cart for user:", user.id);
 		const { error } = await supabase.from("cart").delete().eq("user_id", user.id);
 
 		if (error) {
-			console.error("Error clearing cart:", error);
 			toast({
 				title: "Error clearing cart",
 				description: error.message,
@@ -331,7 +275,6 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
 				isClosable: true,
 			});
 		} else {
-			console.log("Cart cleared successfully for user:", user.id);
 			dispatch(fetchCart({ userId: user.id }));
 			toast({
 				title: "Cart cleared successfully",
@@ -347,62 +290,11 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
 	const appearance: Appearance = {
 		theme: "night",
 		variables: {
-			fontFamily: "Ideal Sans, system-ui, sans-serif",
-			fontSizeBase: "16px",
-			fontSizeSm: "14px",
-			fontSizeLg: "18px",
-			fontWeightNormal: "400",
-			fontWeightBold: "700",
-			fontWeightLight: "300",
 			colorPrimary: "#0570de",
-			colorBackground: "#1a1a1a",
 			colorText: "#e0e0e0",
 			colorTextSecondary: "#b3b3b3",
-			colorTextPlaceholder: "#a0a0a0",
-			colorSuccess: "#24b47e",
 			colorDanger: "#ef5350",
-			colorWarning: "#ff9800",
 			borderRadius: "6px",
-			spacingUnit: "4px",
-			gridRowSpacing: "20px",
-			gridColumnSpacing: "16px",
-			tabSpacing: "8px",
-			accordionItemSpacing: "10px",
-			focusBoxShadow: "0 0 0 2px rgba(5, 112, 222, 0.5)",
-		},
-		rules: {
-			".Tab": {
-				border: "1px solid #2c2c2c",
-				boxShadow: "0px 1px 1px rgba(0, 0, 0, 0.1), 0px 3px 6px rgba(18, 42, 66, 0.1)",
-				backgroundColor: "#2c2c2c",
-			},
-			".Tab:hover": {
-				color: "var(--colorText)",
-				backgroundColor: "#333333",
-			},
-			".Tab--selected": {
-				borderColor: "#0570de",
-				boxShadow:
-					"0px 1px 1px rgba(0, 0, 0, 0.1), 0px 3px 6px rgba(18, 42, 66, 0.1), 0 0 0 2px var(--colorPrimary)",
-			},
-			".Input--invalid": {
-				boxShadow: "0 1px 1px 0 rgba(0, 0, 0, 0.1), 0 0 0 2px var(--colorDanger)",
-			},
-			".Label": {
-				color: "var(--colorTextSecondary)",
-			},
-			".CheckboxInput": {
-				backgroundColor: "#2c2c2c",
-				borderColor: "#2c2c2c",
-				borderRadius: "4px",
-			},
-			".CheckboxInput--checked": {
-				backgroundColor: "var(--colorPrimary)",
-				borderColor: "var(--colorPrimary)",
-			},
-			".CheckboxLabel": {
-				color: "var(--colorText)",
-			},
 		},
 		labels: "floating",
 	};
@@ -413,13 +305,14 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
 				<DrawerOverlay />
 				<DrawerContent>
 					<DrawerCloseButton />
+					<DrawerHeader>Your Cart</DrawerHeader>
 					<DrawerBody>
 						{loading ? (
-							<Center h="100vh">
+							<Center h="100%">
 								<Spinner size="xl" />
 							</Center>
 						) : error ? (
-							<Center h="100vh">
+							<Center h="100%">
 								<Alert status="error">
 									<AlertIcon />
 									{error}
@@ -438,22 +331,16 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
 									mb={4}
 								>
 									<Image
-										src={item.image || defaultImageUrl}
+										src={item.image || "/path/to/default-image.jpg"}
 										alt={item.title}
 										maxW={{ base: "75px", md: "100px" }}
-										maxH={{ base: "75px", md: "100px" }}
 										objectFit="contain"
-										onError={(e) => {
-											e.currentTarget.src = defaultImageUrl;
-										}}
 									/>
-									<Box flex="1" ml={{ base: 2, md: 4 }}>
-										<Text fontWeight="bold" fontSize={{ base: "sm", md: "lg" }} noOfLines={1}>
+									<Box flex="1" ml={4}>
+										<Text fontWeight="bold" fontSize="lg" noOfLines={1}>
 											{item.title}
 										</Text>
-										<Text fontSize={{ base: "xs", md: "md" }}>
-											Price: ${item.price.toFixed(2)} {item.currency}
-										</Text>
+										<Text>Price: ${item.price.toFixed(2)} {item.currency}</Text>
 										<Flex alignItems="center">
 											<Button
 												size="sm"
@@ -488,39 +375,38 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
 								</Flex>
 							))
 						)}
-						<DrawerFooter>
-							{/* Sticky Footer */}
-							<Box position="sticky" width="100%" bg="" p={4} boxShadow=" ">
-								<Flex justifyContent="space-between" mt={2}>
-									<Text>Subtotal</Text>
-									<Text>${calculateTotalAmount().toFixed(2)}</Text>
-								</Flex>
-								<Flex justifyContent="space-between" mt={2}>
-									<Text>Shipping</Text>
-									<Text>Gratis</Text>
-								</Flex>
-								<Flex justifyContent="space-between" mt={2} fontWeight="bold">
-									<Text>Total</Text>
-									<Text>${calculateTotalAmount().toFixed(2)}</Text>
-								</Flex>
-								<Button mt={4} colorScheme="blue" width="100%" onClick={handleCheckout}>
-									Go to Checkout
-								</Button>
-							</Box>
-						</DrawerFooter>
 					</DrawerBody>
+					<DrawerFooter>
+						<Box width="100%" p={4}>
+							<Flex justifyContent="space-between">
+								<Text>Subtotal:</Text>
+								<Text>${calculateTotalAmount().toFixed(2)}</Text>
+							</Flex>
+							<Flex justifyContent="space-between" mt={2} fontWeight="bold">
+								<Text>Total:</Text>
+								<Text>${calculateTotalAmount().toFixed(2)}</Text>
+							</Flex>
+							<Button mt={4} colorScheme="blue" width="100%" onClick={handleCheckout}>
+								Go to Checkout
+							</Button>
+						</Box>
+					</DrawerFooter>
 				</DrawerContent>
 			</Drawer>
 
-			<AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef as React.RefObject<HTMLElement>} onClose={onClose}>
+			<AlertDialog
+				isOpen={isDeleteDialogOpen}
+				leastDestructiveRef={cancelRef}
+				onClose={() => setIsDeleteDialogOpen(false)}
+			>
 				<AlertDialogOverlay>
 					<AlertDialogContent>
 						<AlertDialogHeader fontSize="lg" fontWeight="bold">
 							Delete Comic
 						</AlertDialogHeader>
-
-						<AlertDialogBody>Are you sure you want to delete this comic from your cart?</AlertDialogBody>
-
+						<AlertDialogBody>
+							Are you sure you want to delete this comic from your cart?
+						</AlertDialogBody>
 						<AlertDialogFooter>
 							<Button ref={cancelRef} onClick={() => setIsDeleteDialogOpen(false)}>
 								Cancel
@@ -552,13 +438,13 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
 					<DrawerOverlay />
 					<DrawerContent>
 						<DrawerCloseButton />
-						<DrawerHeader></DrawerHeader>
+						<DrawerHeader>Checkout</DrawerHeader>
 						<DrawerBody>
 							<Elements stripe={getStripe()} options={{ clientSecret, appearance }}>
 								<CheckoutForm
 									amount={totalAmount}
 									cartItems={cartItems}
-									onPaymentSuccess={handlePaymentSuccess}
+									onPaymentSuccess={handleClearCart}
 								/>
 							</Elements>
 						</DrawerBody>
@@ -570,3 +456,4 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
 };
 
 export default CartDrawer;
+
