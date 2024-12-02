@@ -89,6 +89,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
 		return () => {
 			window.removeEventListener("paymentSuccess", handlePaymentSuccess as EventListener);
 		};
+	// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [user, dispatch]);
 
 	const handleRemoveFromCart = async (comicId: string) => {
