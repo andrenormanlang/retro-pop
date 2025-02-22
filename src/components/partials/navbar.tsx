@@ -323,7 +323,7 @@ const Navbar = () => {
 				{item.submenu?.map((subItem, subIndex) =>
 					subItem.submenu ? (
 						// For items with further nested submenus (recursive call for deeper levels)
-						(renderMenuItem(subItem, `${index}-${subIndex}`))
+						renderMenuItem(subItem, `${index}-${subIndex}`)
 					) : (
 						<Link key={subIndex} href={subItem.href} style={{ textDecoration: "none", width: "100%" }}>
 							<MenuItem {...buttonStyle}>{subItem.name}</MenuItem>
@@ -367,9 +367,13 @@ const Navbar = () => {
 							<IconButton
 								aria-label="Cart"
 								icon={<ShoppingCartButton />}
-								onClick={onDrawerOpen} // Open the Drawer
-								colorScheme=""
+								onClick={onDrawerOpen}
 								size={{ base: "sm", md: "md" }}
+								variant="outline"
+								colorScheme="blue"
+								_hover={{ bg: "blue.500", color: "white", borderColor: "blue.500" }}
+								_active={{ bg: "blue.600", color: "white", borderColor: "blue.600" }}
+								_focus={{ boxShadow: "outline" }}
 							/>
 							<Badge
 								position="absolute"
@@ -466,7 +470,6 @@ const Navbar = () => {
 								<Button as={Link} href="/comics-store/sell" {...buttonStyle}>
 									Tip Us!
 								</Button>
-
 							</>
 						)}
 						<Button as={Link} href="/blog" {...buttonStyle}>
