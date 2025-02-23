@@ -2,10 +2,10 @@ import { Inter, Libre_Franklin } from 'next/font/google';
 import Navbar from "../components/partials/navbar";
 import { Box, ChakraProvider, ColorModeProvider } from "@chakra-ui/react";
 import "./globals.css";
-import Providers from "@/lib/query-provider";
 import ReduxProvider from '../contexts/ReduxProvider';
 import { UserProvider } from "@/contexts/UserContext";
 import { Metadata } from 'next';
+import ReactQueryProvider from '@/lib/react-query-provider';
 
 const inter = Inter({ subsets: ['latin'], display: 'swap' });
 const libreFranklin = Libre_Franklin({ subsets: ['latin'], display: 'swap' });
@@ -27,7 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               useSystemColorMode: true,
             }}
           >
-            <Providers>
+            <ReactQueryProvider>
               <ReduxProvider>
                 <UserProvider>
                   <Navbar />
@@ -36,7 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   </Box>
                 </UserProvider>
               </ReduxProvider>
-            </Providers>
+            </ReactQueryProvider>
           </ColorModeProvider>
         </ChakraProvider>
       </body>
