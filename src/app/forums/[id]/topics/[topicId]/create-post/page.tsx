@@ -113,7 +113,7 @@ const CreatePostPage = (props: { params: Promise<{ id: string; topicId: string }
                   [{ header: '1' }, { header: '2' }, { font: [] }],
                   [{ size: [] }],
                   ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-                  [{ list: 'ordered' }, { list: 'bullet' }, { indent: '-1' }, { indent: '+1' }],
+                  [{ list: 'ordered' }, { 'list': 'bullet' },   { indent: '-1' }, { indent: '+1' }],
                   ['link', 'image'],
                   [{ color: [] }, { background: [] }], // Color and marker options
                   ['clean'],
@@ -122,7 +122,7 @@ const CreatePostPage = (props: { params: Promise<{ id: string; topicId: string }
               formats={[
                 'header', 'font', 'size',
                 'bold', 'italic', 'underline', 'strike', 'blockquote',
-                'list', 'bullet', 'indent',
+                'list',  'indent',
                 'link', 'image',
                 'color', 'background', // Include formats for color and marker
               ]}
