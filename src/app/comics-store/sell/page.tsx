@@ -274,7 +274,7 @@ export default function ComicForm() {
                     [{ 'header': '1'}, {'header': '2'}, { 'font': [] }],
                     [{ size: [] }],
                     ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-                    [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'indent': '-1'}, { 'indent': '+1' }],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' },  { 'indent': '-1'}, { 'indent': '+1' }],
                     ['link', 'image'],
                     [{ 'color': [] }, { 'background': [] }], // Color and marker options
                     ['clean'],
@@ -283,7 +283,7 @@ export default function ComicForm() {
                 formats={[
                   'header', 'font', 'size',
                   'bold', 'italic', 'underline', 'strike', 'blockquote',
-                  'list', 'bullet', 'indent',
+                  'list', 'indent',
                   'link', 'image',
                   'color', 'background', // Include formats for color and marker
                 ]}

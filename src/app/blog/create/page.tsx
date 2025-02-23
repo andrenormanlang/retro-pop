@@ -138,7 +138,7 @@ const CreateBlogPostPage = () => {
                   [{ 'header': '1'}, {'header': '2'}, { 'font': [] }],
                   [{ size: [] }],
                   ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-                  [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'indent': '-1'}, { 'indent': '+1' }],
+                  [{ 'list': 'ordered'}, { 'list': 'bullet' },   { 'indent': '-1'}, { 'indent': '+1' }],
                   ['link', 'image'],
                   [{ 'color': [] }, { 'background': [] }],
                   ['clean'],
@@ -147,7 +147,7 @@ const CreateBlogPostPage = () => {
               formats={[
                 'header', 'font', 'size',
                 'bold', 'italic', 'underline', 'strike', 'blockquote',
-                'list', 'bullet', 'indent',
+                'list',  'indent',
                 'link', 'image',
                 'color', 'background',
               ]}

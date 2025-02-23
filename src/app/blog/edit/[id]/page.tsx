@@ -1,11 +1,12 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import { useForm, SubmitHandler } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { createClient } from '@/utils/supabase/client';
+import dynamic from "next/dynamic";
+import React, { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { createClient } from "@/utils/supabase/client";
 import {
   Box,
   Button,
@@ -15,25 +16,26 @@ import {
   Input,
   VStack,
   useToast,
-  Spinner,
   Center,
-} from '@chakra-ui/react';
-import ImageUpload from '@/components/ImageUpload';
-import 'quill/dist/quill.snow.css';
-import ReactQuill, { Quill } from 'react-quill-new';
-import QuillResizeImage from 'quill-resize-image';
-import ComicSpinner from '@/helpers/ComicSpinner';
+  Spinner,
+} from "@chakra-ui/react";
+import ImageUpload from "@/components/ImageUpload";
+import "quill/dist/quill.snow.css";
+import QuillResizeImage from "quill-resize-image";
 
-// Register the image resize module with Quill
-Quill.register('modules/resize', QuillResizeImage);
+// Dynamically import React Quill to avoid SSR issues
+const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
 
-// Define Zod schema
+// Import Quill from react-quill for module registration
+import { Quill } from "react-quill-new";
+Quill.register("modules/resize", QuillResizeImage);
+
+// Define Zod schema for form validation
 const postSchema = z.object({
-  title: z.string().min(10, 'Title is required'),
-  content: z.string().min(100, 'Content is required'),
+  title: z.string().min(10, "Title is required"),
+  content: z.string().min(100, "Content is required"),
   imageUrl: z.string().optional(),
 });
-
 type PostFormData = z.infer<typeof postSchema>;
 
 const EditBlogPost = () => {
@@ -42,7 +44,14 @@ const EditBlogPost = () => {
   const supabase = createClient();
   const router = useRouter();
   const toast = useToast();
-  const { register, handleSubmit, setValue, formState: { errors }, watch } = useForm<PostFormData>({
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+    watch,
+  } = useForm<PostFormData>({
     resolver: zodResolver(postSchema),
   });
 
@@ -58,17 +67,22 @@ const EditBlogPost = () => {
   }, [id]);
 
   const fetchPostData = async (postId: string) => {
-    const { data, error } = await supabase.from('blog_posts').select('*').eq('id', postId).single();
+    const { data, error } = await supabase
+      .from("blog_posts")
+      .select("*")
+      .eq("id", postId)
+      .single();
+
     if (data) {
-      setValue('title', data.title);
-      setValue('content', data.content);
-      setValue('imageUrl', data.imageUrl);
-      setImageUrl(data.imageUrl);  // Set the imageUrl state
+      setValue("title", data.title);
+      setValue("content", data.content);
+      setValue("imageUrl", data.imageUrl);
+      setImageUrl(data.imageUrl);
     } else {
       toast({
-        title: 'Error',
+        title: "Error",
         description: error?.message,
-        status: 'error',
+        status: "error",
         duration: 5000,
         isClosable: true,
       });
@@ -77,38 +91,45 @@ const EditBlogPost = () => {
   };
 
   const checkAdmin = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
     if (!user) {
       toast({
-        title: 'Error',
-        description: 'User not authenticated.',
-        status: 'error',
+        title: "Error",
+        description: "User not authenticated.",
+        status: "error",
         duration: 5000,
         isClosable: true,
       });
       return;
     }
 
-    const { data, error } = await supabase.from('profiles').select('is_admin').eq('id', user.id).single();
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("is_admin")
+      .eq("id", user.id)
+      .single();
 
     if (error) {
       toast({
-        title: 'Error',
-        description: 'Error fetching profile data.',
-        status: 'error',
+        title: "Error",
+        description: "Error fetching profile data.",
+        status: "error",
         duration: 5000,
         isClosable: true,
       });
       return;
     }
 
-    if (data.is_admin) {
+    if (data?.is_admin) {
       setIsAdmin(true);
     } else {
       toast({
-        title: 'Error',
-        description: 'Only admin users can edit blog posts.',
-        status: 'error',
+        title: "Error",
+        description: "Only admin users can edit blog posts.",
+        status: "error",
         duration: 5000,
         isClosable: true,
       });
@@ -119,9 +140,9 @@ const EditBlogPost = () => {
   const onSubmit: SubmitHandler<PostFormData> = async (data) => {
     if (!isAdmin) {
       toast({
-        title: 'Error',
-        description: 'Only admin users can edit blog posts.',
-        status: 'error',
+        title: "Error",
+        description: "Only admin users can edit blog posts.",
+        status: "error",
         duration: 5000,
         isClosable: true,
       });
@@ -133,21 +154,24 @@ const EditBlogPost = () => {
       updated_at: new Date().toISOString(),
     };
 
-    const { error } = await supabase.from('blog_posts').update(postData).eq('id', id);
+    const { error } = await supabase
+      .from("blog_posts")
+      .update(postData)
+      .eq("id", id);
 
     if (error) {
       toast({
-        title: 'Error',
+        title: "Error",
         description: error.message,
-        status: 'error',
+        status: "error",
         duration: 5000,
         isClosable: true,
       });
     } else {
       toast({
-        title: 'Success',
-        description: 'Blog post updated successfully.',
-        status: 'success',
+        title: "Success",
+        description: "Blog post updated successfully.",
+        status: "success",
         duration: 5000,
         isClosable: true,
       });
@@ -158,57 +182,106 @@ const EditBlogPost = () => {
   if (loading) {
     return (
       <Center h="100vh">
-        <ComicSpinner />
+        <Spinner size="xl" color="red.500" />
       </Center>
     );
   }
 
+  // Configure Quill modules including the toolbar and image resize module
+  const quillModules = {
+    toolbar: [
+      [{ header: "1" }, { header: "2" }, { font: [] }],
+      [{ size: [] }],
+      ["bold", "italic", "underline", "strike", "blockquote"],
+      [
+        { list: "ordered" },
+        { list: "bullet" },
+        { indent: "-1" },
+        { indent: "+1" },
+      ],
+      ["link", "image"],
+      [{ color: [] }, { background: [] }],
+      ["clean"],
+    ],
+    resize: {
+      locale: {},
+    },
+  };
+
+  const quillFormats = [
+    "header",
+    "font",
+    "size",
+    "bold",
+    "italic",
+    "underline",
+    "strike",
+    "blockquote",
+    "list",
+    "indent",
+    "link",
+    "image",
+    "color",
+    "background",
+  ];
 
   return (
     <Container maxW="container.md" py={8}>
+      {/* Global styles for the Quill toolbar */}
+      <style jsx global>{`
+        .ql-toolbar.ql-snow {
+          position: sticky;
+          top: 0;
+          z-index: 10;
+          background: #fff;
+        }
+      `}</style>
+
       <Box mb={4}>
         <Button onClick={() => router.back()}>Back to Blog</Button>
       </Box>
+
       <form onSubmit={handleSubmit(onSubmit)}>
         <VStack spacing={4} align="stretch">
           <FormControl isInvalid={!!errors.title}>
             <FormLabel>Title</FormLabel>
-            <Input {...register('title')} />
-            {errors.title && <p>{errors.title.message}</p>}
+            <Input {...register("title")} />
+            {errors.title && (
+              <p style={{ color: "red" }}>{errors.title.message}</p>
+            )}
           </FormControl>
+
+          {/* Place the image upload component where desired */}
+          <ImageUpload
+            onUpload={(url) => {
+              setValue("imageUrl", url);
+              setImageUrl(url);
+            }}
+          />
+
           <FormControl isInvalid={!!errors.content}>
             <FormLabel>Content</FormLabel>
-            <ReactQuill
-              value={watch('content')}
-              onChange={(value) => setValue('content', value)}
-              modules={{
-                toolbar: [
-                  [{ 'header': '1'}, {'header': '2'}, { 'font': [] }],
-                  [{ size: [] }],
-                  ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-                  [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'indent': '-1'}, { 'indent': '+1' }],
-                  ['link', 'image'],
-                  [{ 'color': [] }, { 'background': [] }],
-                  ['clean'],
-                ],
-                resize: {
-                  locale: {},
-                }
-              }}
-              formats={[
-                'header', 'font', 'size',
-                'bold', 'italic', 'underline', 'strike', 'blockquote',
-                'list', 'bullet', 'indent',
-                'link', 'image',
-                'color', 'background',
-              ]}
-            />
-            {errors.content && <p>{errors.content.message}</p>}
+            {/* Wrap the editor in a scrollable container so the toolbar can be sticky */}
+            <Box
+              maxH="500px"
+              overflowY="auto"
+              border="1px solid #ccc"
+              borderRadius="6px"
+            >
+              <ReactQuill
+                value={watch("content")}
+                onChange={(value) => setValue("content", value)}
+                modules={quillModules}
+                formats={quillFormats}
+                theme="snow"
+                style={{ height: "400px" }}
+              />
+            </Box>
+            {errors.content && (
+              <p style={{ color: "red" }}>{errors.content.message}</p>
+            )}
           </FormControl>
-          <ImageUpload onUpload={(url) => {
-            setValue('imageUrl', url);
-            setImageUrl(url);
-          }} />
+
           <Button type="submit">Save</Button>
         </VStack>
       </form>

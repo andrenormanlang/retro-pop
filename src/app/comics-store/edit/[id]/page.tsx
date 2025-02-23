@@ -323,7 +323,7 @@ const EditComic = () => {
                   [{ header: "1" }, { header: "2" }, { font: [] }],
                   [{ size: [] }],
                   ["bold", "italic", "underline", "strike", "blockquote"],
-                  [{ list: "ordered" }, { list: "bullet" }, { indent: "-1" }, { indent: "+1" }],
+                  [{ list: "ordered" }, { 'list': 'bullet' },  { indent: "-1" }, { indent: "+1" }],
                   ["link", "image"],
                   [{ color: [] }, { background: [] }], // Color and marker options
                   ["clean"],
@@ -339,7 +339,6 @@ const EditComic = () => {
                 "strike",
                 "blockquote",
                 "list",
-                "bullet",
                 "indent",
                 "link",
                 "image",
