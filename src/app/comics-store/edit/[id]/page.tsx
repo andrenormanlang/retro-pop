@@ -1,6 +1,5 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import React, { useState, useCallback, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useForm, SubmitHandler } from "react-hook-form";
@@ -29,28 +28,23 @@ import { ArrowBackIcon } from "@chakra-ui/icons";
 import ImageUpload from "./image-upload";
 import { Comic } from "@/types/comics-store/comic-detail.type";
 import { useUpdateComics } from "@/hooks/comic-table/useUpdateComics";
+import RichTextEditor from "@/components/RichTextEditor";
 
-// Dynamically import ReactQuill to prevent SSR issues
-const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
-import "react-quill/dist/quill.snow.css";
 
-// Import Quill and the color picker enhancement
-import Quill from "quill";
-import { SnowTheme } from "quill-color-picker-enhance";
-import "quill-color-picker-enhance/dist/index.css";
-
-// Register the enhanced theme
-if (typeof window !== "undefined" && Quill) {
-  Quill.register("themes/snow-quill-color-picker-enhance", SnowTheme);
-}
-
+// Validation schema
 const validationSchema = z.object({
   image: z.string().optional(),
   title: z.string().min(1, { message: "Title is required" }),
   publisher: z.string().min(1, { message: "Publisher is required" }),
   release_date: z.string().min(1, { message: "Release date is required" }),
-  price: z.preprocess((val) => parseFloat(val as string), z.number().positive({ message: "Price must be positive" })),
-  pages: z.preprocess((val) => parseInt(val as string), z.number().positive({ message: "Pages must be positive" })),
+  price: z.preprocess(
+    (val) => parseFloat(val as string),
+    z.number().positive({ message: "Price must be positive" })
+  ),
+  pages: z.preprocess(
+    (val) => parseInt(val as string),
+    z.number().positive({ message: "Pages must be positive" })
+  ),
   main_artist: z.string().min(1, { message: "Main artist is required" }),
   main_writer: z.string().min(1, { message: "Main writer is required" }),
   description: z.string().min(1, { message: "Description is required" }),
@@ -145,7 +139,11 @@ const EditComic = () => {
   const fetchComic = useCallback(async () => {
     if (id) {
       try {
-        const { data, error } = await supabase.from("comics-sell").select("*").eq("id", id).single();
+        const { data, error } = await supabase
+          .from("comics-sell")
+          .select("*")
+          .eq("id", id)
+          .single();
 
         if (error) throw error;
 
@@ -168,11 +166,18 @@ const EditComic = () => {
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     try {
       setLoading(true);
-      const { error } = await supabase.from("comics-sell").update(data).eq("id", id);
+      const { error } = await supabase
+        .from("comics-sell")
+        .update(data)
+        .eq("id", id);
 
       if (error) throw error;
 
-      updateStockAndPriceMutation.mutate({ comicId: id!, newStock: data.stock, newPrice: data.price });
+      updateStockAndPriceMutation.mutate({
+        comicId: id!,
+        newStock: data.stock,
+        newPrice: data.price,
+      });
 
       toast({
         title: "Comic updated.",
@@ -216,7 +221,12 @@ const EditComic = () => {
   return (
     <Container maxW="container.xl" p={4}>
       <Box mb={4}>
-        <Button leftIcon={<ArrowBackIcon />} colorScheme="teal" variant="outline" onClick={() => router.back()}>
+        <Button
+          leftIcon={<ArrowBackIcon />}
+          colorScheme="teal"
+          variant="outline"
+          onClick={() => router.back()}
+        >
           Back to Grid
         </Button>
       </Box>
@@ -237,16 +247,27 @@ const EditComic = () => {
             width="100%"
           />
         </Box>
-        <VStack as="form" onSubmit={handleSubmit(onSubmit)} flex="2" align="start" spacing={4} p={4}>
+        <VStack
+          as="form"
+          onSubmit={handleSubmit(onSubmit)}
+          flex="2"
+          align="start"
+          spacing={4}
+          p={4}
+        >
           <FormControl isInvalid={!!errors.title}>
             <FormLabel>Title</FormLabel>
             <Input type="text" {...register("title")} />
-            {errors.title && <Text color="red.500">{errors.title.message}</Text>}
+            {errors.title && (
+              <Text color="red.500">{errors.title.message}</Text>
+            )}
           </FormControl>
           <FormControl isInvalid={!!errors.image}>
             <FormLabel>Image URL</FormLabel>
             <ImageUpload onUpload={(url) => setValue("image", url)} />
-            {errors.image && <Text color="red.500">{errors.image.message}</Text>}
+            {errors.image && (
+              <Text color="red.500">{errors.image.message}</Text>
+            )}
           </FormControl>
           <FormControl isInvalid={!!errors.genre}>
             <FormLabel>Genre</FormLabel>
@@ -262,7 +283,9 @@ const EditComic = () => {
           <FormControl isInvalid={!!errors.release_date}>
             <FormLabel>Release Date</FormLabel>
             <Input type="date" {...register("release_date")} />
-            {errors.release_date && <Text color="red.500">{errors.release_date.message}</Text>}
+            {errors.release_date && (
+              <Text color="red.500">{errors.release_date.message}</Text>
+            )}
           </FormControl>
           <FormControl isInvalid={!!errors.stock}>
             <FormLabel>Stock</FormLabel>
@@ -278,11 +301,17 @@ const EditComic = () => {
                 </option>
               ))}
             </Select>
-            {errors.currency && <Text color="red.500">{errors.currency.message}</Text>}
+            {errors.currency && (
+              <Text color="red.500">{errors.currency.message}</Text>
+            )}
           </FormControl>
           <FormControl isInvalid={!!errors.price}>
             <FormLabel>Price</FormLabel>
-            <Input type="number" step="0.01" {...register("price", { valueAsNumber: true })} />
+            <Input
+              type="number"
+              step="0.01"
+              {...register("price", { valueAsNumber: true })}
+            />
             {errors.price && <Text color="red.500">{errors.price.message}</Text>}
           </FormControl>
           <FormControl isInvalid={!!errors.pages}>
@@ -299,55 +328,40 @@ const EditComic = () => {
                 </option>
               ))}
             </Select>
-            {errors.publisher && <Text color="red.500">{errors.publisher.message}</Text>}
+            {errors.publisher && (
+              <Text color="red.500">{errors.publisher.message}</Text>
+            )}
           </FormControl>
           <FormControl isInvalid={!!errors.main_artist}>
             <FormLabel>Main Artist</FormLabel>
             <Input type="text" {...register("main_artist")} />
-            {errors.main_artist && <Text color="red.500">{errors.main_artist.message}</Text>}
+            {errors.main_artist && (
+              <Text color="red.500">{errors.main_artist.message}</Text>
+            )}
           </FormControl>
           <FormControl isInvalid={!!errors.main_writer}>
             <FormLabel>Main Writer</FormLabel>
             <Input type="text" {...register("main_writer")} />
-            {errors.main_writer && <Text color="red.500">{errors.main_writer.message}</Text>}
+            {errors.main_writer && (
+              <Text color="red.500">{errors.main_writer.message}</Text>
+            )}
           </FormControl>
           <FormControl isInvalid={!!errors.description}>
             <FormLabel>Description</FormLabel>
-            <Input type="text" {...register("description")} style={{ display: "none" }} />{" "}
             {/* Hidden input for react-hook-form registration */}
-            <ReactQuill
+            <Input
+              type="text"
+              {...register("description")}
+              style={{ display: "none" }}
+            />
+            <RichTextEditor
               value={watch("description")}
               onChange={(value) => setValue("description", value)}
-              modules={{
-                toolbar: [
-                  [{ header: "1" }, { header: "2" }, { font: [] }],
-                  [{ size: [] }],
-                  ["bold", "italic", "underline", "strike", "blockquote"],
-                  [{ list: "ordered" }, { 'list': 'bullet' },  { indent: "-1" }, { indent: "+1" }],
-                  ["link", "image"],
-                  [{ color: [] }, { background: [] }], // Color and marker options
-                  ["clean"],
-                ],
-              }}
-              formats={[
-                "header",
-                "font",
-                "size",
-                "bold",
-                "italic",
-                "underline",
-                "strike",
-                "blockquote",
-                "list",
-                "indent",
-                "link",
-                "image",
-                "color",
-                "background", // Include formats for color and marker
-              ]}
-              // theme="snow-quill-color-picker-enhance" // Use the enhanced theme
+              style={{ height: "300px" }}
             />
-            {errors.description && <Text color="red.500">{errors.description.message}</Text>}
+            {errors.description && (
+              <Text color="red.500">{errors.description.message}</Text>
+            )}
           </FormControl>
           <Button colorScheme="teal" width="300px" type="submit" isDisabled={loading}>
             {loading ? "Loading ..." : "Update Comic"}

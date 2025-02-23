@@ -1,9 +1,8 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import React, { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { useForm, SubmitHandler } from "react-hook-form";
+import { FormProvider, useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createClient } from "@/utils/supabase/client";
@@ -20,15 +19,7 @@ import {
   Spinner,
 } from "@chakra-ui/react";
 import ImageUpload from "@/components/ImageUpload";
-import "quill/dist/quill.snow.css";
-import QuillResizeImage from "quill-resize-image";
-
-// Dynamically import React Quill to avoid SSR issues
-const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
-
-// Import Quill from react-quill for module registration
-import { Quill } from "react-quill-new";
-Quill.register("modules/resize", QuillResizeImage);
+import RichTextEditor from "@/components/RichTextEditor";
 
 // Define Zod schema for form validation
 const postSchema = z.object({
@@ -45,15 +36,12 @@ const EditBlogPost = () => {
   const router = useRouter();
   const toast = useToast();
 
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    formState: { errors },
-    watch,
-  } = useForm<PostFormData>({
+  // Create the form methods object.
+  const methods = useForm<PostFormData>({
     resolver: zodResolver(postSchema),
   });
+  // Destructure needed methods.
+  const { register, setValue, formState: { errors }, watch } = methods;
 
   const [isAdmin, setIsAdmin] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -154,10 +142,7 @@ const EditBlogPost = () => {
       updated_at: new Date().toISOString(),
     };
 
-    const { error } = await supabase
-      .from("blog_posts")
-      .update(postData)
-      .eq("id", id);
+    const { error } = await supabase.from("blog_posts").update(postData).eq("id", id);
 
     if (error) {
       toast({
@@ -187,104 +172,58 @@ const EditBlogPost = () => {
     );
   }
 
-  // Configure Quill modules including the toolbar and image resize module
-  const quillModules = {
-    toolbar: [
-      [{ header: "1" }, { header: "2" }, { font: [] }],
-      [{ size: [] }],
-      ["bold", "italic", "underline", "strike", "blockquote"],
-      [
-        { list: "ordered" },
-        { list: "bullet" },
-        { indent: "-1" },
-        { indent: "+1" },
-      ],
-      ["link", "image"],
-      [{ color: [] }, { background: [] }],
-      ["clean"],
-    ],
-    resize: {
-      locale: {},
-    },
-  };
-
-  const quillFormats = [
-    "header",
-    "font",
-    "size",
-    "bold",
-    "italic",
-    "underline",
-    "strike",
-    "blockquote",
-    "list",
-    "indent",
-    "link",
-    "image",
-    "color",
-    "background",
-  ];
+	console.log(methods,);
 
   return (
     <Container maxW="container.md" py={8}>
-      {/* Global styles for the Quill toolbar */}
-      <style jsx global>{`
+      {/* <style jsx global>{`
         .ql-toolbar.ql-snow {
           position: sticky;
           top: 0;
           z-index: 10;
           background: #fff;
         }
-      `}</style>
+      `}</style> */}
 
       <Box mb={4}>
         <Button onClick={() => router.back()}>Back to Blog</Button>
       </Box>
+      <FormProvider {...methods}>
+        <form onSubmit={methods.handleSubmit(onSubmit)}>
+          <VStack spacing={4} align="stretch">
+            <FormControl isInvalid={!!errors.title}>
+              <FormLabel>Title</FormLabel>
+              <Input {...register("title")} />
+              {errors.title && (
+                <p style={{ color: "red" }}>{errors.title.message}</p>
+              )}
+            </FormControl>
 
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <VStack spacing={4} align="stretch">
-          <FormControl isInvalid={!!errors.title}>
-            <FormLabel>Title</FormLabel>
-            <Input {...register("title")} />
-            {errors.title && (
-              <p style={{ color: "red" }}>{errors.title.message}</p>
-            )}
-          </FormControl>
+            <ImageUpload
+              onUpload={(url) => {
+                setValue("imageUrl", url);
+                setImageUrl(url);
+              }}
+            />
 
-          {/* Place the image upload component where desired */}
-          <ImageUpload
-            onUpload={(url) => {
-              setValue("imageUrl", url);
-              setImageUrl(url);
-            }}
-          />
+            <FormControl isInvalid={!!errors.content}>
+              <FormLabel>Content</FormLabel>
+              <Box maxH="500px" overflowY="auto" border="1px solid #ccc" borderRadius="6px">
+                <RichTextEditor
+                  value={watch("content")}
+                  onChange={(value) => setValue("content", value)}
+                  style={{ height: "400px" }}
+                />
+              </Box>
+              {errors.content && (
+                <p style={{ color: "red" }}>{errors.content.message}</p>
+              )}
+            </FormControl>
 
-          <FormControl isInvalid={!!errors.content}>
-            <FormLabel>Content</FormLabel>
-            {/* Wrap the editor in a scrollable container so the toolbar can be sticky */}
-            <Box
-              maxH="500px"
-              overflowY="auto"
-              border="1px solid #ccc"
-              borderRadius="6px"
-            >
-              <ReactQuill
-                value={watch("content")}
-                onChange={(value) => setValue("content", value)}
-                modules={quillModules}
-                formats={quillFormats}
-                theme="snow"
-                style={{ height: "400px" }}
-              />
-            </Box>
-            {errors.content && (
-              <p style={{ color: "red" }}>{errors.content.message}</p>
-            )}
-          </FormControl>
-
-          <Button type="submit">Save</Button>
-        </VStack>
-      </form>
+            <Button type="submit">Save</Button>
+          </VStack>
+        </form>
+      </FormProvider>
     </Container>
   );
 };
