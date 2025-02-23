@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { supabase } from "@/utils/supabaseClient";
 import {
   Box,
@@ -21,8 +22,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
-// Import your reusable RichTextEditor component
-import RichTextEditor from "@/components/RichTextEditor";
+// Dynamically import RichTextEditor to disable SSR (so it only runs on the client)
+const RichTextEditor = dynamic(() => import('@/components/RichTextEditor'), { ssr: false });
 
 // Define Zod schema for form validation
 const postSchema = z.object({

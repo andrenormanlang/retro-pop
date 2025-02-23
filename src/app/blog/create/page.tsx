@@ -1,8 +1,9 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { FormProvider, useForm, SubmitHandler } from "react-hook-form";
+import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter } from "next/navigation";
+import { FormProvider, useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createClient } from "@/utils/supabase/client";
@@ -10,9 +11,11 @@ import { Button, Center, Container, FormControl, FormLabel, Input, VStack, useTo
 import ImageUpload from "@/components/ImageUpload";
 import { useUser } from "@/contexts/UserContext";
 import ComicSpinner from "@/helpers/ComicSpinner";
-import RichTextEditor from "@/components/RichTextEditor";
 
-// Define the Zod schema
+// Dynamically import RichTextEditor to disable SSR (so it only runs on the client)
+const RichTextEditor = dynamic(() => import('@/components/RichTextEditor'), { ssr: false });
+
+// Define the Zod schema for the blog post
 const postSchema = z.object({
 	title: z.string().min(10, "Title is required"),
 	content: z.string().min(100, "Content is required"),
@@ -29,21 +32,15 @@ const CreateBlogPostPage = () => {
 	const toast = useToast();
 	const supabase = createClient();
 
-	// 1. Create a form instance with react-hook-form
+	// Set up react-hook-form with validation
 	const methods = useForm<PostFormData>({
 		resolver: zodResolver(postSchema),
 	});
 
-	// 2. Destructure anything you need from methods
-	const {
-		register,
-		handleSubmit,
-		setValue,
-		formState: { errors },
-		watch,
-	} = methods;
+	const { register, handleSubmit, setValue, formState: { errors }, watch } = methods;
 
 	useEffect(() => {
+		// Redirect to login if there is no user
 		if (!user) {
 			router.push("/login");
 		}
@@ -113,7 +110,6 @@ const CreateBlogPostPage = () => {
 				Back
 			</Button>
 
-			{/* 3. Wrap your form with FormProvider */}
 			<FormProvider {...methods}>
 				<form onSubmit={handleSubmit(onSubmit)}>
 					<VStack spacing={4} align="stretch">
