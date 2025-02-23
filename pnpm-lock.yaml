@@ -117,7 +117,7 @@ importers:
         specifier: ^3.0.0
         version: 3.0.0
       quill-resize-image:
-        specifier: ^1.0.4
+        specifier: ^1.0.5
         version: 1.0.5
       random-useragent:
         specifier: ^0.5.0
