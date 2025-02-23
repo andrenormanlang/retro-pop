@@ -1,9 +1,11 @@
-// src/helpers/AvatarNav.tsx
-import { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
-import { Image, Box, Spinner, useColorModeValue, Text, useBreakpointValue } from '@chakra-ui/react';
-import { setAvatarUrl } from '@/store/avatarSlice';
-import { useGetAvatar } from '@/hooks/avatar-image/useGetAvatar';
+// In your AvatarNav component
+"use client";
+
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { Image, Box, Spinner, useColorModeValue, Text, useBreakpointValue } from "@chakra-ui/react";
+import { setAvatarUrl } from "@/store/avatarSlice";
+import { useGetAvatar } from "@/hooks/avatar-image/useGetAvatar";
 
 interface AvatarNavProps {
   uid: string | null;
@@ -11,9 +13,10 @@ interface AvatarNavProps {
 }
 
 export default function AvatarNav({ uid, size }: AvatarNavProps) {
-  const { data: avatarUrl, isLoading, isError } = useGetAvatar(uid!);
+  // Only call the hook if uid is non-null and valid.
+  const { data: avatarUrl, isLoading, isError } = useGetAvatar(uid ?? "");
   const dispatch = useDispatch();
-  const borderColor = useColorModeValue('gray.300', 'gray.600');
+  const borderColor = useColorModeValue("gray.300", "gray.600");
   const responsiveSize = useBreakpointValue(size);
 
   useEffect(() => {
@@ -25,7 +28,6 @@ export default function AvatarNav({ uid, size }: AvatarNavProps) {
   if (isLoading) {
     return <Spinner />;
   }
-
   if (isError) {
     return <Text color="red.500">Error loading avatar</Text>;
   }
@@ -38,7 +40,7 @@ export default function AvatarNav({ uid, size }: AvatarNavProps) {
           height={responsiveSize}
           src={avatarUrl}
           alt="Avatar"
-          style={{ objectFit: 'cover', borderRadius: '50%' }}
+          style={{ objectFit: "cover", borderRadius: "50%" }}
         />
       ) : (
         <Box
@@ -50,18 +52,12 @@ export default function AvatarNav({ uid, size }: AvatarNavProps) {
           alignItems="center"
           justifyContent="center"
         >
-          <Text fontSize="11px" color="red.500">
-            No Image
-          </Text>
+          <Text fontSize="11px" color="red.500">No Image</Text>
         </Box>
       )}
     </Box>
   );
 }
-
-
-
-
 
 
 // WITh CONTEXT!
