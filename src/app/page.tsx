@@ -8,35 +8,7 @@ import { Global } from '@emotion/react';
 const HomePage: NextPage = () => {
   return (
     <>
-      {/* <Global
-        styles={`
-          @keyframes halftoneBackground {
-            0% {
-              background-position: 0% 50%;
-            }
-            50% {
-              background-position: 100% 50%;
-            }
-            100% {
-              background-position: 0% 50%;
-            }
-          }
-
-          .halftone-animation {
-            animation: halftoneBackground 30s ease infinite;
-          }
-        `}
-      />
-      <Box
-        width="100vw"
-        minHeight="100vh"
-        bgImage="url('/halftone-background.svg')"
-        bgSize="cover"
-        bgPosition="center"
-        className="halftone-animation"
-        display="flex"
-        alignItems="center"
-      > */}
+     
 	 <Global
         styles={`
           @layer base {
