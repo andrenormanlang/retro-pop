@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import dynamic from "next/dynamic";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,7 +29,9 @@ import { ArrowBackIcon } from "@chakra-ui/icons";
 import ImageUpload from "./image-upload";
 import { Comic } from "@/types/comics-store/comic-detail.type";
 import { useUpdateComics } from "@/hooks/comic-table/useUpdateComics";
-import RichTextEditor from "@/components/RichTextEditor";
+
+// Dynamically import RichTextEditor to disable SSR (so it only runs on the client)
+const RichTextEditor = dynamic(() => import('@/components/RichTextEditor'), { ssr: false });
 
 
 // Validation schema

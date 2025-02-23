@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,8 +26,9 @@ import {
 import ImageUpload from "./image-upload";
 import { v4 as uuidv4 } from "uuid";
 import { useUser } from "../../../contexts/UserContext";
-import dynamic from "next/dynamic";
-import RichTextEditor from "@/components/RichTextEditor";
+
+// Dynamically import RichTextEditor to disable SSR (so it only runs on the client)
+const RichTextEditor = dynamic(() => import('@/components/RichTextEditor'), { ssr: false });
 
 // Define validation schema
 const validationSchema = z.object({

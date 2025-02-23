@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
+import dynamic from "next/dynamic";
 import { FormProvider, useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,7 +20,9 @@ import {
   Spinner,
 } from "@chakra-ui/react";
 import ImageUpload from "@/components/ImageUpload";
-import RichTextEditor from "@/components/RichTextEditor";
+
+// Dynamically import RichTextEditor to disable SSR (so it only runs on the client)
+const RichTextEditor = dynamic(() => import('@/components/RichTextEditor'), { ssr: false });
 
 // Define Zod schema for form validation
 const postSchema = z.object({
