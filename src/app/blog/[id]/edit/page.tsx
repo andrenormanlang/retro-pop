@@ -1,3 +1,31 @@
+// import { createClient } from "@/utils/supabase/server";
+// import { notFound } from "next/navigation";
+// import EditBlogPost from "./_components/EditBlogPost";
+
+
+// export default async function BlogEditPage({ params: { id } }: { params: { id: string } }) {
+// 	const supabase = createClient();
+
+// 	// Server-side data fetching
+// 	const { data: blog, error } = await supabase.from("blog_posts").select("*").eq("id", id).single();
+
+// 	if (error || !blog) {
+// 		notFound();
+// 	}
+
+// 	// Server-side admin check
+// 	const {
+// 		data: { user },
+// 	} = await supabase.auth.getUser();
+// 	const { data: profile } = await supabase.from("profiles").select("is_admin").eq("id", user?.id).single();
+
+// 	if (!profile?.is_admin) {
+// 		notFound();
+// 	}
+
+// 	return <EditBlogPost initialBlog={blog} />;
+// }
+
 "use client";
 
 import React, { useState, useEffect } from "react";

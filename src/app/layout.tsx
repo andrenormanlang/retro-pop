@@ -1,50 +1,27 @@
-import { Inter, Libre_Franklin } from 'next/font/google';
-import Navbar from "../components/partials/navbar";
-import { Box, ChakraProvider, ColorModeProvider } from "@chakra-ui/react";
-import "./globals.css";
-import ReduxProvider from '../contexts/ReduxProvider';
-import { UserProvider } from "@/contexts/UserContext";
-import { Metadata } from 'next';
-import ReactQueryProvider from '@/lib/react-query-provider';
+import { Inter, Libre_Franklin } from "next/font/google";
+import { Metadata } from "next";
+import ClientProviders from "@/components/client-providers";
+import GlobalStyles from "@/components/global-styles";
 
-const inter = Inter({ subsets: ['latin'], display: 'swap' });
-const libreFranklin = Libre_Franklin({ subsets: ['latin'], display: 'swap' });
+const inter = Inter({ subsets: ["latin"] });
+const libreFranklin = Libre_Franklin({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Retro-Pop Comics",
-  description: "Search & Sell Used Comics Web App",
-  authors: [{ name: "Andre Lang", url: "" }],
+	title: "Retro-Pop Comics",
+	description: "Search & Sell Used Comics Web App",
+	authors: [{ name: "Andre Lang", url: "" }],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en" data-bs-theme="dark" className={`${inter.className} ${libreFranklin.className}`}>
-      <body>
-        <ChakraProvider>
-          <ColorModeProvider
-            options={{
-              initialColorMode: "dark",
-              useSystemColorMode: true,
-            }}
-          >
-            <ReactQueryProvider>
-              <ReduxProvider>
-                <UserProvider>
-                  <Navbar />
-                  <Box mt="8rem" className="container">
-                    {children}
-                  </Box>
-                </UserProvider>
-              </ReduxProvider>
-            </ReactQueryProvider>
-          </ColorModeProvider>
-        </ChakraProvider>
-      </body>
-    </html>
-  );
+	return (
+		<html lang="en" data-bs-theme="dark" className={`${inter.className} ${libreFranklin.className}`}>
+			<body>
+				<GlobalStyles />
+				<ClientProviders>{children}</ClientProviders>
+			</body>
+		</html>
+	);
 }
-
-
 
 // WITH CONTEXT!
 // import Navbar from "../components/partials/navbar";
