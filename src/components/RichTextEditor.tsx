@@ -8,11 +8,13 @@ import "react-quill/dist/quill.snow.css";
 // Dynamically import ReactQuill so it only loads on the client.
 const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
 
-// Import Quill from "quill" and register additional modules.
+// Import your custom toolbar component
+import { QuillToolbar } from "./EditorToolbar";
+
 import Quill from "quill";
 import QuillResizeImage from "quill-resize-image";
 
-// Ensure this runs only on the client.
+// Register additional modules (only on the client)
 if (typeof window !== "undefined" && Quill) {
   try {
     Quill.register("modules/resize", QuillResizeImage);
@@ -32,20 +34,30 @@ export interface RichTextEditorProps {
   formats?: string[];
 }
 
+// Define the full toolbar modules configuration that uses the custom toolbar container.
 const defaultModules = {
-  toolbar: [
-    [{ header: "1" }, { header: "2" }, { font: [] }],
-    [{ size: [] }],
-    ["bold", "italic", "underline", "strike", "blockquote"],
-    [{ list: "ordered" }, { list: "bullet" }, { indent: "-1" }, { indent: "+1" }],
-    ["link", "image"],
-    // We remove color/background controls so inline colors don’t conflict with theme.
-    ["clean"],
-  ],
-  // Enable image resizing via the registered module.
+  toolbar: {
+    container: "#toolbar", // this refers to the id inside QuillToolbar
+    handlers: {
+      // Custom undo/redo handlers (these should match those in your EditorToolbar)
+      undo: function () {
+        this.quill.history.undo();
+      },
+      redo: function () {
+        this.quill.history.redo();
+      },
+    },
+  },
+  history: {
+    delay: 500,
+    maxStack: 100,
+    userOnly: true,
+  },
+  // Include any additional modules like image resizing
   resize: { locale: {} },
 };
 
+// Define the formats you want to support – these should match those in your custom toolbar.
 const defaultFormats = [
   "header",
   "font",
@@ -54,11 +66,17 @@ const defaultFormats = [
   "italic",
   "underline",
   "strike",
+  "align",
+  "script",
+  "list",
   "blockquote",
+  "background",
   "list",
   "indent",
   "link",
   "image",
+  "color",
+  "code-block",
 ];
 
 const RichTextEditor: React.FC<RichTextEditorProps> = ({
@@ -76,10 +94,10 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   // Choose theme-based colors.
   const editorBg = colorMode === "dark" ? "#1A202C" : "#fff";
   const editorTextColor = colorMode === "dark" ? "#fff" : "#000";
-  const toolbarBg = colorMode === "dark" ? "#2D3748" : "#fff";
+  const toolbarBg = colorMode === "dark" ? "#fff" : "#fff";
 
   return (
-    <>
+    <div className="rich-text-editor">
       {/* Global style overrides for ReactQuill */}
       <style jsx global>{`
         /* Sticky toolbar */
@@ -109,6 +127,10 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         }
       `}</style>
 
+      {/* Render the custom toolbar */}
+      <QuillToolbar />
+
+      {/* Render the ReactQuill editor */}
       <ReactQuill
         value={value}
         onChange={onChange}
@@ -120,7 +142,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         style={style}
         className={className}
       />
-    </>
+    </div>
   );
 };
 
