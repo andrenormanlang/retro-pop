@@ -143,6 +143,39 @@ const Navbar = () => {
 		setIsAvatarMenuOpen(!isAvatarMenuOpen);
 	};
 
+	const handleGetSuggestion = async () => {
+		try {
+			const response = await fetch('/api/comic-suggestion');
+			const data = await response.json();
+
+			if (data.error) {
+				toast({
+					title: "Error",
+					description: data.error,
+					status: "error",
+					duration: 5000,
+					isClosable: true,
+				});
+			} else {
+				toast({
+					title: "Comic Suggestion",
+					description: data.suggestion,
+					status: "info",
+					duration: 5000,
+					isClosable: true,
+				});
+			}
+		} catch (error) {
+			toast({
+				title: "Error",
+				description: "Failed to fetch comic suggestion.",
+				status: "error",
+				duration: 5000,
+				isClosable: true,
+			});
+		}
+	};
+
 	const variants = {
 		open: { opacity: 1, x: 0 },
 		closed: { opacity: 0, x: "-100%" },
@@ -362,6 +395,11 @@ const Navbar = () => {
 						mr={3}
 						size={{ base: "sm", md: "md" }}
 					/>
+					<Link href="/comic-suggestion" style={{ textDecoration: "none" }}>
+						<Button colorScheme="blue" mr={3}>
+							AI Comic Suggestion
+						</Button>
+					</Link>
 					{user && (
 						<Box position="relative" mr={3}>
 							<IconButton
