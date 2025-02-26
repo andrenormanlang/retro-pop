@@ -143,39 +143,6 @@ const Navbar = () => {
 		setIsAvatarMenuOpen(!isAvatarMenuOpen);
 	};
 
-	const handleGetSuggestion = async () => {
-		try {
-			const response = await fetch('/api/comic-suggestion');
-			const data = await response.json();
-
-			if (data.error) {
-				toast({
-					title: "Error",
-					description: data.error,
-					status: "error",
-					duration: 5000,
-					isClosable: true,
-				});
-			} else {
-				toast({
-					title: "Comic Suggestion",
-					description: data.suggestion,
-					status: "info",
-					duration: 5000,
-					isClosable: true,
-				});
-			}
-		} catch (error) {
-			toast({
-				title: "Error",
-				description: "Failed to fetch comic suggestion.",
-				status: "error",
-				duration: 5000,
-				isClosable: true,
-			});
-		}
-	};
-
 	const variants = {
 		open: { opacity: 1, x: 0 },
 		closed: { opacity: 0, x: "-100%" },
@@ -388,16 +355,15 @@ const Navbar = () => {
 					</Link>
 				</Flex>
 				<Flex align="center">
-					<IconButton
-						aria-label="Toggle theme"
-						icon={colorMode === "dark" ? <SunIcon /> : <MoonIcon />}
-						onClick={toggleColorMode}
-						mr={3}
-						size={{ base: "sm", md: "md" }}
-					/>
 					<Link href="/comic-suggestion" style={{ textDecoration: "none" }}>
-						<Button colorScheme="blue" mr={3}>
-							AI Comic Suggestion
+						<Button
+							colorScheme="blue"
+							mr={3}
+							fontSize={{ base: "1rem", md: "1.5rem" }}
+							fontFamily="Bangers" // <-- Your custom font family
+							color="red.500" // <-- Text color
+						>
+							AI !
 						</Button>
 					</Link>
 					{user && (
@@ -448,7 +414,7 @@ const Navbar = () => {
 								onClose={handleToggleAvatarMenu}
 							>
 								<MenuButton as={Box} position="relative" display="flex" alignItems="center">
-									<AvatarNav uid={user.id} size={{ base: 10, md: 20 }} />
+									<AvatarNav uid={user.id} size={{ base: 12, md: 14 }} />
 									<Box position="absolute" bottom="-15px" left="50%" transform="translateX(-50%)">
 										{isAvatarMenuOpen ? (
 											<ChevronDownIcon boxSize={{ base: 4, md: 5 }} />
@@ -464,6 +430,13 @@ const Navbar = () => {
 							</Menu>
 						</Flex>
 					)}
+					<IconButton
+						aria-label="Toggle theme"
+						icon={colorMode === "dark" ? <SunIcon /> : <MoonIcon />}
+						onClick={toggleColorMode}
+						ml={3}
+						size={{ base: "sm", md: "md" }}
+					/>
 				</Flex>
 				<motion.div
 					variants={variants}
