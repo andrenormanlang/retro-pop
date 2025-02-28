@@ -21,44 +21,67 @@ const genres = [
   "graphic novel",
   "action",
   "adventure",
+  "western",
+  "war",
+  "biographical",
+  "historical",
+  "comedy",
+  "drama",
+  "mystery",
+  "thriller",
+  "romance"
 ];
 
 // Reliable image sources as fallbacks
 const fallbackImages = {
-  superhero: "https://images.unsplash.com/photo-1568515045052-f9a854d70bfd?q=80&w=300&auto=format&fit=crop",
+  "superhero": "https://images.unsplash.com/photo-1568515045052-f9a854d70bfd?q=80&w=300&auto=format&fit=crop",
   "sci-fi": "https://images.unsplash.com/photo-1506443432602-ac2fcd6f54e0?q=80&w=300&auto=format&fit=crop",
-  fantasy: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=300&auto=format&fit=crop",
-  horror: "https://images.unsplash.com/photo-1509248961158-e54f6934749c?q=80&w=300&auto=format&fit=crop",
-  crime: "https://images.unsplash.com/photo-1453873623425-04e3213d56e5?q=80&w=300&auto=format&fit=crop",
+  "fantasy": "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=300&auto=format&fit=crop",
+  "horror": "https://images.unsplash.com/photo-1509248961158-e54f6934749c?q=80&w=300&auto=format&fit=crop",
+  "crime": "https://images.unsplash.com/photo-1453873623425-04e3213d56e5?q=80&w=300&auto=format&fit=crop",
   "slice of life": "https://images.unsplash.com/photo-1516979187457-637abb4f9353?q=80&w=300&auto=format&fit=crop",
-  manga: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?q=80&w=300&auto=format&fit=crop",
-  indie: "https://images.unsplash.com/photo-1471107340929-a87cd0f5b5f3?q=80&w=300&auto=format&fit=crop",
+  "manga": "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?q=80&w=300&auto=format&fit=crop",
+  "indie": "https://images.unsplash.com/photo-1471107340929-a87cd0f5b5f3?q=80&w=300&auto=format&fit=crop",
   "graphic novel": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=300&auto=format&fit=crop",
-  action: "https://images.unsplash.com/photo-1535970793482-07de93762dc4?q=80&w=300&auto=format&fit=crop",
-  adventure: "https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=300&auto=format&fit=crop",
-  default: "https://images.unsplash.com/photo-1553545204-4f7d339aa06a?q=80&w=300&auto=format&fit=crop",
+  "action": "https://images.unsplash.com/photo-1535970793482-07de93762dc4?q=80&w=300&auto=format&fit=crop",
+  "adventure": "https://images.unsplash.com/photo-1569498237219-011a1c1869ee?q=80&w=300&auto=format&fit=crop",
+  "default": "https://images.unsplash.com/photo-1553545204-4f7d339aa06a?q=80&w=300&auto=format&fit=crop",
 };
 
 export async function GET(request: NextRequest) {
   try {
+    // Extract previously shown comic titles from a URL parameter to avoid repetition
+    const url = new URL(request.url);
+    const previousTitles = url.searchParams.get('previous') ?
+      decodeURIComponent(url.searchParams.get('previous') || '').split('|') :
+      [];
+
     // Get random genre and random seed
     const randomGenre = genres[Math.floor(Math.random() * genres.length)];
-    const randomSeed = Math.floor(Math.random() * 1000);
+    const randomSeed = Math.floor(Math.random() * 10000);
 
+    // Build a more detailed prompt that avoids repetition
     const prompt = `
-      Suggest a popular ${randomGenre} comic book to read.
-      Make sure this is different from previous suggestions.
+      Suggest a unique ${randomGenre} comic book that's worth reading.
+      ${previousTitles.length > 0 ? `AVOID these titles that were already suggested: ${previousTitles.join(', ')}` : ''}
       Use random seed: ${randomSeed} to ensure variety.
-      Provide a brief description and a link to read more.
 
-      IMPORTANT: The title should be a specific, well-known comic series that I can easily find online.
-      Include the publisher (like Marvel, DC, Image, etc.) in the description.
+      IMPORTANT REQUIREMENTS:
+      1. Select a well-known, critically acclaimed comic that represents the best of the ${randomGenre} genre
+      2. The title should be a specific comic series that can be found online
+      3. Include detailed information about the creative team
+      4. Do not suggest popular mainstream comics like Watchmen, Dark Knight Returns, Saga, etc. unless the genre specifically calls for it
 
-      Return the response in this JSON format only, no additional text:
+      Return ONLY the following JSON format, no additional text:
       {
-        "title": "string",
-        "description": "string",
-        "link": "string"
+        "title": "Comic title",
+        "description": "A brief but compelling description of what makes this comic special",
+        "reason": "Why this comic is worth reading and what makes it stand out",
+        "year": "Year first published (e.g. 1986)",
+        "type": "Format (e.g. graphic novel, limited series, ongoing series)",
+        "publisher": "Publishing company name",
+        "artist": "Main artist's full name",
+        "writer": "Main writer's full name"
       }
     `;
 
@@ -67,7 +90,7 @@ export async function GET(request: NextRequest) {
     const text = response.text();
 
     // Clean the response and parse it as JSON
-    const cleanedText = text.replace(/```(?:json)?\n?/g, "").trim();
+    const cleanedText = text.replace(/```(?:json)?\n?|\n?```/g, "").trim();
     const suggestion = JSON.parse(cleanedText);
 
     try {
@@ -104,6 +127,11 @@ export async function GET(request: NextRequest) {
     // If we still don't have an image URL, use the fallback
     if (!suggestion.imageUrl) {
       suggestion.imageUrl = fallbackImages[randomGenre] || fallbackImages["default"];
+    }
+
+    // Add a generic link if none is available
+    if (!suggestion.link) {
+      suggestion.link = `https://www.google.com/search?q=${encodeURIComponent(suggestion.title + " comic " + suggestion.publisher)}`;
     }
 
     return NextResponse.json({ suggestion });
