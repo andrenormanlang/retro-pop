@@ -149,12 +149,19 @@ export default function ComicSuggestion() {
 									{suggestion.title}
 								</Heading>
 
-								<HStack>
-									<Badge colorScheme="blue" fontSize="md" py={1} px={2}>
+								<Box display="flex" flexWrap="wrap" gap={2} mb={2}>
+									<Badge
+										colorScheme="blue"
+										fontSize={{ base: "sm", md: "md" }}
+										py={{ base: 0.5, md: 1 }}
+										px={{ base: 1.5, md: 2 }}
+										whiteSpace="normal"
+										textAlign="center"
+										maxW="100%" 
+									>
 										{suggestion.type}
 									</Badge>
-								</HStack>
-
+								</Box>
 								<Box width="100%" p={4} borderWidth="1px" borderRadius="md" borderColor="gray.200">
 									<VStack align="stretch" spacing={2}>
 										<HStack>
@@ -179,9 +186,7 @@ export default function ComicSuggestion() {
 										</HStack>
 									</VStack>
 								</Box>
-
 								<Divider />
-
 								<VStack align="start" spacing={3} width="100%">
 									<Heading as="h3" size="sm" color="blue.600">
 										<Icon as={FaBook} mr={2} />
