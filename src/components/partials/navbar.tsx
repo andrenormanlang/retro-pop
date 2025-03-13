@@ -355,7 +355,7 @@ const Navbar = () => {
 					</Link>
 				</Flex>
 				<Flex align="center">
-					<Link href="/comic-suggestion" style={{ textDecoration: "none" }}>
+					<Link href="/comic-suggestion/form" style={{ textDecoration: "none" }}>
 						<Button
 							colorScheme="blue"
 							mr={3}

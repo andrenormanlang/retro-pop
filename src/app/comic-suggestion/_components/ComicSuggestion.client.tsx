@@ -24,7 +24,7 @@ import {
 } from "@chakra-ui/react";
 import { ChevronLeftIcon, ExternalLinkIcon } from "@chakra-ui/icons";
 import { FaBook, FaPencilAlt, FaPaintBrush, FaBuilding, FaCalendarAlt } from "react-icons/fa";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface Suggestion {
 	title: string;
@@ -46,6 +46,7 @@ export default function ComicSuggestion() {
 	const [previousTitles, setPreviousTitles] = useState<string[]>([]);
 	const toast = useToast();
 	const router = useRouter();
+	const searchParamsLocal = useSearchParams();
 
 	// On first load, fetch a suggestion
 	useEffect(() => {
@@ -59,7 +60,19 @@ export default function ComicSuggestion() {
 
 			// Pass previous titles to avoid repetition
 			const encodedPrevious = encodeURIComponent(previousTitles.join("|"));
-			const response = await fetch(`/api/comic-suggestion?previous=${encodedPrevious}`);
+
+			// Get user input from query parameters
+			const userName = searchParamsLocal.get("name") || "";
+			const userGenre = searchParamsLocal.get("genre") || "";
+			const userStyle = searchParamsLocal.get("style") || "";
+
+			const params = new URLSearchParams();
+			if (userName) params.append("name", userName);
+			if (userGenre) params.append("genre", userGenre);
+			if (userStyle) params.append("style", userStyle);
+			const queryStr = params.toString() ? `&${params.toString()}` : "";
+
+			const response = await fetch(`/api/comic-suggestion?previous=${encodedPrevious}${queryStr}`);
 			const data = await response.json();
 
 			if (data.error) {
@@ -157,7 +170,7 @@ export default function ComicSuggestion() {
 										px={{ base: 1.5, md: 2 }}
 										whiteSpace="normal"
 										textAlign="center"
-										maxW="100%" 
+										maxW="100%"
 									>
 										{suggestion.type}
 									</Badge>
