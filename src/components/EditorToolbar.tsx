@@ -27,28 +27,32 @@ const CustomRedo = () => (
 
 // Undo and redo functions for Custom Toolbar
 function undoChange() {
-  this.quill.history.undo();
-}
-function redoChange() {
-  this.quill.history.redo();
-}
+	// @ts-ignore
+	this.quill.history.undo();
+  }
+  function redoChange() {
+	// @ts-ignore
+	this.quill.history.redo();
+  }
 
-// Add sizes to whitelist and register them
-const Size = Quill.import("formats/size");
-Size.whitelist = ["extra-small", "small", "medium", "large"];
-Quill.register(Size, true);
+  // Add sizes to whitelist and register them - with complete TypeScript fixes
+  const Size = Quill.import("formats/size");
+  // Fix all TypeScript errors with a broader type assertion
+  (Size as any).whitelist = ["extra-small", "small", "medium", "large"];
+  (Quill as any).register(Size, true);
 
-// Add fonts to whitelist and register them
-const Font = Quill.import("formats/font");
-Font.whitelist = [
-  "arial",
-  "comic-sans",
-  "courier-new",
-  "georgia",
-  "helvetica",
-  "lucida"
-];
-Quill.register(Font, true);
+  // Add fonts to whitelist and register them
+  const Font = Quill.import("formats/font");
+  // Fix all TypeScript errors with a broader type assertion
+  (Font as any).whitelist = [
+	"arial",
+	"comic-sans",
+	"courier-new",
+	"georgia",
+	"helvetica",
+	"lucida"
+  ];
+  (Quill as any).register(Font, true);
 
 // Modules object for setting up the Quill editor
 export const modules = {
