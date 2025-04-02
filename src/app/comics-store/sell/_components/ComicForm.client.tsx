@@ -1,7 +1,7 @@
 // components/comics/ComicFormClient.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
@@ -27,6 +27,8 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import { useUser } from "@/contexts/UserContext";
 import ImageUpload from "./image-upload";
+import { useRouter } from 'next/navigation';
+import { redirectToLogin } from '@/utils/authRedirect';
 
 // Dynamically import RichTextEditor so it only runs on the client
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
@@ -59,8 +61,8 @@ export default function ComicFormClient() {
 	const [error, setError] = useState<string | null>(null);
 	const [imageURL, setImageURL] = useState<string | null>(null);
 
-	// 2. Grab user from your user context
-	const { user } = useUser();
+	const { user, isLoading } = useUser();
+	const router = useRouter();
 
 	const toast = useToast();
 
@@ -90,13 +92,20 @@ export default function ComicFormClient() {
 		},
 	});
 
+	// Add simple redirect effect
+	useEffect(() => {
+		if (!isLoading && !user) {
+			redirectToLogin(router, '/comics-store/sell');
+		}
+	}, [user, isLoading, router]);
+
+	// If loading or no user, return null (redirect will happen in effect)
+	if (isLoading || !user) {
+		return null;
+	}
+
 	// 4. Submit handler
 	const onSubmit: SubmitHandler<FormData> = async (data) => {
-		if (!user) {
-			setError("User not authenticated");
-			return;
-		}
-
 		try {
 			setLoading(true);
 
