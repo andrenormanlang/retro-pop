@@ -11,6 +11,7 @@ import { Button, Center, Container, FormControl, FormLabel, Input, VStack, useTo
 import ImageUpload from "@/components/ImageUpload";
 import { useUser } from "@/contexts/UserContext";
 import ComicSpinner from "@/helpers/ComicSpinner";
+import { redirectToLogin } from '@/utils/authRedirect';
 
 // Dynamically import RichTextEditor to disable SSR (so it only runs on the client)
 const RichTextEditor = dynamic(() => import('@/components/RichTextEditor'), { ssr: false });
@@ -42,7 +43,7 @@ const CreateBlogPostPage = () => {
 	useEffect(() => {
 		// Redirect to login if there is no user
 		if (!user) {
-			router.push("/login");
+			redirectToLogin(router, '/blog/create');
 		}
 	}, [user, router]);
 
