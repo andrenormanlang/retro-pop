@@ -15,6 +15,9 @@ import {
 	Tab,
 	TabPanel,
 	Heading,
+	useColorModeValue,
+	VStack,
+	Badge,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import NextLink from "next/link";
@@ -24,6 +27,7 @@ import { useDebouncedCallback } from "use-debounce";
 import SearchBox from "@/components/SearchBox";
 import MarvelPagination from "@/components/MarvelPagination";
 import { useState } from "react";
+import { format } from "date-fns";
 
 interface MetronIssue {
 	id: number;
@@ -111,6 +115,12 @@ const MetronReleasesClient = () => {
 	const [publisherName, setPublisherName] = useState<string>();
 	const [seriesName, setSeriesName] = useState<string>();
 
+	// Color mode values
+	const cardBg = useColorModeValue("white", "gray.800");
+	const textColor = useColorModeValue("gray.800", "white");
+	const mutedColor = useColorModeValue("gray.600", "gray.300");
+	const borderColor = useColorModeValue("gray.200", "gray.700");
+
 	const { data, isLoading, error } = useQuery<MetronResponse>({
 		queryKey: ["releases", currentPage, pageSize, publisherName, seriesName],
 		queryFn: () =>
@@ -140,22 +150,6 @@ const MetronReleasesClient = () => {
 	// Calculate total pages here for the pagination component
 	const totalPages = data?.count ? Math.ceil(data.count / pageSize) : 1;
 
-	if (isLoading) {
-		return (
-			<Center height="100vh">
-				<Spinner size="xl" />
-			</Center>
-		);
-	}
-
-	if (error) {
-		return (
-			<Center height="100vh">
-				<Text>Error loading releases</Text>
-			</Center>
-		);
-	}
-
 	const filterAndSortIssues = (issues: MetronIssue[]) => {
 		if (!issues) return { recentReleases: [], upcomingReleases: [] };
 
@@ -184,41 +178,108 @@ const MetronReleasesClient = () => {
 			{issues.map((issue) => (
 				<NextLink key={issue.id} href={`/releases/${issue.id}`} passHref>
 					<motion.div
-						whileHover={{ scale: 1.05 }}
+						whileHover={{ scale: 1.02 }}
+						whileTap={{ scale: 0.98 }}
 						style={{
 							textDecoration: "none",
 							cursor: "pointer",
+							width: "100%",
 						}}
 					>
-						<Box borderWidth="1px" borderRadius="lg" overflow="hidden" bg="white" height="100%">
-							<Image
-								src={issue.image || "/default-image.webp"}
-								alt={issue.issue}
-								width="100%"
-								height="auto"
-								fallback={
-									<Center height="300px">
-										<Spinner />
-									</Center>
-								}
-							/>
-							<Box p={4}>
-								<Text fontWeight="bold" fontSize="sm" noOfLines={2}>
-									{issue.issue}
+						<Box
+							borderWidth="1px"
+							borderRadius="lg"
+							overflow="hidden"
+							bg={cardBg}
+							height="520px" // Increased height to accommodate 3 lines
+							borderColor={borderColor}
+							role="group"
+							position="relative"
+							_hover={{
+								boxShadow: "lg",
+								borderColor: "blue.400",
+							}}
+							transition="all 0.2s"
+						>
+							{/* Date Badge */}
+							<Badge
+								position="absolute"
+								top="4"
+								left="4"
+								zIndex="1"
+								bg="blackAlpha.800"
+								color="purple.400"
+								px="3"
+								py="1"
+								borderRadius="full"
+								fontSize="sm"
+							>
+								{format(new Date(issue.store_date), "MMM d, yyyy")}
+							</Badge>
+
+							{/* Image Container */}
+							<Box height="350px" overflow="hidden">
+								<Image
+									src={issue.image || "/default-image.webp"}
+									alt={issue.issue}
+									objectFit="cover"
+									width="100%"
+									height="100%"
+									fallback={
+										<Center height="100%">
+											<Spinner />
+										</Center>
+									}
+								/>
+							</Box>
+
+							{/* Content Container - Increased height */}
+							<VStack p={4} align="center" spacing={2} height="170px" justify="center">
+								<Heading
+									size="md"
+									color={textColor}
+									noOfLines={3} // Allow up to 3 lines
+									textAlign="center"
+									lineHeight="1.2"
+									minHeight="4.8em" // Ensure space for 3 lines + some padding
+									display="-webkit-box"
+									style={{
+										WebkitLineClamp: 3,
+										WebkitBoxOrient: "vertical",
+										overflow: "hidden",
+									}}
+								>
+									{issue.series.name}
+								</Heading>
+								<Text fontWeight="bold" color={textColor} fontSize="md">
+									Issue #{issue.number}
 								</Text>
-								<Text fontSize="sm" color="gray.500" mt={2}>
-									Store Date: {formatDate(issue.store_date)}
-								</Text>
-								<Text fontSize="sm" color="gray.500" mb={2}>
+								<Text fontSize="sm" color={mutedColor}>
 									Series started: {issue.series.year_began}
 								</Text>
-							</Box>
+							</VStack>
 						</Box>
 					</motion.div>
 				</NextLink>
 			))}
 		</SimpleGrid>
 	);
+
+	if (isLoading) {
+		return (
+			<Center height="100vh">
+				<Spinner size="xl" />
+			</Center>
+		);
+	}
+
+	if (error) {
+		return (
+			<Center height="100vh">
+				<Text>Error loading releases</Text>
+			</Center>
+		);
+	}
 
 	const { recentReleases, upcomingReleases } = data?.results
 		? filterAndSortIssues(data.results)
@@ -229,8 +290,8 @@ const MetronReleasesClient = () => {
 			<SearchBox onSearch={handleSearchTerm} />
 
 			{data && (
-				<Box mb={4}>
-					<Text fontSize="1.5em" textAlign="center">
+				<Box mb={6}>
+					<Text fontSize="2xl" textAlign="center" color={textColor} fontWeight="bold">
 						{searchTerm
 							? `Found ${recentReleases.length + upcomingReleases.length} results for "${searchTerm}"`
 							: `Total of ${data.count} comic releases`}
@@ -238,17 +299,21 @@ const MetronReleasesClient = () => {
 				</Box>
 			)}
 
-			<Tabs isFitted variant="enclosed">
+			<Tabs isFitted variant="enclosed" colorScheme="blue">
 				<TabList mb="1em">
-					<Tab>Recently Released ({recentReleases.length})</Tab>
-					<Tab>Upcoming Releases ({upcomingReleases.length})</Tab>
+					<Tab _selected={{ color: "blue.500", borderColor: "blue.500" }}>
+						Recently Released ({recentReleases.length})
+					</Tab>
+					<Tab _selected={{ color: "blue.500", borderColor: "blue.500" }}>
+						Upcoming Releases ({upcomingReleases.length})
+					</Tab>
 				</TabList>
 
 				<TabPanels>
 					<TabPanel>
 						{recentReleases.length === 0 ? (
 							<Center p={8}>
-								<Text>No recent releases found</Text>
+								<Text color={textColor}>No recent releases found</Text>
 							</Center>
 						) : (
 							<IssueGrid issues={recentReleases} />
@@ -257,7 +322,7 @@ const MetronReleasesClient = () => {
 					<TabPanel>
 						{upcomingReleases.length === 0 ? (
 							<Center p={8}>
-								<Text>No upcoming releases found</Text>
+								<Text color={textColor}>No upcoming releases found</Text>
 							</Center>
 						) : (
 							<IssueGrid issues={upcomingReleases} />
@@ -267,7 +332,13 @@ const MetronReleasesClient = () => {
 			</Tabs>
 
 			{data && data.count > pageSize && (
-				<MarvelPagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+				<Box mt={8}>
+					<MarvelPagination
+						currentPage={currentPage}
+						totalPages={totalPages}
+						onPageChange={handlePageChange}
+					/>
+				</Box>
 			)}
 		</Container>
 	);
