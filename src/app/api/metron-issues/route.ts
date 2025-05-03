@@ -1,5 +1,35 @@
 import { NextResponse } from "next/server";
 
+async function getAllResults(params: URLSearchParams, authHeaderValue: string) {
+	let allResults = [];
+	let page = 1;
+	let hasMore = true;
+
+	while (hasMore) {
+		const currentParams = new URLSearchParams(params);
+		currentParams.set("page", page.toString());
+
+		const response = await fetch(`https://metron.cloud/api/issue/?${currentParams.toString()}`, {
+			headers: {
+				Authorization: `Basic ${authHeaderValue}`,
+				Accept: "application/json",
+			},
+			cache: "no-store",
+		});
+
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status}`);
+		}
+
+		const data = await response.json();
+		allResults = [...allResults, ...data.results];
+		hasMore = data.next !== null;
+		page++;
+	}
+
+	return allResults;
+}
+
 export async function GET(request: Request) {
 	try {
 		const authHeaderValue = process.env.METRON_API_AUTH_HEADER;
@@ -14,7 +44,6 @@ export async function GET(request: Request) {
 		const pageParam = searchParams.get("page");
 		const pageSizeParam = searchParams.get("pageSize");
 		const view = searchParams.get("view") || "recent";
-		const query = searchParams.get("series_name")?.toLowerCase();
 
 		// Ensure page and pageSize are valid numbers
 		const page = pageParam && !isNaN(Number(pageParam)) ? Math.max(1, parseInt(pageParam)) : 1;
@@ -31,58 +60,26 @@ export async function GET(request: Request) {
 		const thirtyDaysAhead = new Date(today);
 		thirtyDaysAhead.setDate(today.getDate() + 30);
 
-		// Create params for the Metron API call
+		// Create base params for the API call
 		const params = new URLSearchParams();
-
-		// Always fetch data for the full 60-day window to get all potential results
 		params.append("store_date_range_after", thirtyDaysAgo.toISOString().split("T")[0]);
 		params.append("store_date_range_before", thirtyDaysAhead.toISOString().split("T")[0]);
 
-		// Add search query if provided
-		if (query) {
-			params.append("series_name", query);
+		// Add search parameters
+		for (const [key, value] of searchParams.entries()) {
+			if (key !== "page" && key !== "pageSize" && key !== "view" && value) {
+				params.append(key, value);
+			}
 		}
 
-		// Add other query parameters
-		const additionalParams = [
-			"publisher_name",
-			"cover_month",
-			"cover_year",
-			"cv_id",
-			"gcd_id",
-			"imprint_id",
-			"imprint_name",
-			"rating",
-			"sku",
-			"upc",
-		];
+		// Fetch all results from all pages
+		const allResults = await getAllResults(params, authHeaderValue);
 
-		for (const param of additionalParams) {
-			const value = searchParams.get(param);
-			if (value) params.append(param, value);
-		}
-
-		// Fetch data from Metron API
-		const response = await fetch(`https://metron.cloud/api/issue/?${params.toString()}`, {
-			headers: {
-				Authorization: `Basic ${authHeaderValue}`,
-				Accept: "application/json",
-			},
-			cache: "no-store",
-		});
-
-		if (!response.ok) {
-			throw new Error(`HTTP error! status: ${response.status}`);
-		}
-
-		const data = await response.json();
-
-		// Split results into recent and upcoming
+		// Split and filter results based on date
 		const recentResults = [];
 		const upcomingResults = [];
 
-		// Filter and sort results based on store_date
-		data.results.forEach((issue: any) => {
+		allResults.forEach((issue: any) => {
 			const storeDate = new Date(issue.store_date);
 			storeDate.setHours(0, 0, 0, 0);
 
@@ -98,31 +95,31 @@ export async function GET(request: Request) {
 			return new Date(a.store_date).getTime() - new Date(b.store_date).getTime();
 		};
 
-		recentResults.sort(sortByDate); // Past to present
-		upcomingResults.sort(sortByDate); // Near future to far future
+		recentResults.sort(sortByDate);
+		upcomingResults.sort(sortByDate);
 
-		// Select the appropriate result set based on view
+		// Get the appropriate result set based on view
 		const filteredResults = view === "recent" ? recentResults : upcomingResults;
 		const totalFilteredCount = filteredResults.length;
 
-		// Apply pagination
+		// Apply pagination to filtered results
 		const startIndex = (page - 1) * pageSize;
 		const paginatedResults = filteredResults.slice(startIndex, startIndex + pageSize);
+		const totalPages = Math.ceil(totalFilteredCount / pageSize);
 
 		// Return response with correct counts and paginated results
 		return NextResponse.json({
 			results: paginatedResults,
 			count: totalFilteredCount,
-			totalPages: Math.ceil(totalFilteredCount / pageSize),
+			totalCount: allResults.length,
+			recentCount: recentResults.length,
+			upcomingCount: upcomingResults.length,
+			totalPages: totalPages,
 			currentPage: page,
 			pageSize: pageSize,
 			next: page * pageSize < totalFilteredCount ? `?page=${page + 1}` : null,
 			previous: page > 1 ? `?page=${page - 1}` : null,
 			view: view,
-			dateRange: {
-				start: view === "recent" ? thirtyDaysAgo.toISOString() : today.toISOString(),
-				end: view === "recent" ? today.toISOString() : thirtyDaysAhead.toISOString(),
-			},
 		});
 	} catch (error) {
 		console.error("Error fetching from Metron API:", error);

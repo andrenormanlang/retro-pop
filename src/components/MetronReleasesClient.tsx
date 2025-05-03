@@ -47,6 +47,9 @@ interface MetronIssue {
 interface MetronResponse {
 	results: MetronIssue[];
 	count: number;
+	totalCount: number;
+	recentCount: number;
+	upcomingCount: number;
 	totalPages: number;
 	currentPage: number;
 	pageSize: number;
@@ -134,7 +137,7 @@ const MetronReleasesClient = () => {
 		if (query) {
 			setSearchTerm(query);
 		}
-	}, []);
+	}, [setSearchTerm]);
 
 	// Update URL when tab, page, or search changes
 	useEffect(() => {
@@ -309,14 +312,14 @@ const MetronReleasesClient = () => {
 
 	return (
 		<Container maxW="1200px" py={8}>
-			<SearchBox onSearch={handleSearchTerm} defaultValue={searchTerm} />
+			<SearchBox onSearch={handleSearchTerm} />
 
 			{data && (
 				<Box mb={6}>
 					<Text fontSize="2xl" textAlign="center" color={textColor} fontWeight="bold">
 						{searchTerm
 							? `Found ${data.count} results for "${searchTerm}"`
-							: `${data.count} ${activeView === "recent" ? "Recent" : "Upcoming"} Releases`}
+							: `${data.totalCount} Total Comics (${data.recentCount} Recent, ${data.upcomingCount} Upcoming)`}
 					</Text>
 					<Text fontSize="md" textAlign="center" color={mutedColor} mt={2}>
 						{getDateRangeText(activeView)}
@@ -333,10 +336,10 @@ const MetronReleasesClient = () => {
 			>
 				<TabList mb="1em">
 					<Tab _selected={{ color: "blue.500", borderColor: "blue.500" }}>
-						Recently Released ({activeView === "recent" ? data?.count || 0 : "-"})
+						Recently Released ({data?.recentCount || 0})
 					</Tab>
 					<Tab _selected={{ color: "blue.500", borderColor: "blue.500" }}>
-						Upcoming Releases ({activeView === "upcoming" ? data?.count || 0 : "-"})
+						Upcoming Releases ({data?.upcomingCount || 0})
 					</Tab>
 				</TabList>
 
