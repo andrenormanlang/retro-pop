@@ -52,6 +52,10 @@ interface MetronResponse {
 	currentPage: number;
 	pageSize: number;
 	totalPages: number;
+	recentCount: number;
+	upcomingCount: number;
+	totalRecentCount: number;
+	totalUpcomingCount: number;
 }
 
 interface FetchReleasesParams {
@@ -302,10 +306,10 @@ const MetronReleasesClient = () => {
 			<Tabs isFitted variant="enclosed" colorScheme="blue">
 				<TabList mb="1em">
 					<Tab _selected={{ color: "blue.500", borderColor: "blue.500" }}>
-						Recently Released ({recentReleases.length})
+						Recently Released ({data?.totalRecentCount ? Math.round(data.totalRecentCount) : 0})
 					</Tab>
 					<Tab _selected={{ color: "blue.500", borderColor: "blue.500" }}>
-						Upcoming Releases ({upcomingReleases.length})
+						Upcoming Releases ({data?.totalUpcomingCount ? Math.round(data.totalUpcomingCount) : 0})
 					</Tab>
 				</TabList>
 

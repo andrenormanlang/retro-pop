@@ -13,11 +13,15 @@ export async function GET(request: Request) {
 		const { searchParams } = new URL(request.url);
 		const pageParam = searchParams.get("page");
 		const pageSizeParam = searchParams.get("pageSize");
-		
+
 		// Ensure page and pageSize are valid numbers
 		const page = pageParam && !isNaN(Number(pageParam)) ? Math.max(1, parseInt(pageParam)) : 1;
 		const pageSize = pageSizeParam && !isNaN(Number(pageSizeParam)) ? Math.max(1, parseInt(pageSizeParam)) : 20;
-		
+
+		// Get the current date for filtering
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+
 		let storeDateRangeAfter = searchParams.get("store_date_range_after");
 		let storeDateRangeBefore = searchParams.get("store_date_range_before");
 		const publisherName = searchParams.get("publisher_name");
@@ -34,7 +38,6 @@ export async function GET(request: Request) {
 
 		// If no date range is provided, set default 30-day window
 		if (!storeDateRangeAfter && !storeDateRangeBefore) {
-			const today = new Date();
 			const thirtyDaysBefore = new Date(today);
 			thirtyDaysBefore.setDate(today.getDate() - 30);
 			const thirtyDaysAfter = new Date(today);
@@ -61,6 +64,7 @@ export async function GET(request: Request) {
 		if (sku) params.append("sku", sku);
 		if (upc) params.append("upc", upc);
 
+		// Fetch main data
 		const response = await fetch(`https://metron.cloud/api/issue/?${params.toString()}`, {
 			headers: {
 				Authorization: `Basic ${authHeaderValue}`,
@@ -74,7 +78,20 @@ export async function GET(request: Request) {
 		}
 
 		const data = await response.json();
-		return NextResponse.json(data);
+
+		// Calculate total counts for recent and upcoming releases
+		const recentCount = data.results.filter((issue: any) => new Date(issue.store_date) <= today).length;
+
+		const upcomingCount = data.results.filter((issue: any) => new Date(issue.store_date) > today).length;
+
+		// Add the counts to the response
+		return NextResponse.json({
+			...data,
+			recentCount,
+			upcomingCount,
+			totalRecentCount: data.count * (recentCount / data.results.length),
+			totalUpcomingCount: data.count * (upcomingCount / data.results.length),
+		});
 	} catch (error) {
 		console.error("Error fetching from Metron API:", error);
 		return NextResponse.json({ error: "Failed to fetch data from Metron API" }, { status: 500 });
