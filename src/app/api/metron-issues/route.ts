@@ -13,11 +13,12 @@ export async function GET(request: Request) {
 		const { searchParams } = new URL(request.url);
 		const pageParam = searchParams.get("page");
 		const pageSizeParam = searchParams.get("pageSize");
-
+		const view = searchParams.get("view") || "recent";
+		
 		// Ensure page and pageSize are valid numbers
 		const page = pageParam && !isNaN(Number(pageParam)) ? Math.max(1, parseInt(pageParam)) : 1;
 		const pageSize = pageSizeParam && !isNaN(Number(pageSizeParam)) ? Math.max(1, parseInt(pageSizeParam)) : 20;
-
+		
 		// Get the current date for filtering
 		const today = new Date();
 		today.setHours(0, 0, 0, 0);
@@ -36,14 +37,16 @@ export async function GET(request: Request) {
 		const sku = searchParams.get("sku");
 		const upc = searchParams.get("upc");
 
-		// If no date range is provided, set default 30-day window
-		if (!storeDateRangeAfter && !storeDateRangeBefore) {
+		 // Set date range based on view type
+		if (view === "recent") {
 			const thirtyDaysBefore = new Date(today);
 			thirtyDaysBefore.setDate(today.getDate() - 30);
+			storeDateRangeBefore = today.toISOString().split("T")[0];
+			storeDateRangeAfter = thirtyDaysBefore.toISOString().split("T")[0];
+		} else {
 			const thirtyDaysAfter = new Date(today);
 			thirtyDaysAfter.setDate(today.getDate() + 30);
-
-			storeDateRangeAfter = thirtyDaysBefore.toISOString().split("T")[0];
+			storeDateRangeAfter = today.toISOString().split("T")[0];
 			storeDateRangeBefore = thirtyDaysAfter.toISOString().split("T")[0];
 		}
 
@@ -80,17 +83,30 @@ export async function GET(request: Request) {
 		const data = await response.json();
 
 		// Calculate total counts for recent and upcoming releases
-		const recentCount = data.results.filter((issue: any) => new Date(issue.store_date) <= today).length;
+		const recentCount = data.results.filter(
+			(issue: any) => new Date(issue.store_date) <= today
+		).length;
 
-		const upcomingCount = data.results.filter((issue: any) => new Date(issue.store_date) > today).length;
+		const upcomingCount = data.results.filter(
+			(issue: any) => new Date(issue.store_date) > today
+		).length;
+
+		// Filter results based on view type
+		const filteredResults = data.results.filter((issue: any) => {
+			const issueDate = new Date(issue.store_date);
+			return view === "recent" 
+				? issueDate <= today 
+				: issueDate > today;
+		});
 
 		// Add the counts to the response
 		return NextResponse.json({
 			...data,
+			results: filteredResults,
 			recentCount,
 			upcomingCount,
 			totalRecentCount: data.count * (recentCount / data.results.length),
-			totalUpcomingCount: data.count * (upcomingCount / data.results.length),
+			totalUpcomingCount: data.count * (upcomingCount / data.results.length)
 		});
 	} catch (error) {
 		console.error("Error fetching from Metron API:", error);

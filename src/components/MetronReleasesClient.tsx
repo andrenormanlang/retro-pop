@@ -26,7 +26,7 @@ import { useSearchParameters } from "@/hooks/useSearchParameters";
 import { useDebouncedCallback } from "use-debounce";
 import SearchBox from "@/components/SearchBox";
 import MarvelPagination from "@/components/MarvelPagination";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 
 interface MetronIssue {
@@ -58,6 +58,8 @@ interface MetronResponse {
 	totalUpcomingCount: number;
 }
 
+type ReleaseView = "recent" | "upcoming";
+
 interface FetchReleasesParams {
 	page: number;
 	pageSize: number;
@@ -85,27 +87,33 @@ const fetchReleases = async ({
 	publisherName,
 	seriesName,
 }: FetchReleasesParams) => {
-	const params = new URLSearchParams({
-		page: page.toString(),
-		pageSize: pageSize.toString(),
-	});
+	const url = new URL('/api/metron-issues', window.location.origin);
+	const searchParams = url.searchParams;
+
+	// Get the current view from the URL
+	const currentParams = new URLSearchParams(window.location.search);
+	const view = currentParams.get('view') || 'recent';
+
+	searchParams.set('page', page.toString());
+	searchParams.set('pageSize', pageSize.toString());
+	searchParams.set('view', view);
 
 	if (storeDateRangeAfter) {
-		params.append("store_date_range_after", storeDateRangeAfter);
+		searchParams.set('store_date_range_after', storeDateRangeAfter);
 	}
 	if (storeDateRangeBefore) {
-		params.append("store_date_range_before", storeDateRangeBefore);
+		searchParams.set('store_date_range_before', storeDateRangeBefore);
 	}
 	if (publisherName) {
-		params.append("publisher_name", publisherName);
+		searchParams.set('publisher_name', publisherName);
 	}
 	if (seriesName) {
-		params.append("series_name", seriesName);
+		searchParams.set('series_name', seriesName);
 	}
 
-	const response = await fetch(`/api/metron-issues?${params}`);
+	const response = await fetch(url.toString());
 	if (!response.ok) {
-		throw new Error("Failed to fetch releases");
+		throw new Error('Failed to fetch releases');
 	}
 	const data: MetronResponse = await response.json();
 	return data;
@@ -115,6 +123,7 @@ const MetronReleasesClient = () => {
 	const router = useRouter();
 	const { searchTerm, setSearchTerm } = useSearchParameters(1, "");
 	const [currentPage, setCurrentPage] = useState(1);
+	const [activeView, setActiveView] = useState<ReleaseView>("recent");
 	const pageSize = 20;
 	const [publisherName, setPublisherName] = useState<string>();
 	const [seriesName, setSeriesName] = useState<string>();
@@ -124,6 +133,28 @@ const MetronReleasesClient = () => {
 	const textColor = useColorModeValue("gray.800", "white");
 	const mutedColor = useColorModeValue("gray.600", "gray.300");
 	const borderColor = useColorModeValue("gray.200", "gray.700");
+
+	// Read initial tab and page from URL on component mount
+	useEffect(() => {
+		const searchParams = new URLSearchParams(window.location.search);
+		const view = searchParams.get("view") as ReleaseView;
+		const page = parseInt(searchParams.get("page") || "1", 10);
+
+		if (view === "recent" || view === "upcoming") {
+			setActiveView(view);
+		}
+		if (!isNaN(page) && page > 0) {
+			setCurrentPage(page);
+		}
+	}, []);
+
+	// Update URL when tab or page changes
+	useEffect(() => {
+		const url = new URL(window.location.href);
+		url.searchParams.set("view", activeView);
+		url.searchParams.set("page", currentPage.toString());
+		router.push(url.toString());
+	}, [activeView, currentPage, router]);
 
 	const { data, isLoading, error } = useQuery<MetronResponse>({
 		queryKey: ["releases", currentPage, pageSize, publisherName, seriesName],
@@ -143,16 +174,26 @@ const MetronReleasesClient = () => {
 
 	const handlePageChange = (page: number) => {
 		if (!data?.count) return;
-		// Calculate total pages
-		const totalPages = Math.ceil(data.count / pageSize);
-		// Ensure page is a valid number and within bounds
+		const totalPages = Math.ceil(
+			(activeView === "recent" ? data.totalRecentCount : data.totalUpcomingCount) / pageSize
+		);
 		const validPage = Math.max(1, Math.min(page, totalPages));
 		setCurrentPage(validPage);
-		window.scrollTo(0, 0); // Scroll to top when changing pages
+		window.scrollTo(0, 0);
 	};
 
-	// Calculate total pages here for the pagination component
-	const totalPages = data?.count ? Math.ceil(data.count / pageSize) : 1;
+	const handleTabChange = (index: number) => {
+		const newView = index === 0 ? "recent" : "upcoming";
+		setActiveView(newView);
+		setCurrentPage(1); // Reset to first page when switching tabs
+	};
+
+	// Calculate total pages based on active view
+	const totalPages = data?.count
+		? Math.ceil(
+				(activeView === "recent" ? data.totalRecentCount : data.totalUpcomingCount) / pageSize
+		  )
+		: 1;
 
 	const filterAndSortIssues = (issues: MetronIssue[]) => {
 		if (!issues) return { recentReleases: [], upcomingReleases: [] };
@@ -303,7 +344,13 @@ const MetronReleasesClient = () => {
 				</Box>
 			)}
 
-			<Tabs isFitted variant="enclosed" colorScheme="blue">
+			<Tabs
+				isFitted
+				variant="enclosed"
+				colorScheme="blue"
+				index={activeView === "recent" ? 0 : 1}
+				onChange={handleTabChange}
+			>
 				<TabList mb="1em">
 					<Tab _selected={{ color: "blue.500", borderColor: "blue.500" }}>
 						Recently Released ({data?.totalRecentCount ? Math.round(data.totalRecentCount) : 0})
