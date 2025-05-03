@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
-    const authHeader = process.env.METRON_API_AUTH_HEADER;
+    const authHeader = 'YW5kcmVub3JtYW5sYW5nOkdhbmVzaGE3NyM=';
     if (!authHeader) {
         return new NextResponse("Authorization header is not set", { status: 401 });
     }
