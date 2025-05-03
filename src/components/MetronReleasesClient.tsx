@@ -63,6 +63,7 @@ interface FetchReleasesParams {
 	publisherName?: string;
 	seriesName?: string;
 	view: ReleaseView;
+	query?: string;
 }
 
 const formatDate = (dateString: string) => {
@@ -75,13 +76,7 @@ const formatDate = (dateString: string) => {
 	});
 };
 
-const fetchReleases = async ({
-	page,
-	pageSize,
-	publisherName,
-	seriesName,
-	view,
-}: FetchReleasesParams) => {
+const fetchReleases = async ({ page, pageSize, publisherName, seriesName, view, query }: FetchReleasesParams) => {
 	const url = new URL("/api/metron-issues", window.location.origin);
 	const searchParams = url.searchParams;
 
@@ -89,6 +84,10 @@ const fetchReleases = async ({
 	searchParams.set("pageSize", pageSize.toString());
 	searchParams.set("view", view);
 
+	// Pass search query as series_name to match API parameter
+	if (query) {
+		searchParams.set("series_name", query);
+	}
 	if (publisherName) {
 		searchParams.set("publisher_name", publisherName);
 	}
@@ -124,6 +123,7 @@ const MetronReleasesClient = () => {
 		const searchParams = new URLSearchParams(window.location.search);
 		const view = searchParams.get("view") as ReleaseView;
 		const page = parseInt(searchParams.get("page") || "1", 10);
+		const query = searchParams.get("query") || "";
 
 		if (view === "recent" || view === "upcoming") {
 			setActiveView(view);
@@ -131,18 +131,26 @@ const MetronReleasesClient = () => {
 		if (!isNaN(page) && page > 0) {
 			setCurrentPage(page);
 		}
+		if (query) {
+			setSearchTerm(query);
+		}
 	}, []);
 
-	// Update URL when tab or page changes
+	// Update URL when tab, page, or search changes
 	useEffect(() => {
 		const url = new URL(window.location.href);
 		url.searchParams.set("view", activeView);
 		url.searchParams.set("page", currentPage.toString());
+		if (searchTerm) {
+			url.searchParams.set("query", searchTerm);
+		} else {
+			url.searchParams.delete("query");
+		}
 		router.push(url.toString());
-	}, [activeView, currentPage, router]);
+	}, [activeView, currentPage, searchTerm, router]);
 
-	const { data, isLoading, error } = useQuery<MetronResponse>({
-		queryKey: ["releases", currentPage, pageSize, publisherName, seriesName, activeView],
+	const { data, isLoading, error, refetch } = useQuery<MetronResponse>({
+		queryKey: ["releases", currentPage, pageSize, publisherName, seriesName, activeView, searchTerm],
 		queryFn: () =>
 			fetchReleases({
 				page: currentPage,
@@ -150,6 +158,7 @@ const MetronReleasesClient = () => {
 				publisherName,
 				seriesName,
 				view: activeView,
+				query: searchTerm,
 			}),
 	});
 
@@ -169,6 +178,7 @@ const MetronReleasesClient = () => {
 		const newView = index === 0 ? "recent" : "upcoming";
 		setActiveView(newView);
 		setCurrentPage(1); // Reset to first page when switching tabs
+		refetch(); // Refetch data with new view
 	};
 
 	const getDateRangeText = (view: ReleaseView) => {
@@ -299,7 +309,7 @@ const MetronReleasesClient = () => {
 
 	return (
 		<Container maxW="1200px" py={8}>
-			<SearchBox onSearch={handleSearchTerm} />
+			<SearchBox onSearch={handleSearchTerm} defaultValue={searchTerm} />
 
 			{data && (
 				<Box mb={6}>
@@ -323,35 +333,33 @@ const MetronReleasesClient = () => {
 			>
 				<TabList mb="1em">
 					<Tab _selected={{ color: "blue.500", borderColor: "blue.500" }}>
-						Recently Released ({activeView === "recent" ? data?.count || 0 : "..."})
+						Recently Released ({activeView === "recent" ? data?.count || 0 : "-"})
 					</Tab>
 					<Tab _selected={{ color: "blue.500", borderColor: "blue.500" }}>
-						Upcoming Releases ({activeView === "upcoming" ? data?.count || 0 : "..."})
+						Upcoming Releases ({activeView === "upcoming" ? data?.count || 0 : "-"})
 					</Tab>
 				</TabList>
 
 				<TabPanels>
 					<TabPanel>
-						{activeView === "recent" && data?.results && (
-							data.results.length === 0 ? (
+						{activeView === "recent" &&
+							(data?.results.length === 0 ? (
 								<Center p={8}>
 									<Text color={textColor}>No recent releases found</Text>
 								</Center>
 							) : (
-								<IssueGrid issues={data.results} />
-							)
-						)}
+								<IssueGrid issues={data?.results || []} />
+							))}
 					</TabPanel>
 					<TabPanel>
-						{activeView === "upcoming" && data?.results && (
-							data.results.length === 0 ? (
+						{activeView === "upcoming" &&
+							(data?.results.length === 0 ? (
 								<Center p={8}>
 									<Text color={textColor}>No upcoming releases found</Text>
 								</Center>
 							) : (
-								<IssueGrid issues={data.results} />
-							)
-						)}
+								<IssueGrid issues={data?.results || []} />
+							))}
 					</TabPanel>
 				</TabPanels>
 			</Tabs>

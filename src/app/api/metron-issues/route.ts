@@ -14,6 +14,7 @@ export async function GET(request: Request) {
 		const pageParam = searchParams.get("page");
 		const pageSizeParam = searchParams.get("pageSize");
 		const view = searchParams.get("view") || "recent";
+		const query = searchParams.get("series_name")?.toLowerCase();
 
 		// Ensure page and pageSize are valid numbers
 		const page = pageParam && !isNaN(Number(pageParam)) ? Math.max(1, parseInt(pageParam)) : 1;
@@ -30,25 +31,21 @@ export async function GET(request: Request) {
 		const thirtyDaysAhead = new Date(today);
 		thirtyDaysAhead.setDate(today.getDate() + 30);
 
-		// Set date range based on view type
+		// Create params for the Metron API call
 		const params = new URLSearchParams();
 
-		// Set the date range based on the view
-		if (view === "recent") {
-			params.append("store_date_range_after", thirtyDaysAgo.toISOString().split("T")[0]);
-			params.append("store_date_range_before", today.toISOString().split("T")[0]);
-		} else {
-			params.append("store_date_range_after", today.toISOString().split("T")[0]);
-			params.append("store_date_range_before", thirtyDaysAhead.toISOString().split("T")[0]);
-		}
+		// Always fetch data for the full 60-day window to get all potential results
+		params.append("store_date_range_after", thirtyDaysAgo.toISOString().split("T")[0]);
+		params.append("store_date_range_before", thirtyDaysAhead.toISOString().split("T")[0]);
 
-		params.append("page", "1"); // Get all results in one call
-		params.append("page_size", "1000"); // Use a large page size to get all results
+		// Add search query if provided
+		if (query) {
+			params.append("series_name", query);
+		}
 
 		// Add other query parameters
 		const additionalParams = [
 			"publisher_name",
-			"series_name",
 			"cover_month",
 			"cover_year",
 			"cv_id",
@@ -65,7 +62,7 @@ export async function GET(request: Request) {
 			if (value) params.append(param, value);
 		}
 
-		// Fetch main data
+		// Fetch data from Metron API
 		const response = await fetch(`https://metron.cloud/api/issue/?${params.toString()}`, {
 			headers: {
 				Authorization: `Basic ${authHeaderValue}`,
@@ -80,28 +77,32 @@ export async function GET(request: Request) {
 
 		const data = await response.json();
 
-		// Filter results based on exact date ranges
-		let filteredResults = data.results.filter((issue: any) => {
-			const issueDate = new Date(issue.store_date);
-			issueDate.setHours(0, 0, 0, 0);
+		// Split results into recent and upcoming
+		const recentResults = [];
+		const upcomingResults = [];
 
-			if (view === "recent") {
-				return issueDate >= thirtyDaysAgo && issueDate <= today;
-			} else {
-				return issueDate > today && issueDate <= thirtyDaysAhead;
+		// Filter and sort results based on store_date
+		data.results.forEach((issue: any) => {
+			const storeDate = new Date(issue.store_date);
+			storeDate.setHours(0, 0, 0, 0);
+
+			if (storeDate >= thirtyDaysAgo && storeDate <= today) {
+				recentResults.push(issue);
+			} else if (storeDate > today && storeDate <= thirtyDaysAhead) {
+				upcomingResults.push(issue);
 			}
 		});
 
-		// Sort results with different logic for recent and upcoming
-		filteredResults.sort((a: any, b: any) => {
-			const dateA = new Date(a.store_date).getTime();
-			const dateB = new Date(b.store_date).getTime();
-			// Recent: oldest to newest (ascending)
-			// Upcoming: nearest future to furthest future (ascending)
-			return dateA - dateB;
-		});
+		// Sort results chronologically
+		const sortByDate = (a: any, b: any) => {
+			return new Date(a.store_date).getTime() - new Date(b.store_date).getTime();
+		};
 
-		// Calculate total filtered count (before pagination)
+		recentResults.sort(sortByDate); // Past to present
+		upcomingResults.sort(sortByDate); // Near future to far future
+
+		// Select the appropriate result set based on view
+		const filteredResults = view === "recent" ? recentResults : upcomingResults;
 		const totalFilteredCount = filteredResults.length;
 
 		// Apply pagination
@@ -118,6 +119,10 @@ export async function GET(request: Request) {
 			next: page * pageSize < totalFilteredCount ? `?page=${page + 1}` : null,
 			previous: page > 1 ? `?page=${page - 1}` : null,
 			view: view,
+			dateRange: {
+				start: view === "recent" ? thirtyDaysAgo.toISOString() : today.toISOString(),
+				end: view === "recent" ? today.toISOString() : thirtyDaysAhead.toISOString(),
+			},
 		});
 	} catch (error) {
 		console.error("Error fetching from Metron API:", error);
