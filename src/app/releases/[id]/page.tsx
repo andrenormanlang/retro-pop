@@ -22,7 +22,7 @@ import { useQuery } from "@tanstack/react-query";
 import NextLink from "next/link";
 
 const fetchIssue = async (id: string) => {
-	const response = await fetch(`/api/metron-issues/${id}`);
+	const response = await fetch(`/api/releases/${id}`);
 	if (!response.ok) {
 		throw new Error("Failed to fetch issue details");
 	}

@@ -182,7 +182,7 @@ const MetronReleasesClient = () => {
 	const IssueGrid = ({ issues }: { issues: MetronIssue[] }) => (
 		<SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing={6}>
 			{issues.map((issue) => (
-				<NextLink key={issue.id} href={`/search/metron/issues/${issue.id}`} passHref>
+				<NextLink key={issue.id} href={`/releases/${issue.id}`} passHref>
 					<motion.div
 						whileHover={{ scale: 1.05 }}
 						style={{
@@ -267,11 +267,7 @@ const MetronReleasesClient = () => {
 			</Tabs>
 
 			{data && data.count > pageSize && (
-				<MarvelPagination
-					currentPage={currentPage}
-					totalPages={totalPages}
-					onPageChange={handlePageChange}
-				/>
+				<MarvelPagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
 			)}
 		</Container>
 	);
