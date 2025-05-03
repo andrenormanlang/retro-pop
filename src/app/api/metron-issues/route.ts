@@ -22,11 +22,11 @@ export async function GET(request: NextRequest) {
 
     // Calculate the date 15 days ago
     const fifteenDaysAgo = new Date(today.getTime()); // Start with today's timestamp
-    fifteenDaysAgo.setDate(today.getDate() - 15); // Subtract 15 days
+    fifteenDaysAgo.setDate(today.getDate() - 30); // Subtract 15 days
 
     // Calculate the date 15 days from now
     const fifteenDaysFromNow = new Date(today.getTime()); // Start with today's timestamp
-    fifteenDaysFromNow.setDate(today.getDate() + 15); // Add 15 days
+    fifteenDaysFromNow.setDate(today.getDate() + 45); // Add 15 days
 
     // Format the dates into YYYY-MM-DD strings
     const startDate = formatDate(fifteenDaysAgo);
