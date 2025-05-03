@@ -1,4 +1,4 @@
-import { Input, Button, Stack } from "@chakra-ui/react";
+import { Input, Button, Stack, Flex } from "@chakra-ui/react";
 import { FormEvent, useState } from "react";
 
 type SearchComponentProps = {
@@ -19,25 +19,22 @@ const SearchBox: React.FC<SearchComponentProps> = ({ onSearch }) => {
 	};
 
 	return (
-		<form onSubmit={handleSearch}>
-			<Stack
-				direction="row"
-				spacing={6}
-				width={350}
-				align="center"
-				mb={5}
-				position={"relative"}
-				zIndex={5}
-			>
-				<Input
-					type="text"
-					placeholder="Search..."
-					value={searchTerm}
-					onChange={(e) => setSearchTerm(e.target.value)}
-				/>
-				<Button type="submit">Search</Button>
-			</Stack>
-		</form>
+		<Flex justify="center" width="100%">
+			<form onSubmit={handleSearch} style={{ width: "100%" }}>
+				<Stack direction="row" spacing={4} width="100%" align="center" mb={5} position="relative" zIndex={5}>
+					<Input
+						type="text"
+						placeholder="Search..."
+						value={searchTerm}
+						onChange={(e) => setSearchTerm(e.target.value)}
+						flex={1}
+					/>
+					<Button type="submit" colorScheme="blue">
+						Search
+					</Button>
+				</Stack>
+			</form>
+		</Flex>
 	);
 };
 

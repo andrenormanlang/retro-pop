@@ -207,6 +207,30 @@ const Navbar = () => {
 		},
 	};
 
+	const newReleaseButtonStyle = {
+		width: "auto",
+		fontWeight: "900",
+		fontFamily: "Bangers",
+		fontSize: { base: "1.2rem", md: "1.5rem" },
+		letterSpacing: "0.1rem",
+		color: "white",
+		padding: "0.5rem 1rem",
+		bg: "red.500",
+		borderRadius: "md",
+		mr: 3,
+		_hover: {
+			bg: "red.600",
+			transform: "scale(1.05)",
+			transition: "all 0.2s",
+		},
+		_active: {
+			bg: "red.700",
+		},
+		_focus: {
+			boxShadow: "outline",
+		},
+	};
+
 	const menuBgColor = useColorModeValue("white", "gray.800");
 	const menuColor = useColorModeValue("black", "white");
 	const menuItemHoverBg = useColorModeValue("gray.200", "gray.600");
@@ -248,10 +272,6 @@ const Navbar = () => {
 	};
 
 	const menuItems: MenuType[] = [
-		{
-			name: "Releases",
-			submenu: [{ name: "New & Upcoming", href: "/releases" }],
-		},
 		{
 			name: "Search",
 			submenu: [
@@ -342,6 +362,9 @@ const Navbar = () => {
 					</Link>
 				</Flex>
 				<Flex align="center">
+					<Link href="/releases" style={{ textDecoration: "none" }}>
+						<Button {...newReleaseButtonStyle}>NEW!</Button>
+					</Link>
 					<Link href="/comic-suggestion/form" style={{ textDecoration: "none" }}>
 						<Button
 							colorScheme="blue"
