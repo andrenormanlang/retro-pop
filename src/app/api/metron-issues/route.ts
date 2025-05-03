@@ -14,58 +14,56 @@ export async function GET(request: Request) {
 		const pageParam = searchParams.get("page");
 		const pageSizeParam = searchParams.get("pageSize");
 		const view = searchParams.get("view") || "recent";
-		
+
 		// Ensure page and pageSize are valid numbers
 		const page = pageParam && !isNaN(Number(pageParam)) ? Math.max(1, parseInt(pageParam)) : 1;
 		const pageSize = pageSizeParam && !isNaN(Number(pageSizeParam)) ? Math.max(1, parseInt(pageSizeParam)) : 20;
-		
+
 		// Get the current date for filtering
 		const today = new Date();
 		today.setHours(0, 0, 0, 0);
 
-		let storeDateRangeAfter = searchParams.get("store_date_range_after");
-		let storeDateRangeBefore = searchParams.get("store_date_range_before");
-		const publisherName = searchParams.get("publisher_name");
-		const seriesName = searchParams.get("series_name");
-		const coverMonth = searchParams.get("cover_month");
-		const coverYear = searchParams.get("cover_year");
-		const cvId = searchParams.get("cv_id");
-		const gcdId = searchParams.get("gcd_id");
-		const imprintId = searchParams.get("imprint_id");
-		const imprintName = searchParams.get("imprint_name");
-		const rating = searchParams.get("rating");
-		const sku = searchParams.get("sku");
-		const upc = searchParams.get("upc");
+		// Calculate date ranges
+		const thirtyDaysAgo = new Date(today);
+		thirtyDaysAgo.setDate(today.getDate() - 30);
 
-		 // Set date range based on view type
+		const thirtyDaysAhead = new Date(today);
+		thirtyDaysAhead.setDate(today.getDate() + 30);
+
+		// Set date range based on view type
+		const params = new URLSearchParams();
+
+		// Set the date range based on the view
 		if (view === "recent") {
-			const thirtyDaysBefore = new Date(today);
-			thirtyDaysBefore.setDate(today.getDate() - 30);
-			storeDateRangeBefore = today.toISOString().split("T")[0];
-			storeDateRangeAfter = thirtyDaysBefore.toISOString().split("T")[0];
+			params.append("store_date_range_after", thirtyDaysAgo.toISOString().split("T")[0]);
+			params.append("store_date_range_before", today.toISOString().split("T")[0]);
 		} else {
-			const thirtyDaysAfter = new Date(today);
-			thirtyDaysAfter.setDate(today.getDate() + 30);
-			storeDateRangeAfter = today.toISOString().split("T")[0];
-			storeDateRangeBefore = thirtyDaysAfter.toISOString().split("T")[0];
+			params.append("store_date_range_after", today.toISOString().split("T")[0]);
+			params.append("store_date_range_before", thirtyDaysAhead.toISOString().split("T")[0]);
 		}
 
-		const params = new URLSearchParams();
-		params.append("page", page.toString());
+		params.append("page", "1"); // Get all results in one call
+		params.append("page_size", "1000"); // Use a large page size to get all results
 
-		if (storeDateRangeAfter) params.append("store_date_range_after", storeDateRangeAfter);
-		if (storeDateRangeBefore) params.append("store_date_range_before", storeDateRangeBefore);
-		if (publisherName) params.append("publisher_name", publisherName);
-		if (seriesName) params.append("series_name", seriesName);
-		if (coverMonth) params.append("cover_month", coverMonth);
-		if (coverYear) params.append("cover_year", coverYear);
-		if (cvId) params.append("cv_id", cvId);
-		if (gcdId) params.append("gcd_id", gcdId);
-		if (imprintId) params.append("imprint_id", imprintId);
-		if (imprintName) params.append("imprint_name", imprintName);
-		if (rating) params.append("rating", rating);
-		if (sku) params.append("sku", sku);
-		if (upc) params.append("upc", upc);
+		// Add other query parameters
+		const additionalParams = [
+			"publisher_name",
+			"series_name",
+			"cover_month",
+			"cover_year",
+			"cv_id",
+			"gcd_id",
+			"imprint_id",
+			"imprint_name",
+			"rating",
+			"sku",
+			"upc",
+		];
+
+		for (const param of additionalParams) {
+			const value = searchParams.get(param);
+			if (value) params.append(param, value);
+		}
 
 		// Fetch main data
 		const response = await fetch(`https://metron.cloud/api/issue/?${params.toString()}`, {
@@ -82,31 +80,44 @@ export async function GET(request: Request) {
 
 		const data = await response.json();
 
-		// Calculate total counts for recent and upcoming releases
-		const recentCount = data.results.filter(
-			(issue: any) => new Date(issue.store_date) <= today
-		).length;
-
-		const upcomingCount = data.results.filter(
-			(issue: any) => new Date(issue.store_date) > today
-		).length;
-
-		// Filter results based on view type
-		const filteredResults = data.results.filter((issue: any) => {
+		// Filter results based on exact date ranges
+		let filteredResults = data.results.filter((issue: any) => {
 			const issueDate = new Date(issue.store_date);
-			return view === "recent" 
-				? issueDate <= today 
-				: issueDate > today;
+			issueDate.setHours(0, 0, 0, 0);
+
+			if (view === "recent") {
+				return issueDate >= thirtyDaysAgo && issueDate <= today;
+			} else {
+				return issueDate > today && issueDate <= thirtyDaysAhead;
+			}
 		});
 
-		// Add the counts to the response
+		// Sort results with different logic for recent and upcoming
+		filteredResults.sort((a: any, b: any) => {
+			const dateA = new Date(a.store_date).getTime();
+			const dateB = new Date(b.store_date).getTime();
+			// Recent: oldest to newest (ascending)
+			// Upcoming: nearest future to furthest future (ascending)
+			return dateA - dateB;
+		});
+
+		// Calculate total filtered count (before pagination)
+		const totalFilteredCount = filteredResults.length;
+
+		// Apply pagination
+		const startIndex = (page - 1) * pageSize;
+		const paginatedResults = filteredResults.slice(startIndex, startIndex + pageSize);
+
+		// Return response with correct counts and paginated results
 		return NextResponse.json({
-			...data,
-			results: filteredResults,
-			recentCount,
-			upcomingCount,
-			totalRecentCount: data.count * (recentCount / data.results.length),
-			totalUpcomingCount: data.count * (upcomingCount / data.results.length)
+			results: paginatedResults,
+			count: totalFilteredCount,
+			totalPages: Math.ceil(totalFilteredCount / pageSize),
+			currentPage: page,
+			pageSize: pageSize,
+			next: page * pageSize < totalFilteredCount ? `?page=${page + 1}` : null,
+			previous: page > 1 ? `?page=${page - 1}` : null,
+			view: view,
 		});
 	} catch (error) {
 		console.error("Error fetching from Metron API:", error);

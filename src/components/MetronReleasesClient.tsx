@@ -47,15 +47,12 @@ interface MetronIssue {
 interface MetronResponse {
 	results: MetronIssue[];
 	count: number;
-	next: string | null;
-	previous: string | null;
+	totalPages: number;
 	currentPage: number;
 	pageSize: number;
-	totalPages: number;
-	recentCount: number;
-	upcomingCount: number;
-	totalRecentCount: number;
-	totalUpcomingCount: number;
+	next: string | null;
+	previous: string | null;
+	view: ReleaseView;
 }
 
 type ReleaseView = "recent" | "upcoming";
@@ -63,10 +60,9 @@ type ReleaseView = "recent" | "upcoming";
 interface FetchReleasesParams {
 	page: number;
 	pageSize: number;
-	storeDateRangeAfter?: string;
-	storeDateRangeBefore?: string;
 	publisherName?: string;
 	seriesName?: string;
+	view: ReleaseView;
 }
 
 const formatDate = (dateString: string) => {
@@ -82,38 +78,27 @@ const formatDate = (dateString: string) => {
 const fetchReleases = async ({
 	page,
 	pageSize,
-	storeDateRangeAfter,
-	storeDateRangeBefore,
 	publisherName,
 	seriesName,
+	view,
 }: FetchReleasesParams) => {
-	const url = new URL('/api/metron-issues', window.location.origin);
+	const url = new URL("/api/metron-issues", window.location.origin);
 	const searchParams = url.searchParams;
 
-	// Get the current view from the URL
-	const currentParams = new URLSearchParams(window.location.search);
-	const view = currentParams.get('view') || 'recent';
+	searchParams.set("page", page.toString());
+	searchParams.set("pageSize", pageSize.toString());
+	searchParams.set("view", view);
 
-	searchParams.set('page', page.toString());
-	searchParams.set('pageSize', pageSize.toString());
-	searchParams.set('view', view);
-
-	if (storeDateRangeAfter) {
-		searchParams.set('store_date_range_after', storeDateRangeAfter);
-	}
-	if (storeDateRangeBefore) {
-		searchParams.set('store_date_range_before', storeDateRangeBefore);
-	}
 	if (publisherName) {
-		searchParams.set('publisher_name', publisherName);
+		searchParams.set("publisher_name", publisherName);
 	}
 	if (seriesName) {
-		searchParams.set('series_name', seriesName);
+		searchParams.set("series_name", seriesName);
 	}
 
 	const response = await fetch(url.toString());
 	if (!response.ok) {
-		throw new Error('Failed to fetch releases');
+		throw new Error("Failed to fetch releases");
 	}
 	const data: MetronResponse = await response.json();
 	return data;
@@ -157,13 +142,14 @@ const MetronReleasesClient = () => {
 	}, [activeView, currentPage, router]);
 
 	const { data, isLoading, error } = useQuery<MetronResponse>({
-		queryKey: ["releases", currentPage, pageSize, publisherName, seriesName],
+		queryKey: ["releases", currentPage, pageSize, publisherName, seriesName, activeView],
 		queryFn: () =>
 			fetchReleases({
 				page: currentPage,
 				pageSize,
 				publisherName,
 				seriesName,
+				view: activeView,
 			}),
 	});
 
@@ -173,11 +159,8 @@ const MetronReleasesClient = () => {
 	}, 500);
 
 	const handlePageChange = (page: number) => {
-		if (!data?.count) return;
-		const totalPages = Math.ceil(
-			(activeView === "recent" ? data.totalRecentCount : data.totalUpcomingCount) / pageSize
-		);
-		const validPage = Math.max(1, Math.min(page, totalPages));
+		if (!data?.totalPages) return;
+		const validPage = Math.max(1, Math.min(page, data.totalPages));
 		setCurrentPage(validPage);
 		window.scrollTo(0, 0);
 	};
@@ -188,34 +171,22 @@ const MetronReleasesClient = () => {
 		setCurrentPage(1); // Reset to first page when switching tabs
 	};
 
-	// Calculate total pages based on active view
-	const totalPages = data?.count
-		? Math.ceil(
-				(activeView === "recent" ? data.totalRecentCount : data.totalUpcomingCount) / pageSize
-		  )
-		: 1;
-
-	const filterAndSortIssues = (issues: MetronIssue[]) => {
-		if (!issues) return { recentReleases: [], upcomingReleases: [] };
-
-		const filteredIssues = searchTerm
-			? issues.filter(
-					(issue) =>
-						issue.series.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-						issue.number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-						issue.issue.toLowerCase().includes(searchTerm.toLowerCase())
-			  )
-			: issues;
-
+	const getDateRangeText = (view: ReleaseView) => {
 		const today = new Date();
-		const sortedIssues = [...filteredIssues].sort(
-			(a, b) => new Date(a.store_date).getTime() - new Date(b.store_date).getTime()
-		);
+		const thirtyDaysAgo = new Date(today);
+		thirtyDaysAgo.setDate(today.getDate() - 30);
+		const thirtyDaysAhead = new Date(today);
+		thirtyDaysAhead.setDate(today.getDate() + 30);
 
-		return {
-			recentReleases: sortedIssues.filter((issue) => new Date(issue.store_date) <= today),
-			upcomingReleases: sortedIssues.filter((issue) => new Date(issue.store_date) > today),
+		const formatDate = (date: Date) => {
+			return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 		};
+
+		if (view === "recent") {
+			return `${formatDate(thirtyDaysAgo)} - ${formatDate(today)}`;
+		} else {
+			return `${formatDate(today)} - ${formatDate(thirtyDaysAhead)}`;
+		}
 	};
 
 	const IssueGrid = ({ issues }: { issues: MetronIssue[] }) => (
@@ -326,10 +297,6 @@ const MetronReleasesClient = () => {
 		);
 	}
 
-	const { recentReleases, upcomingReleases } = data?.results
-		? filterAndSortIssues(data.results)
-		: { recentReleases: [], upcomingReleases: [] };
-
 	return (
 		<Container maxW="1200px" py={8}>
 			<SearchBox onSearch={handleSearchTerm} />
@@ -338,8 +305,11 @@ const MetronReleasesClient = () => {
 				<Box mb={6}>
 					<Text fontSize="2xl" textAlign="center" color={textColor} fontWeight="bold">
 						{searchTerm
-							? `Found ${recentReleases.length + upcomingReleases.length} results for "${searchTerm}"`
-							: `Total of ${data.count} comic releases`}
+							? `Found ${data.count} results for "${searchTerm}"`
+							: `${data.count} ${activeView === "recent" ? "Recent" : "Upcoming"} Releases`}
+					</Text>
+					<Text fontSize="md" textAlign="center" color={mutedColor} mt={2}>
+						{getDateRangeText(activeView)}
 					</Text>
 				</Box>
 			)}
@@ -353,30 +323,34 @@ const MetronReleasesClient = () => {
 			>
 				<TabList mb="1em">
 					<Tab _selected={{ color: "blue.500", borderColor: "blue.500" }}>
-						Recently Released ({data?.totalRecentCount ? Math.round(data.totalRecentCount) : 0})
+						Recently Released ({activeView === "recent" ? data?.count || 0 : "..."})
 					</Tab>
 					<Tab _selected={{ color: "blue.500", borderColor: "blue.500" }}>
-						Upcoming Releases ({data?.totalUpcomingCount ? Math.round(data.totalUpcomingCount) : 0})
+						Upcoming Releases ({activeView === "upcoming" ? data?.count || 0 : "..."})
 					</Tab>
 				</TabList>
 
 				<TabPanels>
 					<TabPanel>
-						{recentReleases.length === 0 ? (
-							<Center p={8}>
-								<Text color={textColor}>No recent releases found</Text>
-							</Center>
-						) : (
-							<IssueGrid issues={recentReleases} />
+						{activeView === "recent" && data?.results && (
+							data.results.length === 0 ? (
+								<Center p={8}>
+									<Text color={textColor}>No recent releases found</Text>
+								</Center>
+							) : (
+								<IssueGrid issues={data.results} />
+							)
 						)}
 					</TabPanel>
 					<TabPanel>
-						{upcomingReleases.length === 0 ? (
-							<Center p={8}>
-								<Text color={textColor}>No upcoming releases found</Text>
-							</Center>
-						) : (
-							<IssueGrid issues={upcomingReleases} />
+						{activeView === "upcoming" && data?.results && (
+							data.results.length === 0 ? (
+								<Center p={8}>
+									<Text color={textColor}>No upcoming releases found</Text>
+								</Center>
+							) : (
+								<IssueGrid issues={data.results} />
+							)
 						)}
 					</TabPanel>
 				</TabPanels>
@@ -385,8 +359,8 @@ const MetronReleasesClient = () => {
 			{data && data.count > pageSize && (
 				<Box mt={8}>
 					<MarvelPagination
-						currentPage={currentPage}
-						totalPages={totalPages}
+						currentPage={data.currentPage}
+						totalPages={data.totalPages}
 						onPageChange={handlePageChange}
 					/>
 				</Box>
