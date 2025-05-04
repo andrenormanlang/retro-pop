@@ -2,7 +2,7 @@
 
 ## :star2: Classic Comic Book Search, Collectors Store, and Community
 
-Welcome to my mega project dedicated to lovers and collectors of classic comic book oldies! This platform is a comprehensive comics search tool connected to Comic Vine, SuperHero & Comic Books APIs, enriched with an interactive webshop for selling & buying used comics, a vibrant forum, and an informative blog!
+Welcome to my mega project dedicated to comic book lovers and collectors! This platform is a comprehensive comics search tool connected to Comic Vine, SuperHero & Comic Books APIs, enriched with an interactive webshop for selling & buying used comics, a vibrant forum, and an informative blog!
 
 ## :rocket: Features
 
