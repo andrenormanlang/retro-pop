@@ -85,36 +85,28 @@ const IssuePage = () => {
 			</Box>
 
 			<Flex direction={{ base: "column", md: "row" }} gap={8}>
-				<Box flex="1">
-					<Image
-						src={issue.image}
-						alt={`${issue.series.name} #${issue.number}`}
-						borderRadius="md"
-						objectFit="contain"
-						maxH="700px"
-						width="100%"
-					/>
-				</Box>
-
 				<VStack flex="1" align="start" spacing={4}>
-					<Heading fontFamily="Bangers" letterSpacing="0.05em" color="tomato" size="xl">
-						{issue.series.name} #{issue.number}
-					</Heading>
-
-					<HStack spacing={4} wrap="wrap">
-						<Tag size="lg" colorScheme="blue">
-							Store Date: {formatDate(issue.store_date)}
-						</Tag>
-						<Tag size="lg" colorScheme="green">
-							Cover Date: {formatDate(issue.cover_date)}
-						</Tag>
-					</HStack>
-
 					<Box bg={bgColor} p={6} borderRadius="md" borderWidth="1px" borderColor={borderColor} w="100%">
+							<Image
+								src={issue.image}
+								alt={`${issue.series.name} #${issue.number}`}
+
+								objectFit="contain"
+								maxH="700px"
+								width="100%"
+								mb={4}
+							/>
+							<HStack spacing={4} wrap="wrap" mb={4}>
+								<Tag size="lg" colorScheme="blue">
+									 {formatDate(issue.store_date)}
+								</Tag>
+							</HStack>
+							<Heading fontFamily="Bangers" letterSpacing="0.05em" color="tomato" size="xl">
+								{issue.series.name} #{issue.number} Vol. {issue.series.volume}
+							</Heading>
+
+
 						<VStack align="start" spacing={3}>
-							<Text>
-								<strong>Series:</strong> {issue.series.name} Vol. {issue.series.volume}
-							</Text>
 							<Text>
 								<strong>Year Series Began:</strong> {issue.series.year_began}
 							</Text>
