@@ -9,12 +9,12 @@ import {
 	Link,
 	useDisclosure,
 	useColorMode,
+	useColorModeValue,
 	Menu,
 	MenuButton,
 	MenuList,
 	MenuItem,
 	Stack,
-	useColorModeValue,
 	useToast,
 	Badge,
 } from "@chakra-ui/react";
@@ -356,12 +356,15 @@ const Navbar = () => {
 			zIndex={10}
 			bg="gray.800"
 			height={{ base: "5rem", md: "6.5rem" }}
+			boxShadow="0 2px 4px rgba(0,0,0,0.2)"
 		>
 			<Flex
 				justify="space-between"
 				wrap="wrap"
 				padding="1.5rem"
 				color="white"
+				height="100%"
+				alignItems="center"
 				px={{ base: "1rem", md: "4rem", lg: "8rem" }}
 			>
 				<Flex align="center" mr={4}>

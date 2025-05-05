@@ -1,4 +1,4 @@
-import { Input, Button, Stack, Flex } from "@chakra-ui/react";
+import { Input, Button, Stack, Flex, Box, useColorModeValue } from "@chakra-ui/react";
 import { FormEvent, useState } from "react";
 
 type SearchComponentProps = {
@@ -7,6 +7,8 @@ type SearchComponentProps = {
 
 const SearchBox: React.FC<SearchComponentProps> = ({ onSearch }) => {
 	const [searchTerm, setSearchTerm] = useState("");
+	const bgColor = useColorModeValue("white", "gray.700");
+	const borderColor = useColorModeValue("gray.300", "gray.600");
 
 	const handleSearch = (e: FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -19,21 +21,26 @@ const SearchBox: React.FC<SearchComponentProps> = ({ onSearch }) => {
 	};
 
 	return (
-		<Flex justify="center" width="100%">
-			<form onSubmit={handleSearch} style={{ width: "100%" }}>
-				<Stack direction="row" spacing={4} width="100%" align="center" mb={5} position="relative" zIndex={5}>
-					<Input
-						type="text"
-						placeholder="Search..."
-						value={searchTerm}
-						onChange={(e) => setSearchTerm(e.target.value)}
-						flex={1}
-					/>
-					<Button type="submit" colorScheme="blue">
-						Search
-					</Button>
-				</Stack>
-			</form>
+		<Flex justify="center" width="100%" mb={8}>
+			<Box width={{ base: "90%", sm: "80%", md: "60%", lg: "40%" }}>
+				<form onSubmit={handleSearch} style={{ width: "100%" }}>
+					<Stack direction="row" spacing={4} width="100%" align="center">
+						<Input
+							type="text"
+							placeholder="Search..."
+							value={searchTerm}
+							onChange={(e) => setSearchTerm(e.target.value)}
+							bg={bgColor}
+							borderColor={borderColor}
+							_hover={{ borderColor: "blue.500" }}
+							_focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px #3182ce" }}
+						/>
+						<Button type="submit" colorScheme="blue" minW="100px">
+							Search
+						</Button>
+					</Stack>
+				</form>
+			</Box>
 		</Flex>
 	);
 };
