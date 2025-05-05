@@ -166,12 +166,15 @@ const MetronIssuesClient = () => {
 	const IssueGrid = ({ issues }: { issues: MetronIssue[] }) => (
 		<SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing={6}>
 			{issues.map((issue) => (
-				<NextLink key={issue.id} href={`/search/metron/metron-issues/${issue.id}`} passHref>
+				<NextLink
+					key={issue.id}
+					href={`/search/metron/metron-issues/${issue.id}?page=${currentPage}&query=${searchTerm}&view=${activeView}`}
+					passHref
+				>
 					<motion.div
 						whileHover={{ scale: 1.02 }}
 						whileTap={{ scale: 0.98 }}
 						style={{
-							textDecoration: "none",
 							cursor: "pointer",
 							width: "100%",
 						}}
@@ -280,11 +283,9 @@ const MetronIssuesClient = () => {
 					<Text fontSize="2xl" textAlign="center" color={textColor} fontWeight="bold">
 						{searchTerm
 							? `Found ${data.count} results for "${searchTerm}"`
-							: `${data.totalCount} Total Comics (${data.recentCount} Recent, ${data.upcomingCount} Upcoming)`}
+							: `${data.totalCount} Total Comics `}
 					</Text>
-					<Text fontSize="md" textAlign="center" color={mutedColor} mt={2}>
-						{getDateRangeText(activeView)}
-					</Text>
+
 				</Box>
 			)}
 
@@ -295,8 +296,6 @@ const MetronIssuesClient = () => {
 				index={activeView === "recent" ? 0 : 1}
 				onChange={handleTabChange}
 			>
-
-
 				<TabPanels>
 					<TabPanel>
 						{activeView === "recent" &&

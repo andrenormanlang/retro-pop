@@ -308,7 +308,7 @@ const Navbar = () => {
 				{
 					name: "Metron Cloud",
 					submenu: [
-						{ name: "Issues", href: "/search/metron/issues" },
+						{ name: "Issues", href: "/search/metron/metron-issues" },
 					],
 				},
 			],

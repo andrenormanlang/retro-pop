@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(request: NextRequest, { params }: { params: { issueId: string } }) {
+export async function GET(request: NextRequest, { params }: { params: { "metron-issueId": string } }) {
 	const authHeaderValue = process.env.METRON_API_AUTH_HEADER;
 
 	if (!authHeaderValue) {
@@ -9,7 +9,7 @@ export async function GET(request: NextRequest, { params }: { params: { issueId:
 		});
 	}
 
-	const { issueId } = params;
+	const issueId = params["metron-issueId"];
 	const url = `https://metron.cloud/api/issue/${issueId}/`;
 
 	try {
@@ -18,25 +18,33 @@ export async function GET(request: NextRequest, { params }: { params: { issueId:
 				Authorization: `Basic ${authHeaderValue}`,
 				Accept: "application/json",
 			},
+			cache: "no-store",
 		});
 
 		if (!response.ok) {
-			const errorText = await response.text();
-			console.error(`API call failed with status: ${response.status}`, errorText);
-			throw new Error(`API call failed with status: ${response.status}. Details: ${errorText}`);
+			// Try to parse error response
+			let errorDetail = "";
+			try {
+				const errorJson = await response.json();
+				errorDetail = errorJson.detail || "";
+			} catch {
+				errorDetail = await response.text();
+			}
+
+			// Pass through the Metron API status code and error message
+			return new NextResponse(JSON.stringify({ error: errorDetail || "Failed to fetch issue" }), {
+				status: response.status,
+				headers: { "Content-Type": "application/json" },
+			});
 		}
 
 		const data = await response.json();
 		return NextResponse.json(data);
 	} catch (error) {
-		const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
-		console.error("Failed to fetch comic issue:", errorMessage);
-
-		return new NextResponse(JSON.stringify({ error: `Internal Server Error: ${errorMessage}` }), {
+		console.error("Failed to fetch comic issue:", error);
+		return new NextResponse(JSON.stringify({ error: "Failed to fetch issue data" }), {
 			status: 500,
-			headers: {
-				"Content-Type": "application/json",
-			},
+			headers: { "Content-Type": "application/json" },
 		});
 	}
 }
