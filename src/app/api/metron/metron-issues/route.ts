@@ -1,36 +1,61 @@
 import { NextResponse } from "next/server";
 
-async function getAllResults(params: URLSearchParams, authHeaderValue: string) {
-	let allResults = [];
-	let page = 1;
-	let hasMore = true;
-
-	while (hasMore) {
-		const currentParams = new URLSearchParams(params);
-		currentParams.set("page", page.toString());
-
-		const response = await fetch(`https://metron.cloud/api/issue/?${currentParams.toString()}`, {
-			headers: {
-				Authorization: `Basic ${authHeaderValue}`,
-				Accept: "application/json",
-			},
-			cache: "no-store",
-		});
-
-		if (!response.ok) {
-			throw new Error(`HTTP error! status: ${response.status}`);
-		}
-
-		const data = await response.json();
-		allResults = [...allResults, ...data.results];
-		hasMore = data.next !== null;
-		page++;
-	}
-
-	return allResults;
+interface MetronIssue {
+	id: number;
+	series: {
+		name: string;
+		volume: number;
+		year_began: number;
+	};
+	number: string;
+	issue: string;
+	cover_date: string;
+	store_date: string | null;
+	image: string;
+	cover_hash: string;
+	modified: string;
 }
 
-export async function GET(request: Request) {
+interface MetronResponse {
+	count: number;
+	next: string | null;
+	previous: string | null;
+	results: MetronIssue[];
+}
+
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function fetchWithRetry(url: string, options: RequestInit, maxRetries = 5) {
+	let retryCount = 0;
+
+	while (retryCount < maxRetries) {
+		try {
+			const response = await fetch(url, options);
+
+			if (response.status === 429) {
+				const waitTime = Math.min(1000 * Math.pow(2, retryCount), 10000);
+				console.log(`Rate limited. Waiting ${waitTime}ms before retry ${retryCount + 1}/${maxRetries}`);
+				await delay(waitTime);
+				retryCount++;
+				continue;
+			}
+
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+
+			return await response.json();
+		} catch (error) {
+			if (retryCount === maxRetries - 1) throw error;
+			retryCount++;
+			await delay(1000 * Math.pow(2, retryCount));
+		}
+	}
+
+	throw new Error("Max retries reached");
+}
+
+export const GET = async (request: Request) => {
 	try {
 		const authHeaderValue = process.env.METRON_API_AUTH_HEADER;
 
@@ -41,72 +66,37 @@ export async function GET(request: Request) {
 		}
 
 		const { searchParams } = new URL(request.url);
-		const pageParam = searchParams.get("page");
-		const pageSizeParam = searchParams.get("pageSize");
-		const view = searchParams.get("view") || "recent";
+		const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
+		const pageSize = Math.max(1, Math.min(100, parseInt(searchParams.get("pageSize") || "20")));
 
-		// Ensure page and pageSize are valid numbers
-		const page = pageParam && !isNaN(Number(pageParam)) ? Math.max(1, parseInt(pageParam)) : 1;
-		const pageSize = pageSizeParam && !isNaN(Number(pageSizeParam)) ? Math.max(1, parseInt(pageSizeParam)) : 20;
-
-
-
-		// Create base params for the API call
+		// Forward search parameters directly to Metron API
 		const params = new URLSearchParams();
-
-		// Add search parameters
+		params.set("page", page.toString());
+		// Add other search parameters except pageSize which isn't supported by Metron API
 		for (const [key, value] of searchParams.entries()) {
-			if (key !== "page" && key !== "pageSize" && key !== "view" && value) {
+			if (key !== "pageSize" && value) {
 				params.append(key, value);
 			}
 		}
 
-		// Fetch all results from all pages
-		const allResults = await getAllResults(params, authHeaderValue);
+		const data = (await fetchWithRetry(`https://metron.cloud/api/issue/?${params.toString()}`, {
+			headers: {
+				Authorization: `Basic ${authHeaderValue}`,
+				Accept: "application/json",
+			},
+			cache: "no-store",
+		})) as MetronResponse;
 
-		// Split and filter results based on date
-		const recentResults = [];
-		const upcomingResults = [];
-
-		allResults.forEach((issue: any) => {
-			const storeDate = new Date(issue.store_date);
-			storeDate.setHours(0, 0, 0, 0);
-
-		});
-
-		// Sort results chronologically
-		const sortByDate = (a: any, b: any) => {
-			return new Date(a.store_date).getTime() - new Date(b.store_date).getTime();
-		};
-
-		recentResults.sort(sortByDate);
-		upcomingResults.sort(sortByDate);
-
-		// Get the appropriate result set based on view
-		const filteredResults = view === "recent" ? recentResults : upcomingResults;
-		const totalFilteredCount = filteredResults.length;
-
-		// Apply pagination to filtered results
-		const startIndex = (page - 1) * pageSize;
-		const paginatedResults = filteredResults.slice(startIndex, startIndex + pageSize);
-		const totalPages = Math.ceil(totalFilteredCount / pageSize);
-
-		// Return response with correct counts and paginated results
 		return NextResponse.json({
-			results: paginatedResults,
-			count: totalFilteredCount,
-			totalCount: allResults.length,
-			recentCount: recentResults.length,
-			upcomingCount: upcomingResults.length,
-			totalPages: totalPages,
+			results: data.results,
+			totalCount: data.count,
 			currentPage: page,
 			pageSize: pageSize,
-			next: page * pageSize < totalFilteredCount ? `?page=${page + 1}` : null,
-			previous: page > 1 ? `?page=${page - 1}` : null,
-			view: view,
+			next: data.next ? `?page=${page + 1}&pageSize=${pageSize}` : null,
+			previous: data.previous ? `?page=${page - 1}&pageSize=${pageSize}` : null,
 		});
 	} catch (error) {
 		console.error("Error fetching from Metron API:", error);
 		return NextResponse.json({ error: "Failed to fetch data from Metron API" }, { status: 500 });
 	}
-}
+};

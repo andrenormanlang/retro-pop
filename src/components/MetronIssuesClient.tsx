@@ -30,8 +30,6 @@ import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { FetchReleasesParams, MetronIssue, MetronResponse, ReleaseView } from "@/types/metron/metron-comics.type";
 
-
-
 const formatDate = (dateString: string) => {
 	const date = new Date(dateString);
 	return date.toLocaleDateString("en-US", {
@@ -43,7 +41,7 @@ const formatDate = (dateString: string) => {
 };
 
 const fetchReleases = async ({ page, pageSize, publisherName, seriesName, view, query }: FetchReleasesParams) => {
-	const url = new URL("/api/metron-issues", window.location.origin);
+	const url = new URL("/api/metron/metron-issues", window.location.origin);
 	const searchParams = url.searchParams;
 
 	searchParams.set("page", page.toString());
@@ -297,12 +295,7 @@ const MetronIssuesClient = () => {
 				index={activeView === "recent" ? 0 : 1}
 				onChange={handleTabChange}
 			>
-				<TabList mb="1em">
-					<Tab _selected={{ color: "blue.500", borderColor: "blue.500" }}>
-						Issues ({data?.recentCount || 0})
-					</Tab>
 
-				</TabList>
 
 				<TabPanels>
 					<TabPanel>
@@ -315,7 +308,6 @@ const MetronIssuesClient = () => {
 								<IssueGrid issues={data?.results || []} />
 							))}
 					</TabPanel>
-
 				</TabPanels>
 			</Tabs>
 
