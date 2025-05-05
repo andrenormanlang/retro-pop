@@ -27,15 +27,41 @@ const CBAPI: NextPage = () => {
 		const schemes: { [key: string]: string } = {
 			DOWNLOADNOW: "blue",
 			MEGA: "teal",
-			VIKINGBOX:"yellow",
+			VIKINGBOX: "yellow",
 			TERABOX: "green",
 			PIXELDRAIN: "orange",
 			MEDIAFIRE: "red",
 			READONLINE: "purple",
-
-			// Add other services and their corresponding color schemes
+			// Add color schemes for part indicators
+			PART1: "cyan",
+			PART2: "cyan",
 		};
 		return schemes[serviceName] || "gray"; // Default color scheme if not found
+	};
+
+	const groupDownloadLinks = (links: { [key: string]: string }) => {
+		const grouped: { [key: string]: { [key: string]: string } } = {};
+
+		Object.entries(links).forEach(([key, value]) => {
+			// Check if the key contains PART1 or PART2
+			const partMatch = key.match(/(.*?)(PART[12])?$/);
+			if (partMatch) {
+				const baseName = partMatch[1] || key;
+				const part = partMatch[2];
+
+				if (!grouped[baseName]) {
+					grouped[baseName] = {};
+				}
+
+				if (part) {
+					grouped[baseName][part] = value;
+				} else {
+					grouped[baseName]["SINGLE"] = value;
+				}
+			}
+		});
+
+		return grouped;
 	};
 
 	const desiredButtons = ["DOWNLOADNOW", "MEGA", "MEDIAFIRE", "VIKINGBOX", "TERABOX", "PIXELDRAIN", "READONLINE"];
@@ -159,24 +185,51 @@ const CBAPI: NextPage = () => {
 										{comic.description}
 									</Text>
 									<VStack spacing={4} align="stretch" mt={"1rem"}>
-										{Object.entries(comic.downloadLinks)
-											.filter(([key]) => desiredButtons.includes(key))
-											.map(([key, value], btnIndex) => (
-												<Button
-													as="a"
-													href={value}
-													target="_blank"
-													rel="noopener noreferrer"
-													key={`${comic.id}-${key}-${btnIndex}`} // Ensures unique key
-													leftIcon={<DownloadIcon />}
-													colorScheme={getColorScheme(key)}
-													_hover={{ transform: "scale(1.05)" }}
-													aria-label={`Download from ${key}`}
-													w="full"
-												>
-													{key}
-												</Button>
-											))}
+										{Object.entries(groupDownloadLinks(comic.downloadLinks)).map(
+											([service, links]) => (
+												<Box key={`${comic.id}-${service}`}>
+													{Object.entries(links).length > 1 ? (
+														<>
+															<Text fontSize="sm" fontWeight="bold" mb={2}>
+																{service}
+															</Text>
+															{Object.entries(links).map(([part, url]) => (
+																<Button
+																	as="a"
+																	href={url}
+																	target="_blank"
+																	rel="noopener noreferrer"
+																	key={`${comic.id}-${service}-${part}`}
+																	leftIcon={<DownloadIcon />}
+																	colorScheme={getColorScheme(service)}
+																	_hover={{ transform: "scale(1.05)" }}
+																	aria-label={`Download ${service} ${part}`}
+																	w="full"
+																	mb={2}
+																>
+																	{service} {part !== "SINGLE" ? part : ""}
+																</Button>
+															))}
+														</>
+													) : (
+														<Button
+															as="a"
+															href={Object.values(links)[0]}
+															target="_blank"
+															rel="noopener noreferrer"
+															key={`${comic.id}-${service}`}
+															leftIcon={<DownloadIcon />}
+															colorScheme={getColorScheme(service)}
+															_hover={{ transform: "scale(1.05)" }}
+															aria-label={`Download from ${service}`}
+															w="full"
+														>
+															{service}
+														</Button>
+													)}
+												</Box>
+											)
+										)}
 									</VStack>
 								</Box>
 							</motion.div>
@@ -210,111 +263,3 @@ const CBAPI: NextPage = () => {
 };
 
 export default CBAPI;
-
-// "use client";
-
-// import { useState, useEffect, Suspense } from "react";
-// import {
-// 	SimpleGrid,
-// 	Box,
-// 	Image,
-// 	Text,
-// 	Container,
-// 	Center,
-// 	Spinner,
-// 	Button,
-// 	VStack,
-// } from "@chakra-ui/react";
-// import { DownloadIcon, LinkIcon } from "@chakra-ui/icons";
-// import { motion } from "framer-motion";
-// import NextLink from "next/link";
-// import type { NextPage } from "next";
-// import SearchBox from "@/components/SearchBox";
-// import { useDebouncedCallback } from "use-debounce";
-// import { SearchQuery } from "@/types/comic.types";
-// import { useRouter } from "next/navigation";
-// import { useSearchParameters } from "@/hooks/useSearchParameters";
-// import { useGetComicBooksApi } from "@/hooks/comicbooks-api/useGetComicBooksAPI";
-// import { ComicBooksAPI } from "@/types/cbAPI.types";
-
-// const CBAPI = () => {
-// 	const [comics, setComics] = useState([]);
-// 	const [loading, setLoading] = useState(false);
-// 	const [error, setError] = useState('');
-// 	const [currentPage, setCurrentPage] = useState(1);
-// 	const [searchTerm, setSearchTerm] = useState("");
-
-// 	const router = useRouter();
-
-// 	// Function to fetch comics
-// 	const fetchComics = async () => {
-// 	  setLoading(true);
-// 	  setError('');
-// 	  try {
-// 		const response = await fetch(`/api/comicbooks-api?query=${searchTerm}&page=${currentPage}`);
-// 		if (!response.ok) {
-// 		  throw new Error(`API call failed with status: ${response.status}`);
-// 		}
-// 		const data = await response.json();
-// 		setComics(data);
-// 	  } catch (error) {
-// 		setError(error instanceof Error ? error.message : String(error));
-// 	  } finally {
-// 		setLoading(false);
-// 	  }
-// 	};
-
-// 	// Effect to trigger fetching comics
-// 	useEffect(() => {
-// 	  fetchComics();
-// 	}, [searchTerm, currentPage]);
-
-// 	// Handling search term updates
-// 	const handleSearch = useDebouncedCallback((term) => {
-// 	  setSearchTerm(term);
-// 	  setCurrentPage(1); // Reset to first page on new search
-// 	}, 300);
-
-// 	if (loading) {
-// 	  return (
-// 		<Center h="100vh">
-// 		  <Spinner size="xl" />
-// 		</Center>
-// 	  );
-// 	}
-
-// 	if (error) {
-// 	  return (
-// 		<Center h="100vh">
-// 		  <Text color="red.500">{error}</Text>
-// 		</Center>
-// 	  );
-// 	}
-
-// 	return (
-// 	  <Container maxW="container.xl" centerContent p={4}>
-// 		<SearchBox onSearch={handleSearch} />
-// 		<SimpleGrid columns={{ base: 1, md: 3 }} spacing={10} width="100%">
-// 		  {comics.map((comic: ComicBooksAPI) => (
-// 			<Box key={comic.title} boxShadow="md" p="6" rounded="md" bg="white">
-// 			  <Image src={comic.coverPage} alt={comic.title} />
-// 			  <Text mt="2" fontWeight="bold">
-// 				{comic.title}
-// 			  </Text>
-// 			  <Text mt="2">{comic.description}</Text>
-// 			  {/* Handle download links and other actions here */}
-// 			</Box>
-// 		  ))}
-// 		</SimpleGrid>
-// 		{/* Pagination controls */}
-// 		<Button onClick={() => setCurrentPage(currentPage - 1)} isDisabled={currentPage <= 1}>
-// 		  Previous
-// 		</Button>
-// 		<Button onClick={() => setCurrentPage(currentPage + 1)}>
-// 		  Next
-// 		</Button>
-// 	  </Container>
-// 	);
-//   };
-
-//   export default CBAPI;
