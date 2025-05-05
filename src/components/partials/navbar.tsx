@@ -305,6 +305,12 @@ const Navbar = () => {
 						{ name: "Stories", href: "/search/marvel/marvel-stories" },
 					],
 				},
+				{
+					name: "Metron Cloud",
+					submenu: [
+						{ name: "Issues", href: "/search/metron/issues" },
+					],
+				},
 			],
 		},
 	];

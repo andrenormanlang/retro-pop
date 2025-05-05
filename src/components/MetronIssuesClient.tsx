@@ -28,46 +28,9 @@ import SearchBox from "@/components/SearchBox";
 import MarvelPagination from "@/components/MarvelPagination";
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
+import { FetchReleasesParams, MetronIssue, MetronResponse, ReleaseView } from "@/types/metron/metron-comics.type";
 
-interface MetronIssue {
-	id: number;
-	series: {
-		name: string;
-		volume: number;
-		year_began: number;
-	};
-	number: string;
-	issue: string;
-	cover_date: string;
-	store_date: string;
-	image: string;
-	cover_hash: string;
-}
 
-interface MetronResponse {
-	results: MetronIssue[];
-	count: number;
-	totalCount: number;
-	recentCount: number;
-	upcomingCount: number;
-	totalPages: number;
-	currentPage: number;
-	pageSize: number;
-	next: string | null;
-	previous: string | null;
-	view: ReleaseView;
-}
-
-type ReleaseView = "recent" | "upcoming";
-
-interface FetchReleasesParams {
-	page: number;
-	pageSize: number;
-	publisherName?: string;
-	seriesName?: string;
-	view: ReleaseView;
-	query?: string;
-}
 
 const formatDate = (dateString: string) => {
 	const date = new Date(dateString);
@@ -80,7 +43,7 @@ const formatDate = (dateString: string) => {
 };
 
 const fetchReleases = async ({ page, pageSize, publisherName, seriesName, view, query }: FetchReleasesParams) => {
-	const url = new URL("/api/releases", window.location.origin);
+	const url = new URL("/api/metron-issues", window.location.origin);
 	const searchParams = url.searchParams;
 
 	searchParams.set("page", page.toString());
@@ -106,7 +69,7 @@ const fetchReleases = async ({ page, pageSize, publisherName, seriesName, view, 
 	return data;
 };
 
-const MetronReleasesClient = () => {
+const MetronIssuesClient = () => {
 	const router = useRouter();
 	const { searchTerm, setSearchTerm } = useSearchParameters(1, "");
 	const [currentPage, setCurrentPage] = useState(1);
@@ -205,7 +168,7 @@ const MetronReleasesClient = () => {
 	const IssueGrid = ({ issues }: { issues: MetronIssue[] }) => (
 		<SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing={6}>
 			{issues.map((issue) => (
-				<NextLink key={issue.id} href={`/releases/${issue.id}`} passHref>
+				<NextLink key={issue.id} href={`/search/metron/metron-issues/${issue.id}`} passHref>
 					<motion.div
 						whileHover={{ scale: 1.02 }}
 						whileTap={{ scale: 0.98 }}
@@ -305,7 +268,7 @@ const MetronReleasesClient = () => {
 	if (error) {
 		return (
 			<Center height="100vh">
-				<Text>Error loading releases</Text>
+				<Text>Error loading issues</Text>
 			</Center>
 		);
 	}
@@ -336,11 +299,9 @@ const MetronReleasesClient = () => {
 			>
 				<TabList mb="1em">
 					<Tab _selected={{ color: "blue.500", borderColor: "blue.500" }}>
-						Recently Released ({data?.recentCount || 0})
+						Issues ({data?.recentCount || 0})
 					</Tab>
-					<Tab _selected={{ color: "blue.500", borderColor: "blue.500" }}>
-						Upcoming Releases ({data?.upcomingCount || 0})
-					</Tab>
+
 				</TabList>
 
 				<TabPanels>
@@ -348,22 +309,13 @@ const MetronReleasesClient = () => {
 						{activeView === "recent" &&
 							(data?.results.length === 0 ? (
 								<Center p={8}>
-									<Text color={textColor}>No recent releases found</Text>
+									<Text color={textColor}>No issues found</Text>
 								</Center>
 							) : (
 								<IssueGrid issues={data?.results || []} />
 							))}
 					</TabPanel>
-					<TabPanel>
-						{activeView === "upcoming" &&
-							(data?.results.length === 0 ? (
-								<Center p={8}>
-									<Text color={textColor}>No upcoming releases found</Text>
-								</Center>
-							) : (
-								<IssueGrid issues={data?.results || []} />
-							))}
-					</TabPanel>
+
 				</TabPanels>
 			</Tabs>
 
@@ -380,4 +332,4 @@ const MetronReleasesClient = () => {
 	);
 };
 
-export default MetronReleasesClient;
+export default MetronIssuesClient;
