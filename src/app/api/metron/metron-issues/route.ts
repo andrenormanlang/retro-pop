@@ -87,11 +87,15 @@ export const GET = async (request: Request) => {
 			cache: "no-store",
 		})) as MetronResponse;
 
+		// Calculate total pages
+		const totalPages = Math.ceil(data.count / pageSize);
+
 		return NextResponse.json({
 			results: data.results,
 			totalCount: data.count,
 			currentPage: page,
 			pageSize: pageSize,
+			totalPages: totalPages,
 			next: data.next ? `?page=${page + 1}&pageSize=${pageSize}` : null,
 			previous: data.previous ? `?page=${page - 1}&pageSize=${pageSize}` : null,
 		});

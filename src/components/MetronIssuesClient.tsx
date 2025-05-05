@@ -175,6 +175,7 @@ const MetronIssuesClient = () => {
 						whileHover={{ scale: 1.02 }}
 						whileTap={{ scale: 0.98 }}
 						style={{
+							textDecoration: "none",
 							cursor: "pointer",
 							width: "100%",
 						}}
@@ -184,7 +185,7 @@ const MetronIssuesClient = () => {
 							borderRadius="lg"
 							overflow="hidden"
 							bg={cardBg}
-							height="520px" // Increased height to accommodate 3 lines
+							height="520px"
 							borderColor={borderColor}
 							role="group"
 							position="relative"
@@ -207,7 +208,7 @@ const MetronIssuesClient = () => {
 								borderRadius="full"
 								fontSize="sm"
 							>
-								{format(new Date(issue.store_date), "MMM d, yyyy")}
+								{format(new Date(issue.cover_date), "MMM d, yyyy")}
 							</Badge>
 
 							{/* Image Container */}
@@ -226,15 +227,15 @@ const MetronIssuesClient = () => {
 								/>
 							</Box>
 
-							{/* Content Container - Increased height */}
+							{/* Content Container */}
 							<VStack p={4} align="center" spacing={2} height="170px" justify="center">
 								<Heading
 									size="md"
 									color={textColor}
-									noOfLines={3} // Allow up to 3 lines
+									noOfLines={3}
 									textAlign="center"
 									lineHeight="1.2"
-									minHeight="4.8em" // Ensure space for 3 lines + some padding
+									minHeight="4.8em"
 									display="-webkit-box"
 									style={{
 										WebkitLineClamp: 3,
@@ -244,6 +245,7 @@ const MetronIssuesClient = () => {
 								>
 									{issue.series.name}
 								</Heading>
+
 								<Text fontWeight="bold" color={textColor} fontSize="md">
 									Issue #{issue.number}
 								</Text>
@@ -269,7 +271,7 @@ const MetronIssuesClient = () => {
 	if (error) {
 		return (
 			<Center height="100vh">
-				<Text>Error loading issues</Text>
+				<Text>Error loading releases</Text>
 			</Center>
 		);
 	}
@@ -282,7 +284,7 @@ const MetronIssuesClient = () => {
 				<Box mb={6}>
 					<Text fontSize="2xl" textAlign="center" color={textColor} fontWeight="bold">
 						{searchTerm
-							? `Found ${data.count} results for "${searchTerm}"`
+							? `Found ${data.totalCount} results for "${searchTerm}"`
 							: `${data.totalCount} Total Comics `}
 					</Text>
 
@@ -310,7 +312,7 @@ const MetronIssuesClient = () => {
 				</TabPanels>
 			</Tabs>
 
-			{data && data.count > pageSize && (
+			{data?.results?.length > 0 && (
 				<Box mt={8}>
 					<MarvelPagination
 						currentPage={data.currentPage}
