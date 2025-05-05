@@ -287,7 +287,6 @@ const MetronIssuesClient = () => {
 							? `Found ${data.totalCount} results for "${searchTerm}"`
 							: `${data.totalCount} Total Comics `}
 					</Text>
-
 				</Box>
 			)}
 
