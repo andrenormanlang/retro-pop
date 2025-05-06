@@ -102,7 +102,7 @@ const EditComic = () => {
 		"Valiant Comics",
 		"Dynamite Entertainment",
 		"Boom! Studios",
-		"Editorial Frontera"
+		"Editorial Frontera",
 	];
 
 	const currencies = [
@@ -223,7 +223,6 @@ const EditComic = () => {
 				borderWidth="1px"
 				borderColor={colorMode === "dark" ? "gray.600" : "gray.300"}
 			>
-
 				<VStack
 					as="form"
 					onSubmit={handleSubmit(onSubmit)}
@@ -235,30 +234,30 @@ const EditComic = () => {
 					height="100%"
 				>
 					<Box flex="1" mb={{ base: 4, md: 0 }}>
-					<Heading as="h3" size="sm" mb={4}>
-						Current Cover Image
-					</Heading>
-					<Image
-						borderRadius="md"
-						objectFit="contain"
-						src={comic?.image || "../../public/default-image.jpg"}
-						alt={`Cover of ${comic?.title}`}
-						width="70%"
-					/>
-				</Box>
+						<Heading as="h3" size="sm" mb={4}>
+							Current Cover Image
+						</Heading>
+						<Image
+							borderRadius="md"
+							objectFit="contain"
+							src={comic?.image || "../../public/default-image.jpg"}
+							alt={`Cover of ${comic?.title}`}
+							width="70%"
+						/>
+					</Box>
 					<FormControl isInvalid={!!errors.title}>
 						<FormLabel>Title</FormLabel>
-						<Input type="text" {...register("title")} maxWidth={'500px'}/>
+						<Input type="text" {...register("title")} maxWidth={"500px"} />
 						{errors.title && <Text color="red.500">{errors.title.message}</Text>}
 					</FormControl>
 					<FormControl isInvalid={!!errors.image}>
 						<FormLabel>New Cover Image</FormLabel>
-						<ImageUpload  onUpload={(url) => setValue("image", url)} />
+						<ImageUpload onUpload={(url) => setValue("image", url)} />
 						{errors.image && <Text color="red.500">{errors.image.message}</Text>}
 					</FormControl>
 					<FormControl isInvalid={!!errors.genre}>
 						<FormLabel>Genre</FormLabel>
-						<Select placeholder="Select genre" {...register("genre")} maxWidth={'250px'}>
+						<Select placeholder="Select genre" {...register("genre")} maxWidth={"250px"}>
 							{genres.map((genre) => (
 								<option key={genre} value={genre}>
 									{genre}
@@ -267,20 +266,19 @@ const EditComic = () => {
 						</Select>
 						{errors.genre && <Text color="red.500">{errors.genre.message}</Text>}
 					</FormControl>
-					<FormControl isInvalid={!!errors.release_date} maxWidth={'180px'}>
+					<FormControl isInvalid={!!errors.release_date} maxWidth={"180px"}>
 						<FormLabel>Release Date</FormLabel>
 						<Input type="date" {...register("release_date")} />
 						{errors.release_date && <Text color="red.500">{errors.release_date.message}</Text>}
 					</FormControl>
 					<FormControl isInvalid={!!errors.stock}>
 						<FormLabel>Stock</FormLabel>
-						<Input type="number" {...register("stock", { valueAsNumber: true })} maxWidth={'50px'}/>
+						<Input type="number" {...register("stock", { valueAsNumber: true })} maxWidth={"50px"} />
 						{errors.stock && <Text color="red.500">{errors.stock.message}</Text>}
 					</FormControl>
 					<FormControl isInvalid={!!errors.currency}>
 						<FormLabel>Currency</FormLabel>
-						<Select placeholder="Select currency" {...register("currency")}
-							maxWidth={'180px'}>
+						<Select placeholder="Select currency" {...register("currency")} maxWidth={"180px"}>
 							{currencies.map((currency) => (
 								<option key={currency.value} value={currency.value}>
 									{currency.label}
@@ -291,17 +289,22 @@ const EditComic = () => {
 					</FormControl>
 					<FormControl isInvalid={!!errors.price}>
 						<FormLabel>Price</FormLabel>
-						<Input type="number" step="0.01" {...register("price", { valueAsNumber: true })} maxWidth={'80px'}/>
+						<Input
+							type="number"
+							step="0.01"
+							{...register("price", { valueAsNumber: true })}
+							maxWidth={"80px"}
+						/>
 						{errors.price && <Text color="red.500">{errors.price.message}</Text>}
 					</FormControl>
 					<FormControl isInvalid={!!errors.pages}>
 						<FormLabel>Number of Pages</FormLabel>
-						<Input type="number" {...register("pages", { valueAsNumber: true })} maxWidth={'80px'}/>
+						<Input type="number" {...register("pages", { valueAsNumber: true })} maxWidth={"80px"} />
 						{errors.pages && <Text color="red.500">{errors.pages.message}</Text>}
 					</FormControl>
 					<FormControl isInvalid={!!errors.publisher}>
 						<FormLabel>Publisher</FormLabel>
-						<Select placeholder="Select publisher" {...register("publisher")} maxWidth={'200px'}>
+						<Select placeholder="Select publisher" {...register("publisher")} maxWidth={"200px"}>
 							{publishers.map((publisher) => (
 								<option key={publisher} value={publisher}>
 									{publisher}
@@ -312,26 +315,36 @@ const EditComic = () => {
 					</FormControl>
 					<FormControl isInvalid={!!errors.main_artist}>
 						<FormLabel>Main Artist</FormLabel>
-						<Input type="text" {...register("main_artist")} maxWidth={'250px'}/>
+						<Input type="text" {...register("main_artist")} maxWidth={"250px"} />
 						{errors.main_artist && <Text color="red.500">{errors.main_artist.message}</Text>}
 					</FormControl>
 					<FormControl isInvalid={!!errors.main_writer}>
 						<FormLabel>Main Writer</FormLabel>
-						<Input type="text" {...register("main_writer")} maxWidth={'250px'}/>
+						<Input type="text" {...register("main_writer")} maxWidth={"250px"} />
 						{errors.main_writer && <Text color="red.500">{errors.main_writer.message}</Text>}
 					</FormControl>
 					<FormControl isInvalid={!!errors.description}>
 						<FormLabel>Description</FormLabel>
 						{/* Hidden input for react-hook-form registration */}
 						<Input type="text" {...register("description")} style={{ display: "none" }} />
-						<RichTextEditor
-							value={watch("description")}
-							onChange={(value) => setValue("description", value)}
-							style={{ height: "300px" }}
-						/>
+						<Box
+							sx={{
+								".tox-tinymce": {
+									resize: "vertical",
+									minHeight: "300px",
+									maxHeight: "800px",
+									overflow: "auto",
+								},
+							}}
+						>
+							<RichTextEditor
+								value={watch("description")}
+								onChange={(value) => setValue("description", value)}
+							/>
+						</Box>
 						{errors.description && <Text color="red.500">{errors.description.message}</Text>}
 					</FormControl>
-					<Box  bottom={4} width="100%" textAlign="center" mt={8} pb={4}>
+					<Box bottom={4} width="100%" textAlign="center" mt={8} pb={4}>
 						<Button colorScheme="teal" width="300px" type="submit" isDisabled={loading} size="lg">
 							{loading ? "Loading ..." : "Update Comic"}
 						</Button>

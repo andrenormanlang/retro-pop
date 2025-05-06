@@ -27,8 +27,8 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import { useUser } from "@/contexts/UserContext";
 import ImageUpload from "./image-upload";
-import { useRouter } from 'next/navigation';
-import { redirectToLogin } from '@/utils/authRedirect';
+import { useRouter } from "next/navigation";
+import { redirectToLogin } from "@/utils/authRedirect";
 
 // Dynamically import RichTextEditor so it only runs on the client
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
@@ -95,7 +95,7 @@ export default function ComicFormClient() {
 	// Add simple redirect effect
 	useEffect(() => {
 		if (!isLoading && !user) {
-			redirectToLogin(router, '/comics-store/sell');
+			redirectToLogin(router, "/comics-store/sell");
 		}
 	}, [user, isLoading, router]);
 
@@ -303,11 +303,22 @@ export default function ComicFormClient() {
 
 						<FormControl isInvalid={!!errors.description}>
 							<FormLabel>Description</FormLabel>
-							<RichTextEditor
-								value={watch("description")}
-								onChange={(value) => setValue("description", value)}
-								placeholder="Enter description..."
-							/>
+							<Box
+								sx={{
+									".tox-tinymce": {
+										resize: "vertical",
+										minHeight: "300px",
+										maxHeight: "800px",
+										overflow: "auto",
+									},
+								}}
+							>
+								<RichTextEditor
+									value={watch("description")}
+									onChange={(value) => setValue("description", value)}
+									placeholder="Enter description..."
+								/>
+							</Box>
 							{errors.description && <Text color="red.500">{errors.description.message}</Text>}
 						</FormControl>
 
