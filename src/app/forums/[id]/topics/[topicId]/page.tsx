@@ -235,7 +235,7 @@ const PostPage = (props: { params: Promise<Params['params']> }) => {
                 {format(new Date(post.created_at), 'MMM d, yyyy, h:mm:ss a')}
               </Text>
               <Box mt={2} mb={2}>
-                <Text dangerouslySetInnerHTML={{ __html: post.content }} />
+                <Text className="ql-editor" dangerouslySetInnerHTML={{ __html: post.content }} />
               </Box>
               {post.image_url && <Image src={post.image_url} alt="Post image" maxWidth={{ base: "100%", md: "350px" }} />}
             </Box>

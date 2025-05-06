@@ -205,7 +205,7 @@ export default function BlogPostListClient({ initialPosts }: BlogPostListClientP
                   year: "numeric",
                 }).format(new Date(post.created_at))}
               </Text>
-              <Box noOfLines={3} dangerouslySetInnerHTML={{ __html: post.content }} />
+              <Box noOfLines={3} className="ql-editor" dangerouslySetInnerHTML={{ __html: post.content }} />
               {isAdmin && (
                 <Flex mt={4} justifyContent="flex-start">
                   <IconButton

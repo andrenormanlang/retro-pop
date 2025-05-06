@@ -401,10 +401,12 @@ const ComicDetail = () => {
         >
           <Box width="100%">
             <Text
-              fontSize={{ base: "sm", md: "lg" }}
-              color="white"
-              textAlign="start"
-              dangerouslySetInnerHTML={{ __html: comic.description }}
+              width="100%"
+			 className="ql-editor" // Add the ql-editor class here
+						   fontSize={{ base: "sm", md: "lg" }}
+						   color="white"
+						   textAlign="start"
+						   dangerouslySetInnerHTML={{ __html: comic.description }}
             />
           </Box>
         </Flex>

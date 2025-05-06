@@ -183,6 +183,7 @@ const IssuePage: NextPage = () => {
 							</Heading>
 								{description ? (
 									<div
+										className="ql-editor"
 										dangerouslySetInnerHTML={{
 											__html: comic.results.description,
 										}}
