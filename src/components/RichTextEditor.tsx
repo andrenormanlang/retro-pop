@@ -161,7 +161,6 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
                       stroke: ${colorMode === 'dark' ? '#90CDF4' : '#2B6CB0'} !important;
                  }
 
-                /* --- Custom Font Styles (match values in Font.whitelist) --- */
                 .ql-editor .ql-font-arial { font-family: Arial, sans-serif; }
                 .ql-editor .ql-font-comic-sans { font-family: "Comic Sans MS", cursive; }
                 .ql-editor .ql-font-courier-new { font-family: "Courier New", monospace; }

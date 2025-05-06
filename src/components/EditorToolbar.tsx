@@ -50,7 +50,7 @@ export const modules = {
     toolbar: [
         [{ header: [1, 2, 3, 4, 5, 6, false] }], // Headers and normal text
         [{ font: Font.whitelist }], // Font dropdown using the registered whitelist
-        [{ size: Size.whitelist }], // Size dropdown using the registered whitelist (px values)
+        [{ 'size': ['small', false, 'large', 'huge'] }], // Size dropdown using the registered whitelist (px values)
         ["bold", "italic", "underline", "strike"], // Basic formats
         [{ color: [] }, { background: [] }], // Color and background pickers
         [{ script: "sub" }, { script: "super" }], // Subscript/Superscript
