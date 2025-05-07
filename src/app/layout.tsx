@@ -55,7 +55,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 		<html lang="en" data-bs-theme="dark" className={`${inter.className} ${libreFranklin.className}`}>
 			<head>
 				{/* ignore the error below */}
-				<script crossOrigin="anonymous" src="//unpkg.com/react-scan/dist/auto.global.js" defer />
+				{/* The below is used for tracking automatically  performance issues in a React app.  */}
+				{/* <script crossOrigin="anonymous" src="//unpkg.com/react-scan/dist/auto.global.js" defer /> */}
 				{/* rest of your scripts go under */}
 			</head>
 			<body>
