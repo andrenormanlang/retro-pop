@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, User } from "@supabase/supabase-js";
 
 if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
 	throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL");
@@ -17,13 +17,27 @@ const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process
 	},
 });
 
+interface Profile {
+	id: string;
+	username: string | null;
+}
+
+interface Receipt {
+	profiles: Profile;
+	[key: string]: any;
+}
+
+interface AuthResponse {
+	users: User[];
+}
+
 export async function GET(request: NextRequest) {
 	try {
 		// Fetch receipts with user profiles
 		const { data: receiptsData, error: receiptsError } = await supabaseAdmin.from("receipts").select(`
-        *,
-        profiles:profiles (id, username)
-      `);
+            *,
+            profiles:profiles (id, username)
+        `);
 
 		if (receiptsError) {
 			console.error("Supabase receipts query error:", receiptsError);
@@ -31,7 +45,10 @@ export async function GET(request: NextRequest) {
 		}
 
 		// Fetch user emails from the authentication service
-		const { data: authData, error: authError } = await supabaseAdmin.auth.admin.listUsers();
+		const { data: authData, error: authError } = (await supabaseAdmin.auth.admin.listUsers()) as {
+			data: AuthResponse;
+			error: Error | null;
+		};
 
 		if (authError) {
 			console.error("Supabase auth query error:", authError);
@@ -39,10 +56,10 @@ export async function GET(request: NextRequest) {
 		}
 
 		// Merge the data based on user ID
-		const mergedData = receiptsData.map((receipt) => {
+		const mergedData = (receiptsData as Receipt[]).map((receipt) => {
 			const profile = receipt.profiles;
-
 			const authUser = authData.users.find((user) => user.id === profile.id);
+
 			return {
 				...receipt,
 				profiles: {
