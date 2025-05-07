@@ -17,8 +17,10 @@ import {
 	Stack,
 	useToast,
 	Badge,
+	Icon,
 } from "@chakra-ui/react";
 import { HamburgerIcon, CloseIcon, MoonIcon, SunIcon, ChevronDownIcon, ChevronUpIcon, AddIcon } from "@chakra-ui/icons";
+import { VscAccount, VscSignOut } from "react-icons/vsc";
 import ShoppingCartButton from "@/helpers/ShoppingCartButton";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/utils/supabase/client";
@@ -318,8 +320,21 @@ const Navbar = () => {
 	};
 
 	const avatarMenuListStyle = {
-		...customMenuListStyle,
-		width: { base: "4rem", md: "6rem" },
+		bg: useColorModeValue('white', 'gray.800'),
+		border: '1px solid',
+		borderColor: useColorModeValue('gray.200', 'whiteAlpha.300'),
+		borderRadius: 'xl',
+		boxShadow: 'lg',
+		minW: '200px',
+		p: '3',
+		mt: '4',
+		zIndex: 'popover',
+		backdropFilter: 'blur(8px)',
+		backgroundColor: useColorModeValue('rgba(255, 255, 255, 0.95)', 'rgba(26, 32, 44, 0.95)'),
+		_dark: {
+			bg: 'gray.800',
+			borderColor: 'whiteAlpha.300'
+		}
 	};
 
 	const marvelButtonStyle = {
@@ -333,20 +348,31 @@ const Navbar = () => {
 	};
 
 	const menuItemStyle = {
-		width: "100%",
-		padding: "0.7rem 1rem",
-		fontWeight: "700",
-		fontSize: { base: "1rem", md: "1.1rem" },
-		color: "gray.800",
-		_dark: {
-			color: "white",
-		},
-		transition: "all 0.2s ease-in-out",
+		p: '3',
+		m: '1',
+		borderRadius: 'md',
+		transition: 'all 0.2s',
+		bg: 'transparent',
+		color: useColorModeValue('gray.700', 'whiteAlpha.900'),
 		_hover: {
-			bg: "blue.500",
-			color: "white",
-			transform: "translateX(5px)",
+			bg: useColorModeValue('blue.50', 'whiteAlpha.100'),
+			color: useColorModeValue('blue.600', 'white'),
+			transform: 'translateX(4px)',
 		},
+		_focus: {
+			bg: useColorModeValue('blue.100', 'whiteAlpha.200'),
+			color: useColorModeValue('blue.700', 'white'),
+			boxShadow: 'outline'
+		},
+		_active: {
+			bg: useColorModeValue('blue.100', 'whiteAlpha.200'),
+			color: useColorModeValue('blue.700', 'white'),
+		},
+		display: 'flex',
+		alignItems: 'center',
+		gap: '3',
+		fontSize: '0.95rem',
+		fontWeight: '500'
 	};
 
 	const menuItems: MenuType[] = [
@@ -436,8 +462,17 @@ const Navbar = () => {
 	);
 
 	const renderAvatarItem = (name: string, href?: string, onClick?: () => void) => (
-		<Link href={href} onClick={onClick} style={{ textDecoration: "none", width: "100%" }}>
-			<MenuItem {...buttonAvatarStyle}>{name}</MenuItem>
+		<Link href={href ?? '#'} onClick={onClick} style={{ textDecoration: "none", width: "100%" }}>
+			<MenuItem 
+				{...menuItemStyle} 
+				icon={
+					name === "Profile" 
+						? <Icon as={VscAccount} fontSize="1.2rem" color={useColorModeValue('blue.500', 'blue.200')} /> 
+						: <Icon as={VscSignOut} fontSize="1.2rem" color={useColorModeValue('red.500', 'red.200')} />
+				}
+			>
+				{name}
+			</MenuItem>
 		</Link>
 	);
 
@@ -515,14 +550,39 @@ const Navbar = () => {
 								isOpen={isAvatarMenuOpen}
 								onOpen={handleToggleAvatarMenu}
 								onClose={handleToggleAvatarMenu}
+								autoSelect={false}
+								closeOnSelect
+								gutter={4}
 							>
-								<MenuButton as={Box} position="relative" display="flex" alignItems="center">
+								<MenuButton
+									as={Box}
+									position="relative"
+									display="flex"
+									alignItems="center"
+									cursor="pointer"
+									transition="all 0.2s"
+									_hover={{
+										transform: 'scale(1.05)'
+									 }}
+									_active={{
+										transform: 'scale(0.95)'
+									 }}
+								>
 									<AvatarNav uid={user.id} size={{ base: 12, md: 14 }} />
-									<Box position="absolute" bottom="-15px" left="50%" transform="translateX(-50%)">
+									<Box 
+										position="absolute" 
+										bottom="-15px" 
+										left="50%" 
+										transform="translateX(-50%)"
+										transition="all 0.2s"
+										color={useColorModeValue('gray.600', 'gray.400')}
+										opacity={0.8}
+										_groupHover={{ opacity: 1 }}
+									>
 										{isAvatarMenuOpen ? (
-											<ChevronDownIcon boxSize={{ base: 4, md: 5 }} />
-										) : (
 											<ChevronUpIcon boxSize={{ base: 4, md: 5 }} />
+										) : (
+											<ChevronDownIcon boxSize={{ base: 4, md: 5 }} />
 										)}
 									</Box>
 								</MenuButton>

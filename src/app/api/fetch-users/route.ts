@@ -1,60 +1,69 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 
-// Hard-code the Supabase URL and Service Role Key for testing
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL as string
-const SUPABASE_SERVICE_ROLE_KEY =    process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY as string
+if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+	throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL");
+}
 
-// Initialize Supabase client with the hard-coded service role key
-const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+	throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY");
+}
+
+// Initialize Supabase client with service role key for admin operations
+const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
+	auth: {
+		autoRefreshToken: false,
+		persistSession: false,
+	},
+});
 
 export async function GET(request: NextRequest) {
-  try {
-    // Fetch user profiles
-    const { data: profileData, error: profileError } = await supabaseAdmin
-      .from('profiles')
-      .select('id, username, full_name, avatar_url');
+	try {
+		// Fetch user profiles
+		const { data: profileData, error: profileError } = await supabaseAdmin
+			.from("profiles")
+			.select("id, username, full_name, avatar_url");
 
-    if (profileError) {
-      console.error('Supabase profile query error:', profileError);
-      throw new Error(`Supabase query failed: ${profileError.message}`);
-    }
+		if (profileError) {
+			console.error("Supabase profile query error:", profileError);
+			throw new Error(`Supabase query failed: ${profileError.message}`);
+		}
 
-    // Fetch user emails from the authentication service
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.listUsers();
+		// Fetch user emails from the authentication service
+		const { data: authData, error: authError } = await supabaseAdmin.auth.admin.listUsers();
 
-    if (authError) {
-      console.error('Supabase auth query error:', authError);
-      throw new Error(`Supabase auth query failed: ${authError.message}`);
-    }
+		if (authError) {
+			console.error("Supabase auth query error:", authError);
+			throw new Error(`Supabase auth query failed: ${authError.message}`);
+		}
 
-    // Merge the data based on user ID
-    const mergedData = profileData.map((profile) => {
-		// @ts-ignore
-      const authUser = authData.users.find((user) => user.id === profile.id);
-      return {
-        ...profile,
-        email: authUser ? authUser.email : null,
-		created: authUser ? authUser.created_at : null,
-		last_sign_in: authUser ? authUser.last_sign_in_at : null,
-      };
-    });
+		// Merge the data based on user ID
+		const mergedData = profileData.map((profile) => {
+			// @ts-ignore
+			const authUser = authData.users.find((user) => user.id === profile.id);
+			return {
+				...profile,
+				email: authUser ? authUser.email : null,
+				created: authUser ? authUser.created_at : null,
+				last_sign_in: authUser ? authUser.last_sign_in_at : null,
+			};
+		});
 
-    return new NextResponse(JSON.stringify({ users: mergedData }), {
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      },
-    });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'An unknown error occurred';
-    console.error('API route error:', message);
-    return new NextResponse(JSON.stringify({ error: message }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      },
-    });
-  }
+		return new NextResponse(JSON.stringify({ users: mergedData }), {
+			headers: {
+				"Content-Type": "application/json",
+				"Access-Control-Allow-Origin": "*",
+			},
+		});
+	} catch (error) {
+		const message = error instanceof Error ? error.message : "An unknown error occurred";
+		console.error("API route error:", message);
+		return new NextResponse(JSON.stringify({ error: message }), {
+			status: 500,
+			headers: {
+				"Content-Type": "application/json",
+				"Access-Control-Allow-Origin": "*",
+			},
+		});
+	}
 }
