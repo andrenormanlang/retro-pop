@@ -68,7 +68,7 @@ const AdminPage = () => {
       <Center h="100vh">
         <Alert status="error">
           <AlertIcon />
-          You do not have permission to access this page.
+          You do not have permission to access this page. Check your user role.
         </Alert>
       </Center>
     );
