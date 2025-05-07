@@ -1,17 +1,19 @@
-import { useInfiniteQuery, QueryFunctionContext } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { supabase } from "@/utils/supabase/client";
 import { Comic } from "@/types/comics-store/comic-detail.type";
-
-interface FetchComicsParams extends QueryFunctionContext<[string, string]> {
-	pageParam?: number;
-}
 
 interface FetchComicsResult {
 	comics: Comic[];
 	nextPage?: number;
 }
 
-const fetchComics = async ({ pageParam = 0, queryKey }: FetchComicsParams): Promise<FetchComicsResult> => {
+const fetchComics = async ({
+	pageParam = 0,
+	queryKey,
+}: {
+	pageParam?: number;
+	queryKey: [string, string];
+}): Promise<FetchComicsResult> => {
 	const searchQuery = queryKey[1];
 	const pageSize = 8;
 
@@ -33,9 +35,10 @@ const fetchComics = async ({ pageParam = 0, queryKey }: FetchComicsParams): Prom
 };
 
 export const useInfiniteComics = (searchQuery: string) => {
-	return useInfiniteQuery<FetchComicsResult, Error>({
-		queryKey: ["comics", searchQuery],
+	return useInfiniteQuery({
+		queryKey: ["comics", searchQuery] as const,
 		queryFn: fetchComics,
 		getNextPageParam: (lastPage) => lastPage.nextPage,
+		initialPageParam: 0,
 	});
 };
