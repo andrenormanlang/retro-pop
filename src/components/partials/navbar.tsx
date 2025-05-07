@@ -221,10 +221,10 @@ const Navbar = () => {
 		bg: "blue.500",
 		borderRadius: "md",
 		outline: "none",
+		transition: "all 0.2s ease-in-out",
 		_hover: {
 			bg: "blue.600",
 			transform: "scale(1.05)",
-			transition: "all 0.2s",
 		},
 		_active: {
 			bg: "blue.700",
@@ -301,11 +301,12 @@ const Navbar = () => {
 		borderWidth: "0.5px",
 		borderRadius: "md",
 		boxShadow: "lg",
-		minWidth: "5rem",
-		width: { base: "220px", md: "310px" },
+		minWidth: "fit-content",
+		maxWidth: { base: "220px", md: "310px" },
 		bg: menuBgColor,
 		color: menuColor,
 		outline: "none",
+		padding: "0.5rem",
 		margin: "1",
 		_hover: {
 			bg: menuItemHoverBg,
@@ -329,6 +330,23 @@ const Navbar = () => {
 		color: "white",
 		padding: "1rem",
 		letterSpacing: "-0.15rem",
+	};
+
+	const menuItemStyle = {
+		width: "100%",
+		padding: "0.7rem 1rem",
+		fontWeight: "700",
+		fontSize: { base: "1rem", md: "1.1rem" },
+		color: "gray.800",
+		_dark: {
+			color: "white",
+		},
+		transition: "all 0.2s ease-in-out",
+		_hover: {
+			bg: "blue.500",
+			color: "white",
+			transform: "translateX(5px)",
+		},
 	};
 
 	const menuItems: MenuType[] = [
@@ -386,19 +404,31 @@ const Navbar = () => {
 	}
 
 	const renderMenuItem = (item: MenuType | SubmenuType, index: number | string) => (
-		<Menu key={index}>
-			<MenuButton as={Button} {...(item.name === "MARVEL" ? marvelButtonStyle : buttonStyle)}>
+		<Menu key={index} isLazy>
+			<MenuButton
+				as={Button}
+				{...(item.name === "MARVEL" ? marvelButtonStyle : buttonStyle)}
+				rightIcon={<ChevronDownIcon />}
+			>
 				{item.name}
 			</MenuButton>
 			<MenuList {...customMenuListStyle}>
 				{item.submenu?.map((subItem, subIndex) =>
 					subItem.submenu ? (
-						// For items with further nested submenus (recursive call for deeper levels)
 						renderMenuItem(subItem, `${index}-${subIndex}`)
 					) : (
-						<Link key={subIndex} href={subItem.href} style={{ textDecoration: "none", width: "100%" }}>
-							<MenuItem {...buttonStyle}>{subItem.name}</MenuItem>
-						</Link>
+						<MenuItem
+							key={subIndex}
+							as={Link}
+							href={subItem.href}
+							{...menuItemStyle}
+							display="flex"
+							alignItems="center"
+							justifyContent="flex-start"
+							width="100%"
+						>
+							{subItem.name}
+						</MenuItem>
 					)
 				)}
 			</MenuList>
