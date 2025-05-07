@@ -231,6 +231,25 @@ const Navbar = () => {
 		},
 	};
 
+	const aboutButtonStyle = {
+		...buttonStyle,
+		bg: "purple.500",
+		color: "white",
+		fontWeight: "700",
+		fontSize: { base: "1.1rem", md: "1.4rem" },
+		letterSpacing: "0.15rem",
+		transition: "all 0.3s ease",
+		transform: "scale(1)",
+		_hover: {
+			bg: "purple.400",
+			transform: "scale(1.05)",
+			boxShadow: "lg",
+		},
+		_active: {
+			bg: "purple.600",
+		},
+	};
+
 	const menuBgColor = useColorModeValue("white", "gray.800");
 	const menuColor = useColorModeValue("black", "white");
 	const menuItemHoverBg = useColorModeValue("gray.200", "gray.600");
@@ -307,9 +326,7 @@ const Navbar = () => {
 				},
 				{
 					name: "Metron Cloud",
-					submenu: [
-						{ name: "Issues", href: "/search/metron/metron-issues" },
-					],
+					submenu: [{ name: "Issues", href: "/search/metron/metron-issues" }],
 				},
 			],
 		},
@@ -361,7 +378,7 @@ const Navbar = () => {
 			width="100%"
 			zIndex={10}
 			bg="gray.800"
-			height={{ base: "5rem", md: "6.5rem" }}
+
 			boxShadow="0 2px 4px rgba(0,0,0,0.2)"
 		>
 			<Flex
@@ -378,21 +395,24 @@ const Navbar = () => {
 						<RetroPopLogo size={{ base: "60px", md: "80px" }} />
 					</Link>
 				</Flex>
+
 				<Flex align="center">
 					<Link href="/releases" style={{ textDecoration: "none" }}>
 						<Button {...newReleaseButtonStyle}>NEW!</Button>
 					</Link>
+
 					<Link href="/comic-suggestion/form" style={{ textDecoration: "none" }}>
 						<Button
 							colorScheme="blue"
 							mr={3}
 							fontSize={{ base: "1rem", md: "1.5rem" }}
-							fontFamily="Bangers" // <-- Your custom font family
-							color="red.500" // <-- Text color
+							fontFamily="Bangers"
+							color="red.500"
 						>
 							AI !
 						</Button>
 					</Link>
+
 					{user && (
 						<Box position="relative" mr={3}>
 							<IconButton
@@ -423,6 +443,9 @@ const Navbar = () => {
 							</Badge>
 						</Box>
 					)}
+
+
+
 					{!isMainMenuOpen && (
 						<IconButton
 							onClick={handleOpenMainMenu}
@@ -433,6 +456,7 @@ const Navbar = () => {
 							mr={2}
 						/>
 					)}
+
 					{user && (
 						<Flex align="center" ml={4}>
 							<Menu
@@ -457,6 +481,7 @@ const Navbar = () => {
 							</Menu>
 						</Flex>
 					)}
+
 					<IconButton
 						aria-label="Toggle theme"
 						icon={colorMode === "dark" ? <SunIcon /> : <MoonIcon />}
@@ -465,62 +490,66 @@ const Navbar = () => {
 						size={{ base: "sm", md: "md" }}
 					/>
 				</Flex>
-				<motion.div
-					ref={containerRef} // Use the ref here
-					variants={variants}
-					initial="closed"
-					animate={isOpen ? "open" : "closed"}
-					transition={{ duration: 0.2 }}
-					style={{
-						display: isOpen ? "block" : "none",
-						position: "fixed",
-						top: 0,
-						left: 0,
-						zIndex: 1000,
-						width: "100%",
-						height: "100%",
-						backgroundColor: "black",
-					}}
-				>
-					{isOpen && (
-						<IconButton
-							onClick={handleCloseMainMenu}
-							aria-label="Close menu"
-							icon={<CloseIcon boxSize={5} />}
-							position="absolute"
-							top="1rem"
-							right="1rem"
-							zIndex="tooltip"
-						/>
-					)}
-					<Stack spacing={4} align="center" justify="center" pt="5rem">
-						{!user && (
-							<>
-								<Button as={Link} href="/auth/login" {...buttonStyle}>
-									Login
-								</Button>
-								<Button as={Link} href="/auth/signup" {...buttonStyle}>
-									Sign Up
-								</Button>
-							</>
-						)}
-						{user && (
-							<>
-								<Button as={Link} href="/comics-store/sell" {...buttonStyle}>
-									Tip Us!
-								</Button>
-							</>
-						)}
-						<Button as={Link} href="/blog" {...buttonStyle}>
-							Blog
-						</Button>
-						{menuItems.map((item, index) => (item.submenu ? renderMenuItem(item, index) : null))}
-						<Button as={Link} href="/forums" {...buttonStyle}>
-							Forums
-						</Button>
-					</Stack>
-				</motion.div>
 			</Flex>
+
+			{/* Mobile menu */}
+			<motion.div
+				ref={containerRef}
+				variants={variants}
+				initial="closed"
+				animate={isOpen ? "open" : "closed"}
+				transition={{ duration: 0.2 }}
+				style={{
+					display: isOpen ? "block" : "none",
+					position: "fixed",
+					top: 0,
+					left: 0,
+					zIndex: 1000,
+					width: "100%",
+					height: "100%",
+					backgroundColor: "black",
+				}}
+			>
+				{isOpen && (
+					<IconButton
+						onClick={handleCloseMainMenu}
+						aria-label="Close menu"
+						icon={<CloseIcon boxSize={5} />}
+						position="absolute"
+						top="1rem"
+						right="1rem"
+						zIndex="tooltip"
+					/>
+				)}
+				<Stack spacing={4} align="center" justify="center" pt="5rem">
+					{!user && (
+						<>
+							<Button as={Link} href="/auth/login" {...buttonStyle}>
+								Login
+							</Button>
+							<Button as={Link} href="/auth/signup" {...buttonStyle}>
+								Sign Up
+							</Button>
+						</>
+					)}
+					<Button as={Link} href="/about" {...aboutButtonStyle}>
+						About
+					</Button>
+					{user && (
+						<Button as={Link} href="/comics-store/sell" {...buttonStyle}>
+							Tip Us!
+						</Button>
+					)}
+					<Button as={Link} href="/blog" {...buttonStyle}>
+						Blog
+					</Button>
+					{menuItems.map((item, index) => (item.submenu ? renderMenuItem(item, index) : null))}
+
+					<Button as={Link} href="/forums" {...buttonStyle}>
+						Forums
+					</Button>
+				</Stack>
+			</motion.div>
 			<CartDrawer isOpen={isDrawerOpen} onClose={onDrawerClose} />
 		</Box>
 	);

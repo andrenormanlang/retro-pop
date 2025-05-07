@@ -15,6 +15,7 @@ import Link from "@tiptap/extension-link";
 import Color from "@tiptap/extension-color";
 import Highlight from "@tiptap/extension-highlight";
 import Image from "@tiptap/extension-image";
+import ImageResize from "tiptap-extension-resize-image";
 
 // Define component props interface
 export interface RichTextEditorProps {
@@ -84,6 +85,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 				inline: true,
 				allowBase64: true,
 			}),
+			ImageResize,
 		],
 		content: value,
 		editable: !readOnly,
@@ -489,6 +491,45 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 				.tiptap-editor .ProseMirror img {
 					max-width: 100%;
 					height: auto;
+					cursor: pointer;
+					display: block;
+					margin: 0 auto;
+				}
+
+				.tiptap-editor .ProseMirror img.ProseMirror-selectednode {
+					outline: 2px solid #68cef8;
+				}
+
+				.resize-trigger {
+					position: absolute;
+					width: 8px;
+					height: 8px;
+					border: 1px solid #68cef8;
+					background: white;
+				}
+
+				.resize-trigger-br {
+					bottom: -4px;
+					right: -4px;
+					cursor: se-resize;
+				}
+
+				.resize-trigger-bl {
+					bottom: -4px;
+					left: -4px;
+					cursor: sw-resize;
+				}
+
+				.resize-trigger-tr {
+					top: -4px;
+					right: -4px;
+					cursor: ne-resize;
+				}
+
+				.resize-trigger-tl {
+					top: -4px;
+					left: -4px;
+					cursor: nw-resize;
 				}
 
 				.tiptap-editor .ProseMirror p.is-editor-empty:first-child::before {
