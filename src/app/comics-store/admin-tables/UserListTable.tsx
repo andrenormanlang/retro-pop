@@ -9,7 +9,6 @@ import {
 	Td,
 	TableContainer,
 	Avatar,
-	Container,
 	Heading,
 	Spinner,
 	Center,
@@ -36,15 +35,20 @@ const UserListTable = () => {
 		return data.filter(
 			(user: User) =>
 				(user.username?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-				(user.email?.toLowerCase() || "").includes(searchQuery.toLowerCase())
+				(user.email?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+				(user.full_name?.toLowerCase() || "").includes(searchQuery.toLowerCase())
 		);
 	}, [data, searchQuery]);
 
 	const sortedAndFilteredUsers = useMemo(() => {
-		return filteredUsers.sort((a: User, b: User) => {
+		return [...filteredUsers].sort((a: User, b: User) => {
 			if (!sortConfig) return 0;
 			const aValue = a[sortConfig.key];
 			const bValue = b[sortConfig.key];
+
+			if (!aValue && !bValue) return 0;
+			if (!aValue) return 1;
+			if (!bValue) return -1;
 
 			if (aValue < bValue) {
 				return sortConfig.direction === "ascending" ? -1 : 1;
@@ -64,6 +68,15 @@ const UserListTable = () => {
 		setSortConfig({ key, direction });
 	};
 
+	const formatDate = (dateString: string | null) => {
+		if (!dateString) return "N/A";
+
+		const date = new Date(dateString);
+		const dateOptions = { day: "2-digit", month: "2-digit", year: "2-digit" } as const;
+		const timeOptions = { hour: "2-digit", minute: "2-digit" } as const;
+		return `${date.toLocaleDateString("en-GB", dateOptions)} ${date.toLocaleTimeString("en-GB", timeOptions)}`;
+	};
+
 	if (isLoading) {
 		return (
 			<Center h="100vh">
@@ -77,31 +90,11 @@ const UserListTable = () => {
 			<Center h="100vh">
 				<Alert status="error">
 					<AlertIcon />
-					{error.message}
+					{error instanceof Error ? error.message : "An error occurred"}
 				</Alert>
 			</Center>
 		);
 	}
-
-	if (!Array.isArray(data)) {
-		return (
-			<Center h="100vh">
-				<Alert status="error">
-					<AlertIcon />
-					Unexpected data format
-				</Alert>
-			</Center>
-		);
-	}
-
-	const formatDate = (dateString?: string) => {
-		if (!dateString) return "N/A"; // Return "N/A" or any placeholder if the date string is undefined
-
-		const dateOptions = { day: "2-digit", month: "2-digit", year: "2-digit" } as const;
-		const timeOptions = { hour: "2-digit", minute: "2-digit" } as const;
-		const date = new Date(dateString);
-		return `${date.toLocaleDateString("en-GB", dateOptions)} ${date.toLocaleTimeString("en-GB", timeOptions)}`;
-	};
 
 	return (
 		<Box maxW="1300px" mx="auto" p={4}>
@@ -114,39 +107,54 @@ const UserListTable = () => {
 						<AccordionIcon />
 					</AccordionButton>
 					<AccordionPanel pb={4}>
-						<TableContainer>
-							<SearchBar
-								onSearch={setSearchQuery}
-								searchQuery={searchQuery}
-								totalResults={sortedAndFilteredUsers.length}
-							/>
+						<SearchBar
+							onSearch={setSearchQuery}
+							searchQuery={searchQuery}
+							totalResults={sortedAndFilteredUsers.length}
+						/>
 
+						<TableContainer>
 							<Table variant="simple">
 								<Thead>
 									<Tr>
-										<Th onClick={() => requestSort("avatar_url")}>Avatar</Th>
-										<Th textAlign="center" onClick={() => requestSort("registration date")}>
+										<Th textAlign="center" onClick={() => requestSort("avatar_url")}>
+											Avatar
+										</Th>
+										<Th textAlign="center" onClick={() => requestSort("created")}>
 											Registration Date
 										</Th>
-										<Th onClick={() => requestSort("full_name")}>Full Name</Th>
-										<Th onClick={() => requestSort("username")}>Username</Th>
-										<Th onClick={() => requestSort("email")}>Email</Th>
-										<Th textAlign="center" onClick={() => requestSort("last signed in")}>
+										<Th textAlign="center" onClick={() => requestSort("full_name")}>
+											Full Name
+										</Th>
+										<Th textAlign="center" onClick={() => requestSort("username")}>
+											Username
+										</Th>
+										<Th textAlign="center" onClick={() => requestSort("email")}>
+											Email
+										</Th>
+										<Th textAlign="center" onClick={() => requestSort("last_sign_in")}>
 											Last Signed In
+										</Th>
+										<Th textAlign="center" onClick={() => requestSort("is_admin")}>
+											Admin Status
 										</Th>
 									</Tr>
 								</Thead>
 								<Tbody>
 									{sortedAndFilteredUsers.map((user: User) => (
 										<Tr key={user.id}>
-											<Td>
-												<Avatar src={user.avatar_url} name={user.username || "N/A"} />
+											<Td textAlign="center">
+												<Avatar
+													src={user.avatar_url || undefined}
+													name={user.username || "N/A"}
+												/>
 											</Td>
 											<Td textAlign="center">{formatDate(user.created)}</Td>
-											<Td>{user.full_name || "No Name Provided"}</Td>
-											<Td>{user.username || "No Username"}</Td>
-											<Td>{user.email || "No Email"}</Td>
+											<Td textAlign="center">{user.full_name || "No Name Provided"}</Td>
+											<Td textAlign="center">{user.username || "No Username"}</Td>
+											<Td textAlign="center">{user.email || "No Email"}</Td>
 											<Td textAlign="center">{formatDate(user.last_sign_in)}</Td>
+											<Td textAlign="center">{user.is_admin ? "Yes" : "No"}</Td>
 										</Tr>
 									))}
 								</Tbody>

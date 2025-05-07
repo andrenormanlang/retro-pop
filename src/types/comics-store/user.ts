@@ -1,17 +1,15 @@
 export type User = {
 	id: string;
-	username: string;
-	email: string;
-	avatar_url?: string;
-	created?: string;
-	last_sign_in?: string;
-	is_admin?: boolean;
-	[key: string]: any;  // This line is the index signature
-  }
+	username: string | null;
+	full_name: string | null;
+	email: string | null;
+	avatar_url: string | null;
+	created: string | null;
+	last_sign_in: string | null;
+	is_admin: boolean;
+};
 
-
-  export type SortConfig = {
+export type SortConfig = {
 	key: keyof User;
-	direction: 'ascending' | 'descending';
-  }
-
+	direction: "ascending" | "descending";
+};
