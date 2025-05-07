@@ -118,7 +118,7 @@ const ComicsListTable = () => {
 			toast({
 				title: isApproved ? "Comic approved." : "Comic disapproved.",
 				description: isApproved ? "The comic has been approved." : "The comic has been set to not approved.",
-				status: "success",
+				status: isApproved ? "success" : "warning",
 				duration: 5000,
 				isClosable: true,
 			});

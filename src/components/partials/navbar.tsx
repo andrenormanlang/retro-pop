@@ -20,7 +20,7 @@ import {
 } from "@chakra-ui/react";
 import { HamburgerIcon, CloseIcon, MoonIcon, SunIcon, ChevronDownIcon, ChevronUpIcon, AddIcon } from "@chakra-ui/icons";
 import ShoppingCartButton from "@/helpers/ShoppingCartButton";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/utils/supabase/client";
 import RetroPopLogo from "@/helpers/RetroPopLogo";
 import { MenuType, SubmenuType } from "@/types/navbar/nav.types";
@@ -100,6 +100,18 @@ const Navbar = () => {
 		}
 	}, [user]);
 
+	// Add useEffect for handling body scroll
+	useEffect(() => {
+		if (isOpen) {
+			document.body.style.overflow = "hidden";
+		} else {
+			document.body.style.overflow = "unset";
+		}
+		return () => {
+			document.body.style.overflow = "unset";
+		};
+	}, [isOpen]);
+
 	const handleSignOut = async () => {
 		setLoading(true);
 		try {
@@ -145,13 +157,57 @@ const Navbar = () => {
 	};
 
 	const variants = {
-		open: { opacity: 1, x: 0 },
-		closed: { opacity: 0, x: "-100%" },
+		open: {
+			opacity: 1,
+			y: 0,
+			scale: 1,
+			transition: {
+				type: "spring",
+				stiffness: 300,
+				damping: 30,
+				staggerChildren: 0.1,
+				when: "beforeChildren",
+			},
+		},
+		closed: {
+			opacity: 0,
+			y: "-10%",
+			scale: 0.95,
+			transition: {
+				type: "spring",
+				stiffness: 300,
+				damping: 30,
+				staggerChildren: 0.05,
+				staggerDirection: -1,
+				when: "afterChildren",
+			},
+		},
+	};
+
+	const itemVariants = {
+		open: {
+			opacity: 1,
+			y: 0,
+			transition: {
+				type: "spring",
+				stiffness: 300,
+				damping: 30,
+			},
+		},
+		closed: {
+			opacity: 0,
+			y: 20,
+			transition: {
+				type: "spring",
+				stiffness: 300,
+				damping: 30,
+			},
+		},
 	};
 
 	const buttonStyle = {
 		width: "100%",
-		maxWidth: { base: "220px", md: "310px" },
+		maxWidth: "220px",
 		fontWeight: "700",
 		fontFamily: "Bangers",
 		fontSize: { base: "1rem", md: "1.3rem" },
@@ -160,21 +216,20 @@ const Navbar = () => {
 		justifyContent: "center",
 		alignItems: "center",
 		display: "flex",
-		height: "2rem",
+		height: "2.5rem",
 		my: "0.5rem",
 		bg: "blue.500",
 		borderRadius: "md",
 		outline: "none",
 		_hover: {
-			bg: "blue.500",
-			color: "white",
+			bg: "blue.600",
+			transform: "scale(1.05)",
+			transition: "all 0.2s",
 		},
 		_active: {
 			bg: "blue.700",
-			color: "white",
 		},
 		_focus: {
-			bg: "blue.600",
 			boxShadow: "outline",
 		},
 	};
@@ -208,45 +263,31 @@ const Navbar = () => {
 	};
 
 	const newReleaseButtonStyle = {
-		width: "auto",
-		fontWeight: "900",
-		fontFamily: "Bangers",
-		fontSize: { base: "1.2rem", md: "1.5rem" },
-		letterSpacing: "0.1rem",
-		color: "white",
-		padding: "0.5rem 1rem",
-		bg: "red.500",
-		borderRadius: "md",
-		mr: 3,
+		...buttonStyle,
+		bg: "green.500",
+		color: "red.500",
 		_hover: {
-			bg: "red.600",
+			bg: "green.600",
+			color: "red.400",
 			transform: "scale(1.05)",
 			transition: "all 0.2s",
 		},
 		_active: {
-			bg: "red.700",
-		},
-		_focus: {
-			boxShadow: "outline",
+			bg: "green.700",
+			color: "red.600",
 		},
 	};
 
 	const aboutButtonStyle = {
 		...buttonStyle,
 		bg: "purple.500",
-		color: "white",
-		fontWeight: "700",
-		fontSize: { base: "1.1rem", md: "1.4rem" },
-		letterSpacing: "0.15rem",
-		transition: "all 0.3s ease",
-		transform: "scale(1)",
 		_hover: {
-			bg: "purple.400",
+			bg: "purple.600",
 			transform: "scale(1.05)",
-			boxShadow: "lg",
+			transition: "all 0.2s",
 		},
 		_active: {
-			bg: "purple.600",
+			bg: "purple.700",
 		},
 	};
 
@@ -378,8 +419,7 @@ const Navbar = () => {
 			width="100%"
 			zIndex={10}
 			bg="gray.800"
-
-			boxShadow="0 2px 4px rgba(0,0,0,0.2)"
+			boxShadow="0 2px 4px rgba(0,0,0,0.5)"
 		>
 			<Flex
 				justify="space-between"
@@ -397,22 +437,6 @@ const Navbar = () => {
 				</Flex>
 
 				<Flex align="center">
-					<Link href="/releases" style={{ textDecoration: "none" }}>
-						<Button {...newReleaseButtonStyle}>NEW!</Button>
-					</Link>
-
-					<Link href="/comic-suggestion/form" style={{ textDecoration: "none" }}>
-						<Button
-							colorScheme="blue"
-							mr={3}
-							fontSize={{ base: "1rem", md: "1.5rem" }}
-							fontFamily="Bangers"
-							color="red.500"
-						>
-							AI !
-						</Button>
-					</Link>
-
 					{user && (
 						<Box position="relative" mr={3}>
 							<IconButton
@@ -443,8 +467,6 @@ const Navbar = () => {
 							</Badge>
 						</Box>
 					)}
-
-
 
 					{!isMainMenuOpen && (
 						<IconButton
@@ -493,63 +515,135 @@ const Navbar = () => {
 			</Flex>
 
 			{/* Mobile menu */}
-			<motion.div
-				ref={containerRef}
-				variants={variants}
-				initial="closed"
-				animate={isOpen ? "open" : "closed"}
-				transition={{ duration: 0.2 }}
-				style={{
-					display: isOpen ? "block" : "none",
-					position: "fixed",
-					top: 0,
-					left: 0,
-					zIndex: 1000,
-					width: "100%",
-					height: "100%",
-					backgroundColor: "black",
-				}}
-			>
+			<AnimatePresence>
 				{isOpen && (
-					<IconButton
-						onClick={handleCloseMainMenu}
-						aria-label="Close menu"
-						icon={<CloseIcon boxSize={5} />}
-						position="absolute"
-						top="1rem"
-						right="1rem"
-						zIndex="tooltip"
-					/>
+					<motion.div
+						ref={containerRef}
+						variants={variants}
+						initial="closed"
+						animate="open"
+						exit="closed"
+						style={{
+							position: "fixed",
+							top: 0,
+							left: 0,
+							right: 0,
+							bottom: 0,
+							zIndex: 1000,
+							backgroundColor: "rgba(0, 0, 0, 0.95)",
+							backdropFilter: "blur(10px)",
+							overflow: "auto",
+						}}
+					>
+						<motion.div
+							initial={{ opacity: 0, scale: 0.9 }}
+							animate={{ opacity: 1, scale: 1 }}
+							exit={{ opacity: 0, scale: 0.9 }}
+							transition={{ type: "spring", stiffness: 300, damping: 30 }}
+						>
+							<IconButton
+								onClick={handleCloseMainMenu}
+								aria-label="Close menu"
+								icon={<CloseIcon boxSize={5} />}
+								position="absolute"
+								top="1rem"
+								right="1rem"
+								zIndex="tooltip"
+								bg="transparent"
+								_hover={{ bg: "whiteAlpha.200" }}
+								transition="all 0.2s"
+							/>
+						</motion.div>
+						<Stack spacing={4} align="center" justify="center" pt="5rem" width="100%" px={4}>
+							{!user && (
+								<>
+									<motion.div
+										variants={itemVariants}
+										style={{ width: "100%", display: "flex", justifyContent: "center" }}
+									>
+										<Button as={Link} href="/auth/login" {...buttonStyle}>
+											Login
+										</Button>
+									</motion.div>
+									<motion.div
+										variants={itemVariants}
+										style={{ width: "100%", display: "flex", justifyContent: "center" }}
+									>
+										<Button as={Link} href="/auth/signup" {...buttonStyle}>
+											Sign Up
+										</Button>
+									</motion.div>
+								</>
+							)}
+							<motion.div
+								variants={itemVariants}
+								style={{ width: "100%", display: "flex", justifyContent: "center" }}
+							>
+								<Button as={Link} href="/about" {...aboutButtonStyle}>
+									About
+								</Button>
+							</motion.div>
+							<motion.div
+								variants={itemVariants}
+								style={{ width: "100%", display: "flex", justifyContent: "center" }}
+							>
+								<Button
+									as={Link}
+									href="/comic-suggestion/form"
+									{...buttonStyle}
+									bg="yellow.500"
+									color="purple.500"
+								>
+									GET AI COMICS TIPS!
+								</Button>
+							</motion.div>
+							<motion.div
+								variants={itemVariants}
+								style={{ width: "100%", display: "flex", justifyContent: "center" }}
+							>
+								<Button as={Link} href="/releases" {...newReleaseButtonStyle}>
+									NEW RELEASES!
+								</Button>
+							</motion.div>
+							{user && (
+								<motion.div
+									variants={itemVariants}
+									style={{ width: "100%", display: "flex", justifyContent: "center" }}
+								>
+									<Button as={Link} href="/comics-store/sell" {...buttonStyle}>
+										Tip Us!
+									</Button>
+								</motion.div>
+							)}
+							<motion.div
+								variants={itemVariants}
+								style={{ width: "100%", display: "flex", justifyContent: "center" }}
+							>
+								<Button as={Link} href="/blog" {...buttonStyle}>
+									Blog
+								</Button>
+							</motion.div>
+							{menuItems.map((item, index) => (
+								<motion.div
+									key={index}
+									variants={itemVariants}
+									style={{ width: "100%", display: "flex", justifyContent: "center" }}
+								>
+									{item.submenu ? renderMenuItem(item, index) : null}
+								</motion.div>
+							))}
+							<motion.div
+								variants={itemVariants}
+								style={{ width: "100%", display: "flex", justifyContent: "center" }}
+							>
+								<Button as={Link} href="/forums" {...buttonStyle}>
+									Forums
+								</Button>
+							</motion.div>
+						</Stack>
+					</motion.div>
 				)}
-				<Stack spacing={4} align="center" justify="center" pt="5rem">
-					{!user && (
-						<>
-							<Button as={Link} href="/auth/login" {...buttonStyle}>
-								Login
-							</Button>
-							<Button as={Link} href="/auth/signup" {...buttonStyle}>
-								Sign Up
-							</Button>
-						</>
-					)}
-					<Button as={Link} href="/about" {...aboutButtonStyle}>
-						About
-					</Button>
-					{user && (
-						<Button as={Link} href="/comics-store/sell" {...buttonStyle}>
-							Tip Us!
-						</Button>
-					)}
-					<Button as={Link} href="/blog" {...buttonStyle}>
-						Blog
-					</Button>
-					{menuItems.map((item, index) => (item.submenu ? renderMenuItem(item, index) : null))}
-
-					<Button as={Link} href="/forums" {...buttonStyle}>
-						Forums
-					</Button>
-				</Stack>
-			</motion.div>
+			</AnimatePresence>
 			<CartDrawer isOpen={isDrawerOpen} onClose={onDrawerClose} />
 		</Box>
 	);
