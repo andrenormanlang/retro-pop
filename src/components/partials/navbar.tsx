@@ -40,7 +40,7 @@ const Navbar = () => {
 	const { isOpen, onToggle, onClose } = useDisclosure();
 	const { isOpen: isDrawerOpen, onOpen: onDrawerOpen, onClose: onDrawerClose } = useDisclosure();
 	const { colorMode, toggleColorMode } = useColorMode();
-	const containerRef = React.useRef(null); // Add useRef for container
+	const containerRef = React.useRef(null);
 	const [user, setUser] = useState<User | null>(null);
 	const [isAdmin, setIsAdmin] = useState(false);
 	const [isMainMenuOpen, setIsMainMenuOpen] = useState(false);
@@ -52,6 +52,19 @@ const Navbar = () => {
 	});
 	const [loading, setLoading] = useState(false);
 	const router = useRouter();
+
+	// Move color mode values to component level
+	const profileIconColor = useColorModeValue("blue.500", "blue.200");
+	const signoutIconColor = useColorModeValue("red.500", "red.200");
+	const chevronColor = useColorModeValue("gray.600", "gray.400");
+	const menuBg = useColorModeValue("white", "gray.800");
+	const menuBgTransparent = useColorModeValue("rgba(255, 255, 255, 0.95)", "rgba(26, 32, 44, 0.95)");
+	const menuItemTextColor = useColorModeValue("gray.700", "whiteAlpha.900");
+	const menuItemHoverBg = useColorModeValue("blue.50", "whiteAlpha.100");
+	const menuItemHoverColor = useColorModeValue("blue.600", "white");
+	const menuItemFocusBg = useColorModeValue("blue.100", "whiteAlpha.200");
+	const menuItemFocusColor = useColorModeValue("blue.700", "white");
+	const menuBorderColor = useColorModeValue("gray.200", "whiteAlpha.300");
 
 	const fetchUserProfile = useCallback(
 		async (userId: string) => {
@@ -295,8 +308,6 @@ const Navbar = () => {
 
 	const menuBgColor = useColorModeValue("white", "gray.800");
 	const menuColor = useColorModeValue("black", "white");
-	const menuItemHoverBg = useColorModeValue("gray.200", "gray.600");
-	const menuItemFocusBg = useColorModeValue("gray.300", "gray.700");
 
 	const customMenuListStyle = {
 		borderColor: "gray.600",
@@ -320,21 +331,21 @@ const Navbar = () => {
 	};
 
 	const avatarMenuListStyle = {
-		bg: useColorModeValue('white', 'gray.800'),
-		border: '1px solid',
-		borderColor: useColorModeValue('gray.200', 'whiteAlpha.300'),
-		borderRadius: 'xl',
-		boxShadow: 'lg',
-		minW: '200px',
-		p: '3',
-		mt: '4',
-		zIndex: 'popover',
-		backdropFilter: 'blur(8px)',
-		backgroundColor: useColorModeValue('rgba(255, 255, 255, 0.95)', 'rgba(26, 32, 44, 0.95)'),
+		bg: menuBg,
+		border: "1px solid",
+		borderColor: menuBorderColor,
+		borderRadius: "xl",
+		boxShadow: "lg",
+		minW: "200px",
+		p: "3",
+		mt: "4",
+		zIndex: "popover",
+		backdropFilter: "blur(8px)",
+		backgroundColor: menuBgTransparent,
 		_dark: {
-			bg: 'gray.800',
-			borderColor: 'whiteAlpha.300'
-		}
+			bg: "gray.800",
+			borderColor: "whiteAlpha.300",
+		},
 	};
 
 	const marvelButtonStyle = {
@@ -348,31 +359,31 @@ const Navbar = () => {
 	};
 
 	const menuItemStyle = {
-		p: '3',
-		m: '1',
-		borderRadius: 'md',
-		transition: 'all 0.2s',
-		bg: 'transparent',
-		color: useColorModeValue('gray.700', 'whiteAlpha.900'),
+		p: "3",
+		m: "1",
+		borderRadius: "md",
+		transition: "all 0.2s",
+		bg: "transparent",
+		color: menuItemTextColor,
 		_hover: {
-			bg: useColorModeValue('blue.50', 'whiteAlpha.100'),
-			color: useColorModeValue('blue.600', 'white'),
-			transform: 'translateX(4px)',
+			bg: menuItemHoverBg,
+			color: menuItemHoverColor,
+			transform: "translateX(4px)",
 		},
 		_focus: {
-			bg: useColorModeValue('blue.100', 'whiteAlpha.200'),
-			color: useColorModeValue('blue.700', 'white'),
-			boxShadow: 'outline'
+			bg: menuItemFocusBg,
+			color: menuItemFocusColor,
+			boxShadow: "outline",
 		},
 		_active: {
-			bg: useColorModeValue('blue.100', 'whiteAlpha.200'),
-			color: useColorModeValue('blue.700', 'white'),
+			bg: menuItemFocusBg,
+			color: menuItemFocusColor,
 		},
-		display: 'flex',
-		alignItems: 'center',
-		gap: '3',
-		fontSize: '0.95rem',
-		fontWeight: '500'
+		display: "flex",
+		alignItems: "center",
+		gap: "3",
+		fontSize: "0.95rem",
+		fontWeight: "500",
 	};
 
 	const menuItems: MenuType[] = [
@@ -462,13 +473,15 @@ const Navbar = () => {
 	);
 
 	const renderAvatarItem = (name: string, href?: string, onClick?: () => void) => (
-		<Link href={href ?? '#'} onClick={onClick} style={{ textDecoration: "none", width: "100%" }}>
-			<MenuItem 
-				{...menuItemStyle} 
+		<Link href={href ?? "#"} onClick={onClick} style={{ textDecoration: "none", width: "100%" }}>
+			<MenuItem
+				{...menuItemStyle}
 				icon={
-					name === "Profile" 
-						? <Icon as={VscAccount} fontSize="1.2rem" color={useColorModeValue('blue.500', 'blue.200')} /> 
-						: <Icon as={VscSignOut} fontSize="1.2rem" color={useColorModeValue('red.500', 'red.200')} />
+					name === "Profile" ? (
+						<Icon as={VscAccount} fontSize="1.2rem" color={profileIconColor} />
+					) : (
+						<Icon as={VscSignOut} fontSize="1.2rem" color={signoutIconColor} />
+					)
 				}
 			>
 				{name}
@@ -562,20 +575,20 @@ const Navbar = () => {
 									cursor="pointer"
 									transition="all 0.2s"
 									_hover={{
-										transform: 'scale(1.05)'
-									 }}
+										transform: "scale(1.05)",
+									}}
 									_active={{
-										transform: 'scale(0.95)'
-									 }}
+										transform: "scale(0.95)",
+									}}
 								>
 									<AvatarNav uid={user.id} size={{ base: 12, md: 14 }} />
-									<Box 
-										position="absolute" 
-										bottom="-15px" 
-										left="50%" 
+									<Box
+										position="absolute"
+										bottom="-15px"
+										left="50%"
 										transform="translateX(-50%)"
 										transition="all 0.2s"
-										color={useColorModeValue('gray.600', 'gray.400')}
+										color={chevronColor}
 										opacity={0.8}
 										_groupHover={{ opacity: 1 }}
 									>
