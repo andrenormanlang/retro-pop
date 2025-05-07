@@ -177,6 +177,15 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 						<option value="Courier New">Courier New</option>
 						<option value="Georgia">Georgia</option>
 						<option value="Verdana">Verdana</option>
+						<option value="Helvetica">Helvetica</option>
+						<option value="Calibri">Calibri</option>
+						<option value="Roboto">Roboto</option>
+						<option value="Open Sans">Open Sans</option>
+						<option value="Segoe UI">Segoe UI</option>
+						<option value="Tahoma">Tahoma</option>
+						<option value="Trebuchet MS">Trebuchet MS</option>
+						<option value="Impact">Impact</option>
+						<option value="Comic Sans MS">Comic Sans MS</option>
 					</select>
 
 					<div className="toolbar-group">
