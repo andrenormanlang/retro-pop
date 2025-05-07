@@ -249,7 +249,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 							className={editor.isActive({ textAlign: "center" }) ? "is-active" : ""}
 							title="Align Center"
 						>
-							↔
+							 ↔
 						</button>
 						<button
 							onClick={() => editor.chain().focus().setTextAlign("right").run()}
@@ -263,7 +263,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 							className={editor.isActive({ textAlign: "justify" }) ? "is-active" : ""}
 							title="Justify"
 						>
-							⇔
+							 ⇔
 						</button>
 					</div>
 
@@ -324,29 +324,29 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 							className={editor.isActive("link") ? "is-active" : ""}
 							title="Add Link"
 						>
-							🔗
+							 🔗
 						</button>
 						<button
 							onClick={() => editor.chain().focus().unsetLink().run()}
 							disabled={!editor.isActive("link")}
 							title="Remove Link"
 						>
-							🔗❌
+							 🔗❌
 						</button>
 					</div>
 
 					<div className="toolbar-group">
 						<button onClick={() => editor.chain().focus().undo().run()} title="Undo">
-							↩
+							 ↩
 						</button>
 						<button onClick={() => editor.chain().focus().redo().run()} title="Redo">
-							↪
+							 ↪
 						</button>
 					</div>
 
 					<div className="toolbar-group">
 						<button onClick={addImage} title="Add Image">
-							🖼
+							 🖼
 						</button>
 					</div>
 				</div>
@@ -357,6 +357,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 					border: 1px solid ${borderColor};
 					border-radius: 0.375rem;
 					overflow: hidden;
+					position: relative;
 				}
 
 				.tiptap-editor .editor-toolbar {
@@ -367,6 +368,9 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 					gap: 8px;
 					flex-wrap: wrap;
 					align-items: center;
+					position: sticky;
+					top: 0;
+					z-index: 50;
 				}
 
 				.tiptap-editor .toolbar-group {
@@ -410,10 +414,19 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 					padding: 4px 8px;
 					border: 1px solid ${borderColor};
 					border-radius: 4px;
-					background: transparent;
+					background-color: ${colorMode === "dark" ? "#2D3748" : "#FFFFFF"};
 					color: ${editorTextColor};
 					cursor: pointer;
 					min-width: 100px;
+				}
+
+				.tiptap-editor select:hover {
+					background-color: ${colorMode === "dark" ? "#4A5568" : "#E2E8F0"};
+				}
+
+				.tiptap-editor select option {
+					background-color: ${colorMode === "dark" ? "#2D3748" : "#FFFFFF"};
+					color: ${editorTextColor};
 				}
 
 				.tiptap-editor input[type="color"] {
