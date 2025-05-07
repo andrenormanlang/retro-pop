@@ -101,3 +101,7 @@ h6 {
 	overflow-x: hidden;
 	z-index: 2;
 }
+
+.tiptap-editor .ProseMirror {
+	white-space: pre-wrap;
+}

@@ -1,0 +1,94 @@
+/* styles/comic-detail-content.css */
+
+/* Apply styles to the container wrapping the rendered HTML */
+.comic-description-content {
+    /* You could add overall padding or other container styles here if needed */
+}
+
+/* Style Paragraphs for spacing */
+.comic-description-content p {
+    /* Use margin-bottom to create space *after* each paragraph */
+    /* Adjust the value (e.g., 1em, 1.5em, 20px) as needed */
+    margin-top: 0; /* Optional: Removes the default top margin to prevent double spacing */
+    margin-bottom: 1.5em; /* Add space below paragraphs */
+    line-height: 1.6; /* Improve readability */
+}
+
+/* Remove bottom margin from the very last paragraph */
+.comic-description-content p:last-child {
+    margin-bottom: 0;
+}
+
+/* Style Headings (adjust margins and potentially colors/sizes) */
+.comic-description-content h1 { font-size: 2em; margin-top: 1.5em; margin-bottom: 0.8em; }
+.comic-description-content h2 { font-size: 1.5em; margin-top: 1.5em; margin-bottom: 0.7em; }
+.comic-description-content h3 { font-size: 1.17em; margin-top: 1.4em; margin-bottom: 0.6em; }
+.comic-description-content h4 { font-size: 1em; margin-top: 1.3em; margin-bottom: 0.5em; }
+.comic-description-content h5 { font-size: 0.83em; margin-top: 1.2em; margin-bottom: 0.4em; }
+.comic-description-content h6 { font-size: 0.75em; margin-top: 1.1em; margin-bottom: 0.3em; }
+
+
+/* Style Lists (adjust margins and padding) */
+.comic-description-content ul,
+.comic-description-content ol {
+    margin-top: 1em;
+    margin-bottom: 1em;
+    padding-left: 2em; /* Standard list indentation */
+}
+
+/* Style Blockquotes */
+.comic-description-content blockquote {
+    border-left: 4px solid #ccc; /* Use a color from your theme if possible */
+    margin: 1.5em 0;
+    padding-left: 1em;
+    font-style: italic;
+    color: #a0a0a0; /* Slightly subdue blockquote text */
+}
+
+/* Style Code Blocks */
+.comic-description-content pre {
+    background-color: #f4f4f4; /* Light background */
+    border-radius: 4px;
+    padding: 1em;
+    overflow-x: auto; /* Prevent horizontal overflow */
+    font-family: monospace;
+    margin: 1em 0;
+}
+
+/* Style Inline Code */
+.comic-description-content code {
+    font-family: monospace;
+    background-color: #e0e0e0; /* Slightly lighter background for inline code */
+    padding: 0.2em 0.4em;
+    border-radius: 4px;
+}
+
+/* Style Links (Emphasis) */
+/* Target both the standard <a> tag and the specific class Tiptap might add */
+.comic-description-content a,
+.comic-description-content .editor-link {
+    /* Choose a color that stands out against your background */
+    color: #63b3ed; /* Example: Chakra UI blue.300 */
+    text-decoration: underline; /* Ensure underline for clarity */
+    font-weight: bold; /* Make the text bold */
+    cursor: pointer;
+}
+
+/* Optional: Style link hover state */
+.comic-description-content a:hover,
+.comic-description-content .editor-link:hover {
+    text-decoration: none; /* Remove underline on hover */
+    color: #90cdf4; /* Example: Chakra UI blue.200 */
+}
+
+/* Style Images */
+.comic-description-content img {
+    max-width: 100%; /* Ensure images fit within the container */
+    height: auto;
+    display: block; /* Treat image as a block element */
+    margin: 1em auto; /* Center images and add vertical space */
+}
+
+/* Style Highlights */
+/* Tiptap's highlight adds a mark tag with style="background-color: ..." */
+/* You don't typically need to style <mark> unless you want a default */

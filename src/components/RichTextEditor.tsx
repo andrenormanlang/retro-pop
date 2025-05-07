@@ -1,260 +1,506 @@
 // components/RichTextEditor.tsx
 "use client";
 
-import dynamic from "next/dynamic";
-import React from "react";
+import React, { useCallback } from "react";
 import { useColorMode } from "@chakra-ui/react";
-
-// Import modules and formats constants from EditorToolbar
-import { modules, formats } from "./EditorToolbar"; // This now includes the resize module config
-
-// Dynamically import react-quill-new
-const ReactQuill = dynamic(
-    async () => {
-        const { default: RQ } = await import("react-quill-new");
-        const QuillWrapper = ({ forwardedRef, ...props }: any) => (
-            <RQ ref={forwardedRef} {...props} />
-        );
-        QuillWrapper.displayName = "QuillWrapper";
-        return QuillWrapper;
-    },
-    {
-        ssr: false,
-    }
-);
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import TextStyle from "@tiptap/extension-text-style";
+import FontFamily from "@tiptap/extension-font-family";
+import TextAlign from "@tiptap/extension-text-align";
+import Underline from "@tiptap/extension-underline";
+import Subscript from "@tiptap/extension-subscript";
+import Superscript from "@tiptap/extension-superscript";
+import Link from "@tiptap/extension-link";
+import Color from "@tiptap/extension-color";
+import Highlight from "@tiptap/extension-highlight";
+import Image from "@tiptap/extension-image";
 
 // Define component props interface
 export interface RichTextEditorProps {
-    value: string;
-    onChange: (value: string) => void;
-    placeholder?: string;
-    readOnly?: boolean;
-    style?: React.CSSProperties;
-    className?: string;
-    /** Minimum height of the editor */
-    minHeight?: string;
-    /** Maximum height of the editor */
-    maxHeight?: string;
-    /** Auto focus the editor on mount */
-    autoFocus?: boolean;
-    /** Callback when editor is focused */
-    onFocus?: () => void;
-    /** Callback when editor loses focus */
-    onBlur?: () => void;
+	value: string;
+	onChange: (value: string) => void;
+	placeholder?: string;
+	readOnly?: boolean;
+	style?: React.CSSProperties;
+	className?: string;
+	minHeight?: string;
+	maxHeight?: string;
+	autoFocus?: boolean;
+	onFocus?: () => void;
+	onBlur?: () => void;
 }
 
 const RichTextEditor: React.FC<RichTextEditorProps> = ({
-    value,
-    onChange,
-    placeholder = "Enter text...",
-    readOnly = false,
-    style,
-    className,
-    minHeight = "200px",
-    maxHeight = "600px",
-    autoFocus = false,
-    onFocus,
-    onBlur,
+	value,
+	onChange,
+	placeholder = "Enter text...",
+	readOnly = false,
+	style,
+	className,
+	minHeight = "200px",
+	maxHeight = "600px",
+	autoFocus = false,
+	onFocus,
+	onBlur,
 }) => {
-    const { colorMode } = useColorMode();
-    const editorRef = React.useRef<any>(null);
+	const { colorMode } = useColorMode();
 
-    React.useEffect(() => {
-        if (autoFocus && editorRef.current) {
-            const quillEditor = editorRef.current.getEditor();
-            if (quillEditor) {
-                const timer = setTimeout(() => {
-                     quillEditor.focus();
-                }, 0);
-                return () => clearTimeout(timer);
-            }
-        }
-        return () => {};
-    }, [autoFocus, editorRef.current]);
+	const editor = useEditor({
+		extensions: [
+			StarterKit.configure({
+				heading: {
+					levels: [1, 2, 3, 4, 5, 6],
+				},
+				bulletList: {
+					keepMarks: true,
+					keepAttributes: false,
+				},
+				orderedList: {
+					keepMarks: true,
+					keepAttributes: false,
+				},
+			}),
+			TextStyle,
+			FontFamily,
+			TextAlign.configure({
+				types: ["heading", "paragraph"],
+				alignments: ["left", "center", "right", "justify"],
+			}),
+			Underline,
+			Subscript,
+			Superscript,
+			Link.configure({
+				openOnClick: false,
+				HTMLAttributes: {
+					class: "editor-link",
+				},
+			}),
+			Color,
+			Highlight.configure({
+				multicolor: true,
+			}),
+			Image.configure({
+				inline: true,
+				allowBase64: true,
+			}),
+		],
+		content: value,
+		editable: !readOnly,
+		autofocus: autoFocus,
+		onUpdate: ({ editor }) => {
+			onChange(editor.getHTML());
+		},
+		onFocus: () => onFocus?.(),
+		onBlur: () => onBlur?.(),
+	});
 
+	const setLink = useCallback(() => {
+		if (!editor) return;
+		const url = window.prompt("Enter URL:");
+		if (url) {
+			editor.chain().focus().setLink({ href: url }).run();
+		}
+	}, [editor]);
 
-    const editorBg = colorMode === "dark" ? "#2D3748" : "#FFFFFF";
-    const editorTextColor = colorMode === "dark" ? "#CBD5E0" : "#2D3748";
-    const borderColor = colorMode === "dark" ? "#4A5568" : "#E2E8F0";
+	const addImage = useCallback(() => {
+		if (!editor) return;
+		const url = window.prompt("Enter image URL:");
+		if (url) {
+			editor.chain().focus().setImage({ src: url }).run();
+		}
+	}, [editor]);
 
-    return (
-        <div className={`rich-text-editor ${className || ""}`}>
-            <style jsx global>{`
-                /* Ensure base quill.snow.css is loaded globally in layout.tsx */
+	const editorBg = colorMode === "dark" ? "#2D3748" : "#FFFFFF";
+	const editorTextColor = colorMode === "dark" ? "#CBD5E0" : "#2D3748";
+	const borderColor = colorMode === "dark" ? "#4A5568" : "#E2E8F0";
 
-                /* Target the main Quill containers within the outer div */
-                .rich-text-editor .ql-toolbar {
-                    border-top-left-radius: 0.375rem;
-                    border-top-right-radius: 0.375rem;
-                    border-color: ${borderColor} !important;
-                    background-color: ${editorBg} !important;
-                    padding: 8px 15px !important;
-                    line-height: normal !important;
-                }
+	if (!editor) {
+		return null;
+	}
 
-                .rich-text-editor .ql-container {
-                    border-bottom-left-radius: 0.375rem;
-                    border-bottom-right-radius: 0.375rem;
-                    border-color: ${borderColor} !important;
-                    background-color: ${editorBg} !important;
-                    min-height: ${minHeight} !important;
-                    max-height: ${maxHeight} !important;
-                    overflow-y: auto !important;
-                    border-top: none !important;
-                    padding: 0 !important;
-                }
+	return (
+		<div className={`tiptap-editor ${className || ""}`} style={style}>
+			{!readOnly && (
+				<div className="editor-toolbar">
+					<select
+						onChange={(e) => {
+							if (e.target.value === "paragraph") {
+								editor.chain().focus().setParagraph().run();
+							} else {
+								editor
+									.chain()
+									.focus()
+									.toggleHeading({ level: parseInt(e.target.value) as 1 | 2 | 3 | 4 | 5 | 6 })
+									.run();
+							}
+						}}
+						value={
+							editor.isActive("heading", { level: 1 })
+								? "1"
+								: editor.isActive("heading", { level: 2 })
+								? "2"
+								: editor.isActive("heading", { level: 3 })
+								? "3"
+								: editor.isActive("heading", { level: 4 })
+								? "4"
+								: editor.isActive("heading", { level: 5 })
+								? "5"
+								: editor.isActive("heading", { level: 6 })
+								? "6"
+								: "paragraph"
+						}
+					>
+						<option value="paragraph">Normal</option>
+						<option value="1">Heading 1</option>
+						<option value="2">Heading 2</option>
+						<option value="3">Heading 3</option>
+						<option value="4">Heading 4</option>
+						<option value="5">Heading 5</option>
+						<option value="6">Heading 6</option>
+					</select>
 
-                /* Target the editable area */
-                .rich-text-editor .ql-editor {
-                    color: ${editorTextColor} !important;
-                    min-height: ${minHeight} !important;
-                    height: auto !important;
-                    max-height: ${maxHeight} !important;
-                    background-color: inherit !important;
-                    padding: 15px !important;
-                    line-height: 1.5 !important;
-                    word-wrap: break-word;
-                }
+					<select
+						onChange={(e) => {
+							if (e.target.value === "default") {
+								editor.chain().focus().unsetFontFamily().run();
+							} else {
+								editor.chain().focus().setFontFamily(e.target.value).run();
+							}
+						}}
+					>
+						<option value="default">Default Font</option>
+						<option value="Arial">Arial</option>
+						<option value="Times New Roman">Times New Roman</option>
+						<option value="Courier New">Courier New</option>
+						<option value="Georgia">Georgia</option>
+						<option value="Verdana">Verdana</option>
+					</select>
 
-                /* Placeholder styles */
-                .ql-editor.ql-blank::before {
-                    color: ${colorMode === "dark" ? "#718096" : "#A0AEC0"} !important;
-                    left: 15px !important;
-                    font-style: normal !important;
-                    content: attr(data-placeholder) !important;
-                    pointer-events: none !important;
-                    right: unset !important;
-                }
+					<div className="toolbar-group">
+						<button
+							onClick={() => editor.chain().focus().toggleBold().run()}
+							className={editor.isActive("bold") ? "is-active" : ""}
+							title="Bold (Ctrl+B)"
+						>
+							B
+						</button>
+						<button
+							onClick={() => editor.chain().focus().toggleItalic().run()}
+							className={editor.isActive("italic") ? "is-active" : ""}
+							title="Italic (Ctrl+I)"
+						>
+							I
+						</button>
+						<button
+							onClick={() => editor.chain().focus().toggleUnderline().run()}
+							className={editor.isActive("underline") ? "is-active" : ""}
+							title="Underline (Ctrl+U)"
+						>
+							U
+						</button>
+						<button
+							onClick={() => editor.chain().focus().toggleStrike().run()}
+							className={editor.isActive("strike") ? "is-active" : ""}
+							title="Strikethrough"
+						>
+							S
+						</button>
+					</div>
 
-                /* Toolbar element styling (buttons, selects, pickers) */
-                .ql-snow .ql-stroke { stroke: ${editorTextColor} !important; }
-                .ql-snow .ql-fill { fill: ${editorTextColor} !important; }
-                .ql-picker-label { color: ${editorTextColor} !important; }
+					<div className="toolbar-group">
+						<button
+							onClick={() => editor.chain().focus().toggleSubscript().run()}
+							className={editor.isActive("subscript") ? "is-active" : ""}
+							title="Subscript"
+						>
+							X₂
+						</button>
+						<button
+							onClick={() => editor.chain().focus().toggleSuperscript().run()}
+							className={editor.isActive("superscript") ? "is-active" : ""}
+							title="Superscript"
+						>
+							X²
+						</button>
+					</div>
 
-                /* Picker dropdown options styling */
-                .ql-snow .ql-picker-options {
-                    background-color: ${editorBg} !important;
-                    border-color: ${borderColor} !important;
-                    z-index: 10 !important;
-                }
-                .ql-snow .ql-picker-options .ql-picker-item {
-                     color: ${editorTextColor} !important;
-                }
-                 /* Hover state for picker options */
-                 .ql-snow .ql-picker-options .ql-picker-item:hover {
-                      background-color: ${colorMode === 'dark' ? '#4A5568' : '#E2E8F0'} !important;
-                 }
+					<div className="toolbar-group">
+						<button
+							onClick={() => editor.chain().focus().setTextAlign("left").run()}
+							className={editor.isActive({ textAlign: "left" }) ? "is-active" : ""}
+							title="Align Left"
+						>
+							←
+						</button>
+						<button
+							onClick={() => editor.chain().focus().setTextAlign("center").run()}
+							className={editor.isActive({ textAlign: "center" }) ? "is-active" : ""}
+							title="Align Center"
+						>
+							↔
+						</button>
+						<button
+							onClick={() => editor.chain().focus().setTextAlign("right").run()}
+							className={editor.isActive({ textAlign: "right" }) ? "is-active" : ""}
+							title="Align Right"
+						>
+							→
+						</button>
+						<button
+							onClick={() => editor.chain().focus().setTextAlign("justify").run()}
+							className={editor.isActive({ textAlign: "justify" }) ? "is-active" : ""}
+							title="Justify"
+						>
+							⇔
+						</button>
+					</div>
 
-                /* Border for picker labels */
-                .ql-snow .ql-picker-label { border-color: ${colorMode === "dark" ? "#4A5568" : "#E2E8F0"} !important; }
-                .ql-snow .ql-picker.ql-expanded .ql-picker-label { border-color: ${colorMode === "dark" ? "#4A5568" : "#E2E8F0"} !important; }
-                 .ql-snow .ql-picker.ql-expanded .ql-picker-options { border-color: ${colorMode === "dark" ? "#4A5568" : "#E2E8F0"} !important; }
+					<div className="toolbar-group">
+						<button
+							onClick={() => editor.chain().focus().toggleBulletList().run()}
+							className={editor.isActive("bulletList") ? "is-active" : ""}
+							title="Bullet List"
+						>
+							•
+						</button>
+						<button
+							onClick={() => editor.chain().focus().toggleOrderedList().run()}
+							className={editor.isActive("orderedList") ? "is-active" : ""}
+							title="Numbered List"
+						>
+							1.
+						</button>
+					</div>
 
-                /* Hover/Focus/Active states for toolbar buttons and pickers */
-                 .ql-snow .ql-formats button:hover,
-                 .ql-snow .ql-formats button:focus,
-                 .ql-snow .ql-formats button.ql-active,
-                 .ql-snow .ql-picker-label:hover,
-                 .ql-snow .ql-picker-label.ql-active {
-                      color: ${colorMode === 'dark' ? '#90CDF4' : '#2B6CB0'} !important;
-                      fill: ${colorMode === 'dark' ? '#90CDF4' : '#2B6CB0'} !important;
-                      stroke: ${colorMode === 'dark' ? '#90CDF4' : '#2B6CB0'} !important;
-                 }
+					<div className="toolbar-group">
+						<button
+							onClick={() => editor.chain().focus().toggleBlockquote().run()}
+							className={editor.isActive("blockquote") ? "is-active" : ""}
+							title="Blockquote"
+						>
+							&ldquo;&rdquo;
+						</button>
+						<button
+							onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+							className={editor.isActive("codeBlock") ? "is-active" : ""}
+							title="Code Block"
+						>
+							{"< >"}
+						</button>
+					</div>
 
-                .ql-editor .ql-font-arial { font-family: Arial, sans-serif; }
-                .ql-editor .ql-font-comic-sans { font-family: "Comic Sans MS", cursive; }
-                .ql-editor .ql-font-courier-new { font-family: "Courier New", monospace; }
-                .ql-editor .ql-font-georgia { font-family: Georgia, serif; }
-                .ql-editor .ql-font-helvetica { font-family: Helvetica, sans-serif; }
-                .ql-editor .ql-font-lucida { font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif; }
-                .ql-editor .ql-font-times-new-roman { font-family: "Times New Roman", Times, serif; }
-                .ql-editor .ql-font-libre-franklin { font-family: "Libre Franklin", sans-serif; }
-                .ql-editor .ql-font-inter { font-family: "Inter", sans-serif; }
+					<div className="toolbar-group">
+						<input
+							type="color"
+							onInput={(e) => {
+								editor.chain().focus().setColor(e.currentTarget.value).run();
+							}}
+							title="Text Color"
+						/>
+						<input
+							type="color"
+							onInput={(e) => {
+								editor.chain().focus().toggleHighlight({ color: e.currentTarget.value }).run();
+							}}
+							title="Highlight Color"
+						/>
+					</div>
 
-                /* --- Custom Size Styles (match values in Size.whitelist) --- */
-                .ql-editor .ql-size-8px { font-size: 8px; }
-                .ql-editor .ql-size-10px { font-size: 10px; }
-                .ql-editor .ql-size-12px { font-size: 12px; }
-                .ql-editor .ql-size-14px { font-size: 14px; }
-                .ql-editor .ql-size-16px { font-size: 16px; }
-                .ql-editor .ql-size-20px { font-size: 20px; }
-                .ql-editor .ql-size-24px { font-size: 24px; }
-                .ql-editor .ql-size-32px { font-size: 32px; }
-                .ql-editor .ql-size-48px { font-size: 48px; }
+					<div className="toolbar-group">
+						<button
+							onClick={setLink}
+							className={editor.isActive("link") ? "is-active" : ""}
+							title="Add Link"
+						>
+							🔗
+						</button>
+						<button
+							onClick={() => editor.chain().focus().unsetLink().run()}
+							disabled={!editor.isActive("link")}
+							title="Remove Link"
+						>
+							🔗❌
+						</button>
+					</div>
 
-                /* --- Other standard Quill styles you might want to override --- */
-                .ql-editor blockquote {
-                    border-left: 4px solid ${borderColor} !important;
-                    margin-bottom: 5px !important; margin-top: 5px !important;
-                    padding-left: 16px !important;
-                }
-                 .ql-editor .ql-code-block {
-                    background-color: ${colorMode === 'dark' ? '#1A202C' : '#F7FAFC'} !important;
-                    border-radius: 4px !important;
-                    margin-bottom: 5px !important; margin-top: 5px !important;
-                    padding: 8px 16px !important;
-                     font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace !important;
-                     white-space: pre-wrap !important;
-                 }
-                 .ql-editor a {
-                    color: ${colorMode === 'dark' ? '#90CDF4' : '#3182CE'} !important;
-                    text-decoration: underline !important;
-                 }
-                 .ql-editor ul, .ql-editor ol { padding-left: 1.5em !important; }
-                  .ql-editor li { margin-bottom: 4px !important; }
+					<div className="toolbar-group">
+						<button onClick={() => editor.chain().focus().undo().run()} title="Undo">
+							↩
+						</button>
+						<button onClick={() => editor.chain().focus().redo().run()} title="Redo">
+							↪
+						</button>
+					</div>
 
-                 /* --- Styles needed for quill-resize-image handles --- */
-                 /* These styles are often required by resize modules */
-                 .ql-editor .ql-ui { /* Container for resize handles/ui */
-                    position: absolute !important;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    bottom: 0;
-                    z-index: 100; /* Ensure resize handles are above content */
-                 }
-                 .ql-editor .ql-ui .ql-handle { /* Resize handles */
-                    position: absolute !important;
-                    width: 12px !important;
-                    height: 12px !important;
-                    background-color: ${colorMode === 'dark' ? '#90CDF4' : '#3182CE'} !important; /* Handle color */
-                    border: 1px solid ${editorBg} !important; /* Border for contrast */
-                    z-index: 101 !important; /* Ensure handles are above the container */
-                 }
-                 /* Position the handles */
-                 .ql-editor .ql-ui .ql-handle-tl { top: -6px; left: -6px; cursor: nwse-resize; }
-                 .ql-editor .ql-ui .ql-handle-tr { top: -6px; right: -6px; cursor: nesw-resize; }
-                 .ql-editor .ql-ui .ql-handle-bl { bottom: -6px; left: -6px; cursor: nesw-resize; }
-                 .ql-editor .ql-ui .ql-handle-br { bottom: -6px; right: -6px; cursor: nwse-resize; }
-                 /* Optional: Style for the selector border */
-                 .ql-editor .ql-ui .ql-selection {
-                    border: 1px dashed ${colorMode === 'dark' ? '#90CDF4' : '#3182CE'} !important; /* Border around selected image */
-                    box-sizing: border-box;
-                 }
+					<div className="toolbar-group">
+						<button onClick={addImage} title="Add Image">
+							🖼
+						</button>
+					</div>
+				</div>
+			)}
+			<EditorContent editor={editor} />
+			<style jsx global>{`
+				.tiptap-editor {
+					border: 1px solid ${borderColor};
+					border-radius: 0.375rem;
+					overflow: hidden;
+				}
 
+				.tiptap-editor .editor-toolbar {
+					border-bottom: 1px solid ${borderColor};
+					background-color: ${editorBg};
+					padding: 8px;
+					display: flex;
+					gap: 8px;
+					flex-wrap: wrap;
+					align-items: center;
+				}
 
-            `}</style>
+				.tiptap-editor .toolbar-group {
+					display: flex;
+					gap: 4px;
+					padding: 0 4px;
+					border-right: 1px solid ${borderColor};
+				}
 
-            {/*
-              The dynamically imported ReactQuill component.
-              It will now have the resize module enabled via the 'modules' prop.
-            */}
-            <ReactQuill
-                forwardedRef={editorRef}
-                value={value}
-                onChange={onChange}
-                placeholder={placeholder}
-                readOnly={readOnly}
-                modules={modules} // Pass the modules object including resize config
-                formats={formats}
-                theme="snow"
-                style={style}
-                className={className}
-                onFocus={onFocus}
-                onBlur={onBlur}
-            />
-        </div>
-    );
+				.tiptap-editor .toolbar-group:last-child {
+					border-right: none;
+				}
+
+				.tiptap-editor button {
+					padding: 4px 8px;
+					border: 1px solid ${borderColor};
+					border-radius: 4px;
+					background: transparent;
+					color: ${editorTextColor};
+					cursor: pointer;
+					min-width: 32px;
+					display: flex;
+					align-items: center;
+					justify-content: center;
+				}
+
+				.tiptap-editor button:hover {
+					background-color: ${colorMode === "dark" ? "#4A5568" : "#E2E8F0"};
+				}
+
+				.tiptap-editor button.is-active {
+					background-color: ${colorMode === "dark" ? "#4A5568" : "#E2E8F0"};
+				}
+
+				.tiptap-editor button:disabled {
+					opacity: 0.5;
+					cursor: not-allowed;
+				}
+
+				.tiptap-editor select {
+					padding: 4px 8px;
+					border: 1px solid ${borderColor};
+					border-radius: 4px;
+					background: transparent;
+					color: ${editorTextColor};
+					cursor: pointer;
+					min-width: 100px;
+				}
+
+				.tiptap-editor input[type="color"] {
+					width: 32px;
+					height: 32px;
+					padding: 0;
+					border: 1px solid ${borderColor};
+					border-radius: 4px;
+					cursor: pointer;
+				}
+
+				.tiptap-editor .ProseMirror {
+					padding: 15px;
+					min-height: ${minHeight};
+					max-height: ${maxHeight};
+					overflow-y: auto;
+					background-color: ${editorBg};
+					color: ${editorTextColor};
+				}
+
+				.tiptap-editor .ProseMirror p {
+					margin: 0;
+					line-height: 1.5;
+				}
+
+				.tiptap-editor .ProseMirror h1 {
+					font-size: 2em;
+					margin: 0.67em 0;
+				}
+				.tiptap-editor .ProseMirror h2 {
+					font-size: 1.5em;
+					margin: 0.75em 0;
+				}
+				.tiptap-editor .ProseMirror h3 {
+					font-size: 1.17em;
+					margin: 0.83em 0;
+				}
+				.tiptap-editor .ProseMirror h4 {
+					margin: 1.12em 0;
+				}
+				.tiptap-editor .ProseMirror h5 {
+					font-size: 0.83em;
+					margin: 1.5em 0;
+				}
+				.tiptap-editor .ProseMirror h6 {
+					font-size: 0.75em;
+					margin: 1.67em 0;
+				}
+
+				.tiptap-editor .ProseMirror ul,
+				.tiptap-editor .ProseMirror ol {
+					padding-left: 2em;
+					margin: 0.5em 0;
+				}
+
+				.tiptap-editor .ProseMirror blockquote {
+					border-left: 3px solid ${borderColor};
+					margin: 1em 0;
+					padding-left: 1em;
+					font-style: italic;
+				}
+
+				.tiptap-editor .ProseMirror pre {
+					background: ${colorMode === "dark" ? "#2D3748" : "#f5f5f5"};
+					border-radius: 4px;
+					padding: 0.75em 1em;
+					margin: 0.5em 0;
+					overflow-x: auto;
+				}
+
+				.tiptap-editor .ProseMirror code {
+					font-family: monospace;
+					background: ${colorMode === "dark" ? "#2D3748" : "#f5f5f5"};
+					padding: 0.2em 0.4em;
+					border-radius: 4px;
+				}
+
+				.tiptap-editor .editor-link {
+					color: #3182ce;
+					text-decoration: underline;
+					cursor: pointer;
+				}
+
+				.tiptap-editor .ProseMirror img {
+					max-width: 100%;
+					height: auto;
+				}
+
+				.tiptap-editor .ProseMirror p.is-editor-empty:first-child::before {
+					color: ${colorMode === "dark" ? "#718096" : "#A0AEC0"};
+					content: attr(data-placeholder);
+					float: left;
+					height: 0;
+					pointer-events: none;
+				}
+			`}</style>
+		</div>
+	);
 };
 
 export default RichTextEditor;
