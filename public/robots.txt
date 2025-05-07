@@ -1,0 +1,11 @@
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://retro-pop-comics.com/sitemap.xml
+
+# Prevent crawling of admin and private areas
+Disallow: /admin/*
+Disallow: /api/*
+Disallow: /auth/*
