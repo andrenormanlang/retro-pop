@@ -12,11 +12,6 @@ RUN npm install --legacy-peer-deps
 # Copy application code - node_modules should be excluded by .dockerignore
 COPY . .
 
-
-# Remove sensitive environment variables from the Dockerfile for security.
-# Set them at runtime using docker-compose, your deployment platform, or docker run -e.
-# Example: docker run -e SUPABASE_SERVICE_ROLE_KEY=your_key ...
-#
 # The following environment variables should be set securely at runtime:
 #   - COMIC_VINE_API_KEY
 #   - METRON_API_AUTH_HEADER
