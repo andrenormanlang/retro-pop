@@ -7,7 +7,7 @@ WORKDIR /app
 COPY package.json ./
 
 # Install dependencies with --legacy-peer-deps to resolve React 19 compatibility issues
-RUN npm install --legacy-peer-deps
+RUN pnpm install --legacy-peer-deps
 
 # Copy application code - node_modules should be excluded by .dockerignore
 COPY . .
@@ -96,4 +96,4 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
 	CMD curl -f http://localhost:3000/ || exit 1
 
-CMD ["npm", "start"]
+CMD ["pnpm", "start"]

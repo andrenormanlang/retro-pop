@@ -249,31 +249,21 @@ const Navbar = () => {
 		},
 	};
 
-	const buttonAvatarStyle = {
-		width: "100%",
-		maxWidth: { base: "220px", md: "310px" },
-		fontWeight: "400",
-		fontSize: { base: "0.8rem", md: "1rem" },
-		color: "white",
-		justifyContent: "center",
-		alignItems: "center",
-		display: "flex",
-		height: "1.5rem",
-		my: "0.5rem",
-		bg: "blue.500",
-		borderRadius: "md",
-		outline: "none",
+	const submenuFinalItemStyle = {
+		...buttonStyle,
+		maxWidth: "unset", // Remove max-width restriction
+		width: "100%", // Ensure it takes full width of the MenuList
+		my: "0.1rem", // Reduce vertical margin for closer packing
+		fontSize: { base: "0.9rem", md: "1.1rem" }, // Slightly smaller font size for nested items
+		height: "2rem", // Make them a bit shorter
+		justifyContent: "flex-start", // Left-align text
+		px: "1rem", // Add some horizontal padding
 		_hover: {
-			bg: "blue.500",
-			color: "white",
+			bg: "blue.600",
+			transform: "none", // Prevent scaling to avoid layout issues in a list
 		},
 		_active: {
 			bg: "blue.700",
-			color: "white",
-		},
-		_focus: {
-			bg: "blue.600",
-			boxShadow: "outline",
 		},
 	};
 
@@ -454,18 +444,14 @@ const Navbar = () => {
 					subItem.submenu ? (
 						renderMenuItem(subItem, `${index}-${subIndex}`)
 					) : (
-						<MenuItem
+						<Button
 							key={subIndex}
 							as={Link}
 							href={subItem.href}
-							{...menuItemStyle}
-							display="flex"
-							alignItems="center"
-							justifyContent="flex-start"
-							width="100%"
+							{...submenuFinalItemStyle}
 						>
 							{subItem.name}
-						</MenuItem>
+						</Button>
 					)
 				)}
 			</MenuList>
