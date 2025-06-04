@@ -1,17 +1,17 @@
 # Build Stage
-FROM node:22-alpine AS builder
-
+FROM node:20-slim AS base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+COPY . /app
 WORKDIR /app
 
-# Copy package files first for better layer caching
-COPY package.json ./
+# Production dependencies stage
+FROM base AS prod-deps
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
 
-# Install dependencies with --legacy-peer-deps to resolve React 19 compatibility issues
-RUN pnpm install --legacy-peer-deps
-
-# Copy application code - node_modules should be excluded by .dockerignore
-COPY . .
-
+# Build stage
+FROM base AS build
 # Define build arguments
 ARG NEXT_PUBLIC_SUPABASE_URL
 ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -28,72 +28,73 @@ ARG GEMINI_API_KEY
 
 # Validate required environment variables
 RUN if [ -z "$NEXT_PUBLIC_SUPABASE_URL" ] || [ -z "$NEXT_PUBLIC_SUPABASE_ANON_KEY" ] || [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then \
-	echo "Error: Required environment variables are missing" && \
-	exit 1; \
-	fi
+    echo "Error: Required environment variables are missing" && \
+    exit 1; \
+    fi
 
 # Set environment variables from build arguments
 ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL \
-	NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY \
-	NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=$NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY \
-	STRIPE_SECRET_KEY=$STRIPE_SECRET_KEY \
-	COMIC_VINE_API_KEY=$COMIC_VINE_API_KEY \
-	METRON_API_AUTH_HEADER=$METRON_API_AUTH_HEADER \
-	SUPERHERO_ACCESS_TOKEN=$SUPERHERO_ACCESS_TOKEN \
-	MARVEL_PUBLIC_KEY=$MARVEL_PUBLIC_KEY \
-	MARVEL_PRIVATE_KEY=$MARVEL_PRIVATE_KEY \
-	CHARACTERS_API_URL=$CHARACTERS_API_URL \
-	SUPABASE_SERVICE_ROLE_KEY=$SUPABASE_SERVICE_ROLE_KEY \
-	GEMINI_API_KEY=$GEMINI_API_KEY
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY \
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=$NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY \
+    STRIPE_SECRET_KEY=$STRIPE_SECRET_KEY \
+    COMIC_VINE_API_KEY=$COMIC_VINE_API_KEY \
+    METRON_API_AUTH_HEADER=$METRON_API_AUTH_HEADER \
+    SUPERHERO_ACCESS_TOKEN=$SUPERHERO_ACCESS_TOKEN \
+    MARVEL_PUBLIC_KEY=$MARVEL_PUBLIC_KEY \
+    MARVEL_PRIVATE_KEY=$MARVEL_PRIVATE_KEY \
+    CHARACTERS_API_URL=$CHARACTERS_API_URL \
+    SUPABASE_SERVICE_ROLE_KEY=$SUPABASE_SERVICE_ROLE_KEY \
+    GEMINI_API_KEY=$GEMINI_API_KEY
 
-# Build with more memory available and ensure environment variables are passed
-RUN NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL \
-	NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY \
-	SUPABASE_SERVICE_ROLE_KEY=$SUPABASE_SERVICE_ROLE_KEY \
-	NODE_OPTIONS="--max_old_space_size=4096" npm run build -- --no-lint
+# Install all dependencies and build
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+RUN NODE_OPTIONS="--max_old_space_size=4096" pnpm run build
 
-# Production Stage
-FROM node:22-alpine AS runner
+# Final production stage
+FROM base AS runner
+ENV NODE_ENV=production \
+    PORT=3000 \
+    HOSTNAME="0.0.0.0"
+
+# Copy environment variables to runtime
+ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL \
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY \
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=$NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY \
+    STRIPE_SECRET_KEY=$STRIPE_SECRET_KEY \
+    COMIC_VINE_API_KEY=$COMIC_VINE_API_KEY \
+    METRON_API_AUTH_HEADER=$METRON_API_AUTH_HEADER \
+    SUPERHERO_ACCESS_TOKEN=$SUPERHERO_ACCESS_TOKEN \
+    MARVEL_PUBLIC_KEY=$MARVEL_PUBLIC_KEY \
+    MARVEL_PRIVATE_KEY=$MARVEL_PRIVATE_KEY \
+    CHARACTERS_API_URL=$CHARACTERS_API_URL \
+    SUPABASE_SERVICE_ROLE_KEY=$SUPABASE_SERVICE_ROLE_KEY \
+    GEMINI_API_KEY=$GEMINI_API_KEY
+
+# Create a non-root user FIRST
+RUN groupadd --system --gid 1001 nodejs && \
+    useradd --system --uid 1001 --create-home nextjs
+
+# Copy only production dependencies and built application
+COPY --from=prod-deps /app/node_modules /app/node_modules
+COPY --from=build /app/.next /app/.next
+COPY --from=build /app/public /app/public
+COPY --from=build /app/next.config.mjs /app/next.config.mjs
+COPY --from=build /app/package.json /app/package.json
 
 WORKDIR /app
 
-ENV NODE_ENV=production \
-	PORT=3000 \
-	HOSTNAME="0.0.0.0"
-
-# Copy environment variables from builder
-ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL \
-	NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY \
-	NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=$NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY \
-	STRIPE_SECRET_KEY=$STRIPE_SECRET_KEY \
-	COMIC_VINE_API_KEY=$COMIC_VINE_API_KEY \
-	METRON_API_AUTH_HEADER=$METRON_API_AUTH_HEADER \
-	SUPERHERO_ACCESS_TOKEN=$SUPERHERO_ACCESS_TOKEN \
-	MARVEL_PUBLIC_KEY=$MARVEL_PUBLIC_KEY \
-	MARVEL_PRIVATE_KEY=$MARVEL_PRIVATE_KEY \
-	CHARACTERS_API_URL=$CHARACTERS_API_URL \
-	SUPABASE_SERVICE_ROLE_KEY=$SUPABASE_SERVICE_ROLE_KEY \
-	GEMINI_API_KEY=$GEMINI_API_KEY
-
-# Copy only necessary files
-COPY --from=builder /app/next.config.mjs ./
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
-
 # Install curl for healthcheck
-RUN apk --no-cache add curl
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
-# Create a non-root user
-RUN addgroup --system --gid 1001 nodejs && \
-	adduser --system --uid 1001 nextjs && \
-	chown -R nextjs:nodejs /app
+# Set ownership of /app and create cache directory for nextjs user
+RUN chown -R nextjs:nodejs /app && \
+    mkdir -p /home/nextjs/.cache/node/corepack && \
+    chown -R nextjs:nodejs /home/nextjs/.cache
 
 USER nextjs
 EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-	CMD curl -f http://localhost:3000/ || exit 1
+    CMD curl -f http://localhost:3000/ || exit 1
 
 CMD ["pnpm", "start"]
