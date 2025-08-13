@@ -177,7 +177,9 @@ const EditComic = () => {
 				isClosable: true,
 			});
 
-			router.push("/");
+			// Removed automatic redirect to home to prevent unexpected navigation.
+			// If desired, re-enable by uncommenting:
+			// router.push("/");
 		} catch (error: any) {
 			setError("Error updating the comic!");
 			toast({
