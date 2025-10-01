@@ -90,7 +90,7 @@ function setCache(key: string, data: any) {
 }
 
 // Parse comic article with multiple selector fallbacks
-function parseComicArticle($: cheerio.CheerioAPI, element: cheerio.SelectorType) {
+function parseComicArticle($: cheerio.CheerioAPI, element: any) {
 	const $article = $(element);
 
 	// Check if this is a blog/news post (skip these)
@@ -173,7 +173,7 @@ function parseComicArticle($: cheerio.CheerioAPI, element: cheerio.SelectorType)
 }
 
 // Extract download links (basic version - not fetching individual pages)
-function extractDownloadLinks($article: cheerio.Cheerio<cheerio.Element>, $: cheerio.CheerioAPI, comicUrl: string) {
+function extractDownloadLinks($article: cheerio.Cheerio<any>, $: cheerio.CheerioAPI, comicUrl: string) {
 	const downloadLinks: { [key: string]: string } = {};
 
 	// GetComics typically has download links in the article body
