@@ -73,7 +73,7 @@ async function scrapeComicDetails(url: string) {
 					title = firstPart;
 				}
 			}
-			
+
 			// Remove extra whitespace and limit length
 			title = title.replace(/\s+/g, " ").trim().substring(0, 100);
 		}
@@ -214,9 +214,10 @@ async function scrapeWithScraperAPI(searchTerm?: string, page: number = 1) {
 			// Check if this is a valid individual comic (not a collection/bundle)
 			const hasContent = $article.find(".post-info, .post-excerpt, .entry-summary").text().trim();
 			const isNotBlog = !href?.includes("/blog/") && !href?.includes("/news/");
-			
+
 			// Filter out collections/bundles - these usually have very long titles or multiple (#) symbols
-			const isIndividualComic = title && 
+			const isIndividualComic =
+				title &&
 				!title.toLowerCase().includes("collection") &&
 				!title.toLowerCase().includes("bundle") &&
 				!title.toLowerCase().includes("pack") &&
@@ -231,9 +232,8 @@ async function scrapeWithScraperAPI(searchTerm?: string, page: number = 1) {
 					if (details) {
 						// Additional filtering: make sure the scraped title is reasonable
 						const scrapedTitle = details.title;
-						const isValidTitle = scrapedTitle && 
-							scrapedTitle.length < 200 &&
-							!scrapedTitle.includes("(2022)") ||
+						const isValidTitle =
+							(scrapedTitle && scrapedTitle.length < 200 && !scrapedTitle.includes("(2022)")) ||
 							!scrapedTitle.includes("(2023)") ||
 							!scrapedTitle.includes("(2024)") ||
 							!scrapedTitle.includes("(2025)");
