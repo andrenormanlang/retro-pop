@@ -4,220 +4,186 @@ import * as cheerio from "cheerio";
 
 const BASE_URL = "https://getcomics.org";
 const SCRAPER_API_KEY = process.env.SCRAPER_API_KEY;
-const CACHE_DURATION = 300000; // 5 minutes
-const MAX_RETRIES = 3;
-const RETRY_DELAY = 2000;
 
-// Simple in-memory cache
-const cache = new Map<string, { data: any; timestamp: number }>();
-
-// Rate limiting helper
-class RateLimiter {
-	private lastRequest = 0;
-	private minDelay = 1000; // 1 second between requests
-
-	async throttle() {
-		const now = Date.now();
-		const timeSinceLastRequest = now - this.lastRequest;
-		if (timeSinceLastRequest < this.minDelay) {
-			await new Promise((resolve) => setTimeout(resolve, this.minDelay - timeSinceLastRequest));
-		}
-		this.lastRequest = Date.now();
-	}
-}
-
-const rateLimiter = new RateLimiter();
-
-// Fetch with retry logic
-async function fetchWithRetry(url: string, retries = MAX_RETRIES): Promise<string> {
-	for (let i = 0; i < retries; i++) {
-		try {
-			await rateLimiter.throttle();
-
-			if (!SCRAPER_API_KEY) {
-				throw new Error("SCRAPER_API_KEY is not configured");
-			}
-
-			const scraperApiUrl = `https://api.scraperapi.com?api_key=${SCRAPER_API_KEY}&url=${encodeURIComponent(
-				url
-			)}&render=false`;
-
-			const response = await fetch(scraperApiUrl, {
-				method: "GET",
-				headers: {
-					Accept: "text/html",
-					"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-				},
-				signal: AbortSignal.timeout(30000), // 30 second timeout
-			});
-
-			if (!response.ok) {
-				const errorText = await response.text();
-				throw new Error(`ScraperAPI error (${response.status}): ${errorText}`);
-			}
-
-			return await response.text();
-		} catch (error) {
-			console.error(`Attempt ${i + 1} failed:`, error);
-
-			if (i === retries - 1) throw error;
-
-			// Exponential backoff
-			await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY * Math.pow(2, i)));
-		}
-	}
-	throw new Error("Max retries exceeded");
-}
-
-// Get from cache or fetch
-function getFromCache(key: string): any | null {
-	const cached = cache.get(key);
-	if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-		console.log(`Cache hit for: ${key}`);
-		return cached.data;
-	}
-	return null;
-}
-
-function setCache(key: string, data: any) {
-	cache.set(key, { data, timestamp: Date.now() });
-
-	// Clean old cache entries
-	if (cache.size > 100) {
-		const oldestKey = Array.from(cache.keys())[0];
-		cache.delete(oldestKey);
-	}
-}
-
-// Parse comic article with multiple selector fallbacks
-function parseComicArticle($: cheerio.CheerioAPI, element: any) {
-	const $article = $(element);
-
-	// Check if this is a blog/news post (skip these)
-	const categoryLink = $article.find(".post-category").attr("href") || "";
-	const isNonComic =
-		categoryLink.includes("/cat/blog/") ||
-		categoryLink.includes("/cat/news/") ||
-		categoryLink.includes("/cat/sponsored/");
-
-	// Title - it's in h1.post-title or h2.post-title
-	const title = $article.find(".post-title a, h1.post-title a").text().trim();
-	const link = $article.find(".post-title a, h1.post-title a").attr("href");
-
-	// Image - in .post-header-image img
-	const image = $article.find(".post-header-image img").attr("src");
-
-	// Description - need to extract text content and metadata separately
-	const $excerpt = $article.find(".post-excerpt");
-	let description = "";
-	let year = "";
-	let size = "";
-
-	// Extract year and size from the first paragraph with strong tags
-	const metaParagraph = $excerpt.find("p").first().html() || "";
-	const yearMatch = metaParagraph.match(/<strong>Year\s*:\s*<\/strong>\s*(\d{4})/i);
-	const sizeMatch = metaParagraph.match(
-		/<strong>Size\s*:\s*<\/strong>\s*([\d.]+\s*(?:GB|MB|KB)(?:\/\/[\d.]+\s*(?:GB|MB|KB))?)/i
-	);
-
-	if (yearMatch) year = yearMatch[1];
-	if (sizeMatch) size = sizeMatch[1];
-
-	// Get description from text nodes after the meta paragraph
-	// Skip the first p (metadata) and get actual description text
-	const descParagraphs = $excerpt.find("p").toArray();
-	if (descParagraphs.length > 1) {
-		// Get text from second paragraph onward
-		description = descParagraphs
-			.slice(1)
-			.map((p) => $(p).text().trim())
-			.filter((text) => text.length > 0)
-			.join(" ");
-	} else {
-		// Fallback: get all text and remove metadata
-		description = $excerpt
-			.text()
-			.replace(/Year\s*:\s*\d{4}/i, "")
-			.replace(/Size\s*:\s*[\d.]+\s*(?:GB|MB|KB)(?:\/\/[\d.]+\s*(?:GB|MB|KB))?/i, "")
-			.replace(/\|/g, "")
-			.trim();
+// Function to fetch HTML from any URL using ScraperAPI
+async function fetchHtmlWithScraperAPI(url: string): Promise<string> {
+	if (!SCRAPER_API_KEY) {
+		throw new Error("SCRAPER_API_KEY is not configured");
 	}
 
-	// Clean description
-	if (description) {
-		description = description.replace(/\s+/g, " ").trim().substring(0, 500);
-	}
+	const scraperApiUrl = `https://api.scraperapi.com?api_key=${SCRAPER_API_KEY}&url=${encodeURIComponent(
+		url
+	)}&render=false`;
 
-	// Date from post-meta
-	const dateText =
-		$article.find(".post-meta-date time").attr("datetime") || $article.find(".post-meta-date time").text().trim();
-
-	// Category
-	const category = $article.find(".post-category").text().trim();
-
-	// Check if sticky (pinned post)
-	const isSticky = $article.hasClass("sticky");
-
-	return {
-		title,
-		link,
-		image: image || "",
-		description: description || "",
-		date: dateText || null,
-		year,
-		size,
-		category,
-		isSticky,
-		isNonComic,
-	};
-}
-
-// Extract download links (basic version - not fetching individual pages)
-function extractDownloadLinks($article: cheerio.Cheerio<any>, $: cheerio.CheerioAPI, comicUrl: string) {
-	const downloadLinks: { [key: string]: string } = {};
-
-	// GetComics typically has download links in the article body
-	// But from listing pages, we usually don't get these - they're on individual pages
-	$article.find("a").each((_, linkElement) => {
-		const $link = $(linkElement);
-		const linkHref = $link.attr("href");
-		const linkText = $link.text().trim().toUpperCase();
-
-		if (
-			linkHref &&
-			!linkHref.includes("#comments") &&
-			!linkHref.includes("#respond") &&
-			linkHref !== comicUrl &&
-			!linkHref.includes("/cat/") && // Skip category links
-			!linkHref.includes("/tag/") && // Skip tag links
-			!linkText.includes("READ MORE") // Skip "Read More" links
-		) {
-			const lowerHref = linkHref.toLowerCase();
-
-			// Detect file hosting services
-			if (lowerHref.includes("mega.nz") || lowerHref.includes("mega.co.nz")) {
-				downloadLinks["MEGA"] = linkHref;
-			} else if (lowerHref.includes("mediafire.com")) {
-				downloadLinks["MEDIAFIRE"] = linkHref;
-			} else if (lowerHref.includes("getcomics.org/dlds/")) {
-				downloadLinks["DOWNLOAD_NOW"] = linkHref;
-			} else if (lowerHref.includes("link-to.net") || lowerHref.includes("getcomics.info")) {
-				downloadLinks["DOWNLOAD_NOW"] = linkHref;
-			} else if (linkText.includes("DOWNLOAD NOW") || linkText.includes("DOWNLOAD")) {
-				downloadLinks["DOWNLOAD_NOW"] = linkHref;
-			}
-		}
+	const response = await fetch(scraperApiUrl, {
+		method: "GET",
+		headers: {
+			Accept: "text/html",
+			"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+		},
 	});
 
-	return downloadLinks;
+	if (!response.ok) {
+		const errorText = await response.text();
+		throw new Error(`ScraperAPI error (${response.status}): ${errorText}`);
+	}
+
+	return await response.text();
 }
 
-async function scrapeComics(searchTerm?: string, page: number = 1) {
-	// Check cache first
-	const cacheKey = `${searchTerm || "home"}-${page}`;
-	const cached = getFromCache(cacheKey);
-	if (cached) {
-		return cached;
+// Extract information from scraped info string
+function infoScraper(str: string) {
+	if (str.length !== 0) {
+		const infoString = str.split(",").map((x) => x.split(":"));
+
+		const info: any = {};
+		for (let i in infoString) {
+			if (infoString[i].length >= 2) {
+				info[infoString[i][0].replace(/'/g, "").trim().split(" ").join("")] = infoString[i][1]
+					.replace(/'/g, "")
+					.trim();
+			}
+		}
+		return info;
+	}
+	return {};
+}
+
+// Scrape individual comic page for detailed information
+async function scrapeComicDetails(url: string) {
+	try {
+		console.log(`Scraping individual page: ${url}`);
+		const html = await fetchHtmlWithScraperAPI(url);
+		const $ = cheerio.load(html);
+
+		// Extract title - prefer the first h1 or main title
+		let title =
+			$(".post-info h1, .entry-header h1, .post-title, h1.entry-title").text().trim() ||
+			$(".post-title a").text().trim() ||
+			$("h1").first().text().trim();
+
+		// Clean up title - sometimes it contains extra elements or multiple titles
+		if (title) {
+			// Split by common separators and take the first meaningful part
+			const titleParts = title.split(/(?:\s{2,}|\n|\t)/);
+			if (titleParts.length > 1) {
+				// Take the first part if it looks like a proper comic title
+				const firstPart = titleParts[0].trim();
+				if (firstPart.length > 10 && firstPart.includes("#")) {
+					title = firstPart;
+				}
+			}
+			
+			// Remove extra whitespace and limit length
+			title = title.replace(/\s+/g, " ").trim().substring(0, 100);
+		}
+
+		// Extract description - look for the first substantial paragraph
+		let description = "";
+		$(".post-content p, .entry-content p, .post-contents p").each((_, el) => {
+			const $el = $(el);
+			// Remove child elements (links, etc.) and get pure text
+			const text = $el.clone().children().remove().end().text().trim();
+			if (
+				text.length > 50 &&
+				!text.toLowerCase().includes("download") &&
+				!text.toLowerCase().includes("year:") &&
+				!text.toLowerCase().includes("size:") &&
+				!description
+			) {
+				description = text;
+			}
+		});
+
+		// Extract metadata information - look for patterns like "Year: 2025, Size: 100MB"
+		let scrapedInfo = "";
+		$(".post-content, .entry-content, .post-contents")
+			.find("p, strong")
+			.each((_, el) => {
+				const text = $(el).text();
+				if ((text.includes("Year:") || text.includes("Size:")) && text.includes("|")) {
+					scrapedInfo = text;
+					return false; // break
+				}
+			});
+
+		// Also try to extract year and size directly
+		const pageText = $(".post-content, .entry-content").text();
+		const yearMatch = pageText.match(/Year\s*:\s*(\d{4})/i);
+		const sizeMatch = pageText.match(/Size\s*:\s*([\d.]+\s*(?:GB|MB|KB))/i);
+
+		// Parse the scraped info or create from individual matches
+		let information: any = {};
+		if (scrapedInfo) {
+			information = infoScraper(scrapedInfo);
+		}
+
+		// Fill in missing info from direct matches
+		if (yearMatch && !information.Year) {
+			information.Year = yearMatch[1];
+		}
+		if (sizeMatch && !information.Size) {
+			information.Size = sizeMatch[1];
+		}
+
+		// Extract download links
+		const downloadLinks: { [key: string]: string } = {};
+
+		// Look for download links in various selectors
+		$("a").each((_, linkEl) => {
+			const $link = $(linkEl);
+			const href = $link.attr("href");
+			const text = $link.text().trim();
+
+			if (href && !href.includes("#comments") && !href.includes("/how-to-download")) {
+				const lowerHref = href.toLowerCase();
+				const upperText = text.toUpperCase();
+
+				// Detect file hosting services
+				if (lowerHref.includes("mega.nz") || lowerHref.includes("mega.co.nz")) {
+					downloadLinks["MEGA"] = href;
+				} else if (lowerHref.includes("mediafire.com")) {
+					downloadLinks["MEDIAFIRE"] = href;
+				} else if (lowerHref.includes("rapidgator.net")) {
+					downloadLinks["RAPIDGATOR"] = href;
+				} else if (lowerHref.includes("zippyshare.com")) {
+					downloadLinks["ZIPPYSHARE"] = href;
+				} else if (lowerHref.includes("getcomics.org/dlds/")) {
+					downloadLinks["DOWNLOAD_NOW"] = href;
+				} else if (
+					upperText.includes("DOWNLOAD NOW") ||
+					(upperText.includes("DOWNLOAD") && !upperText.includes("HOW TO"))
+				) {
+					if (!lowerHref.includes("how-to") && !downloadLinks["DOWNLOAD_NOW"]) {
+						downloadLinks["DOWNLOAD_NOW"] = href;
+					}
+				} else if (upperText.includes("READ ONLINE")) {
+					downloadLinks["READ_ONLINE"] = href;
+				}
+			}
+		});
+
+		console.log(
+			`Scraped ${url}: title="${title}", desc length=${description.length}, links=${
+				Object.keys(downloadLinks).length
+			}`
+		);
+
+		return {
+			title,
+			description: description || "",
+			information,
+			downloadLinks,
+		};
+	} catch (error) {
+		console.error(`Error scraping ${url}:`, error);
+		return null;
+	}
+}
+
+async function scrapeWithScraperAPI(searchTerm?: string, page: number = 1) {
+	if (!SCRAPER_API_KEY) {
+		throw new Error("SCRAPER_API_KEY is not configured");
 	}
 
 	try {
@@ -229,160 +195,100 @@ async function scrapeComics(searchTerm?: string, page: number = 1) {
 			targetUrl = page === 1 ? BASE_URL : `${BASE_URL}/page/${page}`;
 		}
 
-		console.log(`Fetching: ${targetUrl}`);
+		console.log(`Scraping listing page: ${targetUrl}`);
 
-		const html = await fetchWithRetry(targetUrl);
+		const html = await fetchHtmlWithScraperAPI(targetUrl);
 		const $ = cheerio.load(html);
 
-		const comics: any[] = [];
+		const comicPromises: Promise<any>[] = [];
 
-		// First, check for cover posts (featured posts at the top)
-		$(".cover-blog-posts .cover-post").each((_, element) => {
-			const $coverPost = $(element);
-			const title = $coverPost.find(".post-title a").text().trim();
-			const link = $coverPost.find(".post-title a").attr("href");
-			const category = $coverPost.find(".post-category").text().trim();
-			const image = $coverPost.attr("data-background-image");
+		// Parse listing page - look for individual comic articles only
+		$('article[id*="post-"]').each((_, element) => {
+			const $article = $(element);
 
-			// Extract metadata from post-excerpt
-			const excerptHtml = $coverPost.find(".post-excerpt").html() || "";
-			const yearMatch = excerptHtml.match(/<strong>Year\s*:\s*<\/strong>\s*(\d{4})/i);
-			const sizeMatch = excerptHtml.match(
-				/<strong>Size\s*:\s*<\/strong>\s*([\d.]+\s*(?:GB|MB|KB)(?:\/\/[\d.]+\s*(?:GB|MB|KB))?)/i
-			);
+			// Get basic info from listing
+			const coverPage = $article.find("img").attr("src") || $article.find(".post-header-image img").attr("src");
+			const href = $article.find("a").first().attr("href") || $article.find(".post-title a").attr("href");
+			const title = $article.find(".post-title a, h2 a, h1 a").text().trim();
 
-			if (title && link) {
-				comics.push({
-					title,
-					coverPage: image || "",
-					description: "", // Cover posts typically don't have descriptions on listing
-					information: {
-						Year: yearMatch ? yearMatch[1] : "",
-						Size: sizeMatch ? sizeMatch[1] : "",
-					},
-					downloadLinks: {},
-					url: link,
-					id: link.split("/").filter(Boolean).pop() || "",
-					publishDate: null,
-					category,
-					isSticky: true, // Cover posts are featured
-					isCoverPost: true,
+			// Check if this is a valid individual comic (not a collection/bundle)
+			const hasContent = $article.find(".post-info, .post-excerpt, .entry-summary").text().trim();
+			const isNotBlog = !href?.includes("/blog/") && !href?.includes("/news/");
+			
+			// Filter out collections/bundles - these usually have very long titles or multiple (#) symbols
+			const isIndividualComic = title && 
+				!title.toLowerCase().includes("collection") &&
+				!title.toLowerCase().includes("bundle") &&
+				!title.toLowerCase().includes("pack") &&
+				(title.match(/#/g) || []).length <= 2 && // Allow max 2 # symbols (for issue numbers)
+				title.length < 150; // Reasonable title length for individual comics
+
+			if (href && hasContent && coverPage && isNotBlog && isIndividualComic) {
+				console.log(`Found individual comic: ${title} - ${href}`);
+
+				// Create promise to fetch detailed info from individual page
+				const promise = scrapeComicDetails(href).then((details) => {
+					if (details) {
+						// Additional filtering: make sure the scraped title is reasonable
+						const scrapedTitle = details.title;
+						const isValidTitle = scrapedTitle && 
+							scrapedTitle.length < 200 &&
+							!scrapedTitle.includes("(2022)") ||
+							!scrapedTitle.includes("(2023)") ||
+							!scrapedTitle.includes("(2024)") ||
+							!scrapedTitle.includes("(2025)");
+
+						// If scraped title seems like multiple comics, use the original listing title
+						const finalTitle = (scrapedTitle.match(/\d{4}\)/g) || []).length > 2 ? title : scrapedTitle;
+
+						return {
+							title: finalTitle,
+							coverPage: coverPage || "",
+							description: details.description,
+							information: details.information,
+							downloadLinks: details.downloadLinks,
+							url: href,
+							id: href.split("/").filter(Boolean).pop() || "",
+							publishDate: null,
+							categories: [],
+						};
+					}
+					return null;
 				});
+
+				comicPromises.push(promise);
 			}
 		});
 
-		// Parse all comic articles - GetComics uses article elements with IDs like "post-380098"
-		$("article[id^='post-']").each((_, element) => {
-			const parsed = parseComicArticle($, element);
+		// Limit to first 8 comics to avoid timeout
+		const limitedPromises = comicPromises.slice(0, 8);
 
-			// Skip blog posts, news, and non-comic content
-			if (parsed.isNonComic) {
-				console.log(`Skipping non-comic: ${parsed.title} (${parsed.category})`);
-				return;
-			}
+		console.log(`Found ${comicPromises.length} comics, processing first ${limitedPromises.length}`);
 
-			if (parsed.title && parsed.link) {
-				const $article = $(element);
-				const downloadLinks = extractDownloadLinks($article, $, parsed.link);
+		// Wait for all comic details to be scraped
+		const comics = await Promise.all(limitedPromises);
 
-				comics.push({
-					title: parsed.title,
-					coverPage: parsed.image,
-					description: parsed.description,
-					information: {
-						Year: parsed.year,
-						Size: parsed.size,
-					},
-					downloadLinks,
-					url: parsed.link,
-					id: parsed.link.split("/").filter(Boolean).pop() || "",
-					publishDate: parsed.date,
-					category: parsed.category,
-					isSticky: parsed.isSticky,
-				});
-			}
-		});
+		// Filter out null results
+		const validComics = comics.filter((comic) => comic !== null);
+
+		console.log(`Successfully processed ${validComics.length} comics`);
 
 		// Get pagination info
 		const totalPages = $(".pagination .page-numbers").not(".next, .prev").last().text();
 		const hasMore = $(".pagination .next").length > 0;
 
-		const result = {
-			results: comics,
+		return {
+			results: validComics,
 			pagination: {
 				current_page: page,
 				total_pages: totalPages ? parseInt(totalPages, 10) : page,
 				has_more: hasMore,
-				total_results: comics.length,
+				total_results: validComics.length,
 			},
 			success: true,
 		};
-
-		// Cache the result
-		setCache(cacheKey, result);
-
-		return result;
 	} catch (error) {
 		console.error("Scraping error:", error);
-		throw error;
-	}
-}
-
-// Separate endpoint for fetching individual comic details
-// This should be called from a different route: /api/comics/[id]
-export async function fetchComicDetails(comicUrl: string) {
-	const cached = getFromCache(`detail-${comicUrl}`);
-	if (cached) return cached;
-
-	try {
-		const html = await fetchWithRetry(comicUrl);
-		const $ = cheerio.load(html);
-
-		// Extract enhanced description
-		let description = "";
-		const plotParagraphs = $(".entry-content p, .post-content p")
-			.filter((_, el) => {
-				const text = $(el).text().trim();
-				const hasLinks = $(el).find("a").length > 0;
-				return text.length > 50 && !hasLinks && !text.toLowerCase().includes("download");
-			})
-			.map((_, el) => $(el).text().trim())
-			.get();
-
-		if (plotParagraphs.length > 0) {
-			description = plotParagraphs.reduce((a, b) => (a.length > b.length ? a : b));
-		}
-
-		// Extract all download links
-		const downloadLinks: { [key: string]: string } = {};
-		$("a").each((_, linkElement) => {
-			const $link = $(linkElement);
-			const linkHref = $link.attr("href");
-
-			if (linkHref) {
-				const lowerHref = linkHref.toLowerCase();
-
-				if (lowerHref.includes("mega.nz")) {
-					downloadLinks["MEGA"] = linkHref;
-				} else if (lowerHref.includes("mediafire.com")) {
-					downloadLinks["MEDIAFIRE"] = linkHref;
-				} else if (lowerHref.includes("rapidgator.net")) {
-					downloadLinks["RAPIDGATOR"] = linkHref;
-				} else if (lowerHref.includes("getcomics.org/dlds/")) {
-					downloadLinks["DOWNLOAD_NOW"] = linkHref;
-				}
-			}
-		});
-
-		const result = {
-			description: description || "",
-			downloadLinks,
-		};
-
-		setCache(`detail-${comicUrl}`, result);
-		return result;
-	} catch (error) {
-		console.error("Error fetching comic details:", error);
 		throw error;
 	}
 }
@@ -393,22 +299,30 @@ export async function GET(request: NextRequest) {
 	const page = parseInt(urlParams.get("page") || "1", 10);
 
 	console.log(`API Request - Search: ${searchTerm}, Page: ${page}`);
+	console.log(`Environment check - SCRAPER_API_KEY exists: ${!!process.env.SCRAPER_API_KEY}`);
 
 	// Validate page number
-	if (page < 1 || page > 100) {
-		return NextResponse.json({ error: "Invalid page number. Must be between 1-100" }, { status: 400 });
+	if (page < 1) {
+		return NextResponse.json({ error: "Invalid page number. Must be >= 1" }, { status: 400 });
 	}
 
 	try {
-		const data = await scrapeComics(searchTerm || undefined, page);
+		const data = await scrapeWithScraperAPI(searchTerm || undefined, page);
 
+		// Return just the comics array to match the expected format
 		return NextResponse.json(data.results, {
 			headers: {
 				"Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
 			},
 		});
 	} catch (error) {
-		console.error("API Error:", error);
+		console.error("API Error Details:", {
+			error: error instanceof Error ? error.message : "Unknown error",
+			stack: error instanceof Error ? error.stack : undefined,
+			type: error?.constructor?.name,
+			searchTerm,
+			page,
+		});
 
 		const errorMessage = error instanceof Error ? error.message : "Unknown error";
 
@@ -417,6 +331,12 @@ export async function GET(request: NextRequest) {
 				error: "Failed to fetch comics",
 				message: errorMessage,
 				success: false,
+				debug: {
+					searchTerm,
+					page,
+					timestamp: new Date().toISOString(),
+					apiKeyConfigured: !!process.env.SCRAPER_API_KEY,
+				},
 			},
 			{ status: 500 }
 		);
