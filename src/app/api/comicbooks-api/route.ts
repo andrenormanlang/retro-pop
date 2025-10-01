@@ -1,37 +1,97 @@
- // pages/api/comics/index.js
-import { NextRequest, NextResponse } from 'next/server';
-const comicsApi = require('comicbooks-api');
+// pages/api/comics/index.js
+import { NextRequest, NextResponse } from "next/server";
+const comicsApi = require("comicbooks-api");
 
 export async function GET(request: NextRequest) {
 	// Correctly parse URL parameters
 	const urlParams = new URL(request.url).searchParams;
-	const searchTerm = urlParams.get('query'); // Search term may or may not be present
-	const page = parseInt(urlParams.get('page') || '1', 10); // Correct radix parameter
+	const searchTerm = urlParams.get("query"); // Search term may or may not be present
+	const page = parseInt(urlParams.get("page") || "1", 10); // Correct radix parameter
+	const pageSize = parseInt(urlParams.get("pageSize") || "10", 10);
+
+	// Add detailed logging for debugging production issues
+	console.log("ComicsAPI Request:", {
+		searchTerm,
+		page,
+		pageSize,
+		nodeEnv: process.env.NODE_ENV,
+		timestamp: new Date().toISOString(),
+		userAgent: request.headers.get("user-agent"),
+		origin: request.headers.get("origin"),
+		referer: request.headers.get("referer"),
+	});
 
 	try {
-	  let comics;
+		let comics;
 
-	  // Determine action based on the presence of a search term
-	  if (searchTerm) {
-		// Search for comics using the provided term
-		comics = await comicsApi.getComicsThroughSearch(searchTerm, page);
-	  } else {
-		// Fetch the latest comics if no search term is provided
-		comics = await comicsApi.getLatestComics(page);
-	  }
+		// Add timeout for external API calls
+		const timeoutPromise = new Promise((_, reject) => {
+			setTimeout(() => reject(new Error("Request timeout after 15 seconds")), 15000);
+		});
 
-	  return NextResponse.json(comics);
-  } catch (error) {
-    console.error('Failed to fetch comics:', error);
+		// Determine action based on the presence of a search term
+		if (searchTerm) {
+			console.log(`Searching for comics with term: "${searchTerm}", page: ${page}`);
+			// Search for comics using the provided term
+			comics = await Promise.race([comicsApi.getComicsThroughSearch(searchTerm, page), timeoutPromise]);
+		} else {
+			console.log(`Fetching latest comics, page: ${page}`);
+			// Fetch the latest comics if no search term is provided
+			comics = await Promise.race([comicsApi.getLatestComics(page), timeoutPromise]);
+		}
 
-    return NextResponse.json(
-      {
-        error: 'Failed to fetch comics',
-        message: error instanceof Error ? error.message : 'An unexpected error occurred'
-      },
-      { status: 500 }
-    );
-  }
+		console.log("ComicsAPI Success:", {
+			resultsCount: comics?.length || 0,
+			hasData: !!comics,
+			timestamp: new Date().toISOString(),
+		});
+
+		return NextResponse.json(comics);
+	} catch (error) {
+		// Enhanced error logging for production debugging
+		console.error("ComicsAPI Error Details:", {
+			error: error instanceof Error ? error.message : "Unknown error",
+			stack: error instanceof Error ? error.stack : undefined,
+			searchTerm,
+			page,
+			pageSize,
+			nodeEnv: process.env.NODE_ENV,
+			timestamp: new Date().toISOString(),
+			errorType: error?.constructor?.name,
+			// Add any additional error properties
+			...(error &&
+				typeof error === "object" &&
+				error.response && {
+					statusCode: error.response?.status,
+					statusText: error.response?.statusText,
+					responseData: error.response?.data,
+				}),
+		});
+
+		// Return more detailed error information in development
+		const errorResponse = {
+			error: "Failed to fetch comics",
+			message: error instanceof Error ? error.message : "An unexpected error occurred",
+			...(process.env.NODE_ENV === "development" && {
+				stack: error instanceof Error ? error.stack : undefined,
+				details: {
+					searchTerm,
+					page,
+					pageSize,
+					timestamp: new Date().toISOString(),
+				},
+			}),
+		};
+
+		return NextResponse.json(errorResponse, {
+			status: error?.response?.status === 403 ? 403 : 500,
+			headers: {
+				"Cache-Control": "no-cache, no-store, must-revalidate",
+				Pragma: "no-cache",
+				Expires: "0",
+			},
+		});
+	}
 }
 
 // pages/api/comics/index.js
@@ -50,7 +110,6 @@ export async function GET(request: NextRequest) {
 // 		const baseURL = `https://getcomics.org`;
 // 		const searchURL = searchTerm ? `/search/${searchTerm}/page/${page}` : `/page/${page}`;
 // 		const fullURL = `${baseURL}${searchURL}`;
-
 
 // 		// Include a User-Agent header to mimic a request from a popular web browser
 //         const response = await axios.get(fullURL, {
