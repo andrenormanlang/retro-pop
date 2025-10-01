@@ -47,7 +47,7 @@ specifiers:
   '@types/uuid': ^9.0.8
   autoprefixer: ^10.0.1
   axios: ^1.6.7
-  cheerio: ^1.0.0-rc.12
+  cheerio: ^1.0.0
   comicbooks-api: ^0.1.5
   copy-to-clipboard: ^3.3.3
   date-fns: ^3.6.0
@@ -76,6 +76,7 @@ specifiers:
   react-redux: ^9.1.2
   react-resizable: ^3.0.5
   sass: ^1.70.0
+  scraperapi-sdk: ^2.0.1
   stripe: ^16.0.0
   tailwindcss: ^3.3.0
   tiptap-extension-resize-image: ^1.2.2
@@ -146,6 +147,7 @@ dependencies:
   react-redux: 9.2.0_qaya7baxug4ahyvtlkq772t3xu
   react-resizable: 3.0.5_j6k6oay3ugsr56slyfvma2drry
   sass: 1.87.0
+  scraperapi-sdk: 2.0.1
   stripe: 16.12.0
   tiptap-extension-resize-image: 1.2.2_5yukc2bx7yvap7t3zfvacfc26a
   use-debounce: 10.0.4_react@19.1.0
@@ -10724,6 +10726,10 @@ packages:
 
   /scheduler/0.26.0:
     resolution: {integrity: sha512-NlHwttCI/l5gCPR3D1nNXtWABUmBwvZpEQiD4IXSbIDq8BzLIK/7Ir5gTFSGZDUu37K5cMNp0hFtzO38sC7gWA==}
+    dev: false
+
+  /scraperapi-sdk/2.0.1:
+    resolution: {integrity: sha512-j4bp89daQst73qhGrpAgBuU6t21eI+14fsmtES7gh7IKGtFrAo7pq1xL5ThVYa7Onw6NHYP6uxGFVjMAjIiSCA==}
     dev: false
 
   /scroll-into-view-if-needed/3.0.10:
