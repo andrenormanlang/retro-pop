@@ -5,8 +5,8 @@ import * as cheerio from "cheerio";
 const BASE_URL = "https://getcomics.org";
 const SCRAPER_API_KEY = process.env.SCRAPER_API_KEY;
 
-// Function to fetch HTML from any URL using ScraperAPI
-async function fetchHtmlWithScraperAPI(url: string): Promise<string> {
+// Function to fetch HTML from any URL using ScraperAPI with retry logic
+async function fetchHtmlWithScraperAPI(url: string, retries = 3): Promise<string> {
 	if (!SCRAPER_API_KEY) {
 		throw new Error("SCRAPER_API_KEY is not configured");
 	}
@@ -15,20 +15,41 @@ async function fetchHtmlWithScraperAPI(url: string): Promise<string> {
 		url
 	)}&render=false`;
 
-	const response = await fetch(scraperApiUrl, {
-		method: "GET",
-		headers: {
-			Accept: "text/html",
-			"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-		},
-	});
+	for (let attempt = 0; attempt <= retries; attempt++) {
+		try {
+			const response = await fetch(scraperApiUrl, {
+				method: "GET",
+				headers: {
+					Accept: "text/html",
+					"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+				},
+			});
 
-	if (!response.ok) {
-		const errorText = await response.text();
-		throw new Error(`ScraperAPI error (${response.status}): ${errorText}`);
+			// Handle rate limiting with exponential backoff
+			if (response.status === 429) {
+				if (attempt < retries) {
+					const waitTime = Math.pow(2, attempt) * 1000; // 1s, 2s, 4s
+					console.log(`Rate limited. Waiting ${waitTime}ms before retry ${attempt + 1}/${retries}...`);
+					await new Promise((resolve) => setTimeout(resolve, waitTime));
+					continue;
+				}
+			}
+
+			if (!response.ok) {
+				const errorText = await response.text();
+				throw new Error(`ScraperAPI error (${response.status}): ${errorText}`);
+			}
+
+			return await response.text();
+		} catch (error) {
+			if (attempt === retries) throw error;
+			const waitTime = Math.pow(2, attempt) * 1000;
+			console.log(`Request failed. Retrying in ${waitTime}ms...`);
+			await new Promise((resolve) => setTimeout(resolve, waitTime));
+		}
 	}
 
-	return await response.text();
+	throw new Error("Max retries exceeded");
 }
 
 // Extract information from scraped info string
@@ -126,42 +147,119 @@ async function scrapeComicDetails(url: string) {
 			information.Size = sizeMatch[1];
 		}
 
-		// Extract download links
+		// Extract download links using reference pattern
 		const downloadLinks: { [key: string]: string } = {};
 
-		// Look for download links in various selectors
-		$("a").each((_, linkEl) => {
-			const $link = $(linkEl);
-			const href = $link.attr("href");
-			const text = $link.text().trim();
+		// Helper to prefer anchors with class 'aio-red' when multiple similar links are present
+		function preferAnchorHrefByClass($anchors: any /* Cheerio or array of elements */, preferredClass = "aio-red") {
+			// Normalize to an array of elements
+			let elems: any[] = [];
+			if (Array.isArray($anchors)) elems = $anchors;
+			else if (typeof $anchors.get === "function") elems = $anchors.get();
 
-			if (href && !href.includes("#comments") && !href.includes("/how-to-download")) {
-				const lowerHref = href.toLowerCase();
-				const upperText = text.toUpperCase();
-
-				// Detect file hosting services
-				if (lowerHref.includes("mega.nz") || lowerHref.includes("mega.co.nz")) {
-					downloadLinks["MEGA"] = href;
-				} else if (lowerHref.includes("mediafire.com")) {
-					downloadLinks["MEDIAFIRE"] = href;
-				} else if (lowerHref.includes("rapidgator.net")) {
-					downloadLinks["RAPIDGATOR"] = href;
-				} else if (lowerHref.includes("zippyshare.com")) {
-					downloadLinks["ZIPPYSHARE"] = href;
-				} else if (lowerHref.includes("getcomics.org/dlds/")) {
-					downloadLinks["DOWNLOAD_NOW"] = href;
-				} else if (
-					upperText.includes("DOWNLOAD NOW") ||
-					(upperText.includes("DOWNLOAD") && !upperText.includes("HOW TO"))
+			// Try to find an anchor that has the preferred class first
+			for (const a of elems) {
+				const cls = $(a).attr("class") || "";
+				if (
+					cls
+						.split(/\s+/)
+						.map((c: string) => c.trim())
+						.includes(preferredClass)
 				) {
-					if (!lowerHref.includes("how-to") && !downloadLinks["DOWNLOAD_NOW"]) {
-						downloadLinks["DOWNLOAD_NOW"] = href;
-					}
-				} else if (upperText.includes("READ ONLINE")) {
-					downloadLinks["READ_ONLINE"] = href;
+					return $(a).attr("href");
 				}
 			}
+
+			// Otherwise return first anchor with a meaningful href
+			for (const a of elems) {
+				const href = $(a).attr("href");
+				if (href && !href.includes("#comments")) return href;
+			}
+
+			return null;
+		}
+
+		// First try the reference .aio-pulse selector pattern and prefer aio-red anchors
+		$(".aio-pulse").each((_, pulseEl) => {
+			const $pulse = $(pulseEl);
+			const $anchors = $pulse.find("a");
+			if ($anchors.length === 0) return;
+
+			// If there are anchors that look like DOWNLOAD NOW / getcomics dlds links, prefer aio-red among them
+			const downloadNowCandidates: any[] = [];
+			$anchors.each((_, a) => {
+				const $a = $(a);
+				const href = $a.attr("href") || "";
+				const txt = $a.text().trim().toUpperCase();
+				if (txt.includes("DOWNLOAD NOW") || href.toLowerCase().includes("getcomics.org/dlds/")) {
+					downloadNowCandidates.push(a as any);
+				}
+			});
+
+			let chosenHref: string | null = null;
+			if (downloadNowCandidates.length > 0) {
+				chosenHref = preferAnchorHrefByClass(downloadNowCandidates, "aio-red");
+			}
+
+			// If not found, iterate anchors and classify by domain as before
+			if (!chosenHref) {
+				$anchors.each((_, linkEl) => {
+					const $link = $(linkEl);
+					const href = $link.attr("href");
+					const text = $link.text().trim().toUpperCase();
+
+					if (href && !href.includes("#comments")) {
+						const lowerHref = href.toLowerCase();
+
+						// Map according to reference format
+						if (text.includes("DOWNLOAD NOW") || lowerHref.includes("getcomics.org/dlds/")) {
+							downloadLinks["DOWNLOADNOW"] = href;
+						} else if (lowerHref.includes("mega.nz") || lowerHref.includes("mega.co.nz")) {
+							downloadLinks["MEGA"] = href;
+						} else if (lowerHref.includes("mediafire.com")) {
+							downloadLinks["MEDIAFIRE"] = href;
+						} else if (text.includes("READ ONLINE")) {
+							downloadLinks["READONLINE"] = href;
+						} else if (lowerHref.includes("uploadedpremium.link") || lowerHref.includes("ufile.io")) {
+							downloadLinks["UFILE"] = href;
+						} else if (lowerHref.includes("zippyshare.com")) {
+							downloadLinks["ZIPPYSHARE"] = href;
+						}
+					}
+				});
+			} else {
+				// We found a preferred DOWNLOAD NOW href among candidates
+				downloadLinks["DOWNLOADNOW"] = chosenHref;
+			}
 		});
+
+		// Fallback: scan all links if no .aio-pulse found
+		if (Object.keys(downloadLinks).length === 0) {
+			$("a").each((_, linkEl) => {
+				const $link = $(linkEl);
+				const href = $link.attr("href");
+				const text = $link.text().trim().toUpperCase();
+
+				if (href && !href.includes("#comments") && !href.includes("/how-to-download")) {
+					const lowerHref = href.toLowerCase();
+
+					// Map according to reference format
+					if (text.includes("DOWNLOAD NOW") || lowerHref.includes("getcomics.org/dlds/")) {
+						downloadLinks["DOWNLOADNOW"] = href;
+					} else if (lowerHref.includes("mega.nz") || lowerHref.includes("mega.co.nz")) {
+						downloadLinks["MEGA"] = href;
+					} else if (lowerHref.includes("mediafire.com")) {
+						downloadLinks["MEDIAFIRE"] = href;
+					} else if (text.includes("READ ONLINE")) {
+						downloadLinks["READONLINE"] = href;
+					} else if (lowerHref.includes("uploadedpremium.link") || lowerHref.includes("ufile.io")) {
+						downloadLinks["UFILE"] = href;
+					} else if (lowerHref.includes("zippyshare.com")) {
+						downloadLinks["ZIPPYSHARE"] = href;
+					}
+				}
+			});
+		}
 
 		console.log(
 			`Scraped ${url}: title="${title}", desc length=${description.length}, links=${
@@ -200,76 +298,138 @@ async function scrapeWithScraperAPI(searchTerm?: string, page: number = 1) {
 		const html = await fetchHtmlWithScraperAPI(targetUrl);
 		const $ = cheerio.load(html);
 
-		const comicPromises: Promise<any>[] = [];
+		// Collect factories (deferred promise creators) to control concurrency
+		const comicPromises: Array<() => Promise<any>> = [];
 
-		// Parse listing page - look for individual comic articles only
-		$('article[id*="post-"]').each((_, element) => {
+		// Parse listing page using reference method - look for article elements with proper filtering
+		$("article").each((_, element) => {
 			const $article = $(element);
 
-			// Get basic info from listing
-			const coverPage = $article.find("img").attr("src") || $article.find(".post-header-image img").attr("src");
-			const href = $article.find("a").first().attr("href") || $article.find(".post-title a").attr("href");
-			const title = $article.find(".post-title a, h2 a, h1 a").text().trim();
+			// Debug: try multiple selectors to find the right one
+			let $link = $article.find("h2 a").first();
+			if (!$link.length) $link = $article.find(".entry-title a").first();
+			if (!$link.length) $link = $article.find("h1 a").first();
+			if (!$link.length) $link = $article.find('a[href*="getcomics.org"]').first();
+			if (!$link.length) $link = $article.find("a").first();
 
-			// Check if this is a valid individual comic (not a collection/bundle)
-			const hasContent = $article.find(".post-info, .post-excerpt, .entry-summary").text().trim();
-			const isNotBlog = !href?.includes("/blog/") && !href?.includes("/news/");
+			const href = $link.attr("href");
+			const title = $link.text().trim();
+			const coverPage = $article.find("img").first().attr("src");
 
-			// Filter out collections/bundles - these usually have very long titles or multiple (#) symbols
-			const isIndividualComic =
-				title &&
-				!title.toLowerCase().includes("collection") &&
-				!title.toLowerCase().includes("bundle") &&
-				!title.toLowerCase().includes("pack") &&
-				(title.match(/#/g) || []).length <= 2 && // Allow max 2 # symbols (for issue numbers)
-				title.length < 150; // Reasonable title length for individual comics
-
-			if (href && hasContent && coverPage && isNotBlog && isIndividualComic) {
-				console.log(`Found individual comic: ${title} - ${href}`);
-
-				// Create promise to fetch detailed info from individual page
-				const promise = scrapeComicDetails(href).then((details) => {
-					if (details) {
-						// Additional filtering: make sure the scraped title is reasonable
-						const scrapedTitle = details.title;
-						const isValidTitle =
-							(scrapedTitle && scrapedTitle.length < 200 && !scrapedTitle.includes("(2022)")) ||
-							!scrapedTitle.includes("(2023)") ||
-							!scrapedTitle.includes("(2024)") ||
-							!scrapedTitle.includes("(2025)");
-
-						// If scraped title seems like multiple comics, use the original listing title
-						const finalTitle = (scrapedTitle.match(/\d{4}\)/g) || []).length > 2 ? title : scrapedTitle;
-
-						return {
-							title: finalTitle,
-							coverPage: coverPage || "",
-							description: details.description,
-							information: details.information,
-							downloadLinks: details.downloadLinks,
-							url: href,
-							id: href.split("/").filter(Boolean).pop() || "",
-							publishDate: null,
-							categories: [],
-						};
-					}
-					return null;
+			// Debug logging for the first few articles
+			if (comicPromises.length < 5) {
+				console.log(`Debug article ${comicPromises.length}:`, {
+					titleSelectors: {
+						"h2 a": $article.find("h2 a").length,
+						".entry-title a": $article.find(".entry-title a").length,
+						"h1 a": $article.find("h1 a").length,
+						'a[href*="getcomics.org"]': $article.find('a[href*="getcomics.org"]').length,
+						a: $article.find("a").length,
+					},
+					title: title,
+					href: href,
+					hasCover: !!coverPage,
 				});
+			}
 
-				comicPromises.push(promise);
+			// Check if this is a valid individual comic
+			// Only skip obvious weekly packs and large collections
+			const isWeeklyPack =
+				title &&
+				(title.toLowerCase().includes("weekly pack") ||
+					title.toLowerCase().includes("week pack") ||
+					title.toLowerCase().includes("weekly collection"));
+
+			// Allow most individual comics through, only filter out obvious bulk collections
+			const isBulkCollection =
+				title &&
+				(title.toLowerCase().includes("complete collection") ||
+					title.toLowerCase().includes("full collection") ||
+					(title.toLowerCase().includes("collection") && title.toLowerCase().includes("vol")) ||
+					title.toLowerCase().includes("omnibus collection"));
+
+			// Include individual comics and smaller collections, exclude only weekly packs and bulk collections
+			if (href && coverPage && title && !isWeeklyPack && !isBulkCollection) {
+				console.log(`Found valid comic: ${title} - ${href}`);
+
+				// Create a factory that returns a promise when invoked
+				const factory = () =>
+					scrapeComicDetails(href)
+						.then((details) => {
+							if (details && details.title) {
+								return {
+									title: details.title,
+									coverPage: coverPage,
+									description: details.description,
+									information: details.information,
+									downloadLinks: details.downloadLinks,
+									url: href,
+									id: href.split("/").filter(Boolean).pop() || "",
+									publishDate: null,
+									categories: [],
+								};
+							}
+							return null;
+						})
+						.catch((error) => {
+							console.error(`Error processing comic ${href}:`, error);
+							return null;
+						});
+
+				comicPromises.push(factory);
+			} else if (isWeeklyPack) {
+				console.log(`Skipping weekly pack: ${title}`);
+			} else if (isBulkCollection) {
+				console.log(`Skipping bulk collection: ${title}`);
+			} else {
+				console.log(`Skipping invalid item: ${title || "no title"} - href: ${!!href}, cover: ${!!coverPage}`);
 			}
 		});
 
-		// Limit to first 8 comics to avoid timeout
-		const limitedPromises = comicPromises.slice(0, 8);
+		// Process comics and limit to 8 per page to conserve API credits
+		const limitedFactories = comicPromises.slice(0, 8);
+		console.log(
+			`Found ${comicPromises.length} comics, processing first ${limitedFactories.length} with concurrency limit`
+		);
 
-		console.log(`Found ${comicPromises.length} comics, processing first ${limitedPromises.length}`);
+		// Helper to run factories with concurrency limit and delay
+		async function runWithConcurrency<T>(factories: Array<() => Promise<T>>, concurrency = 5) {
+			const results: T[] = [];
+			let index = 0;
 
-		// Wait for all comic details to be scraped
-		const comics = await Promise.all(limitedPromises);
+			async function worker() {
+				while (index < factories.length) {
+					const current = index++;
+					try {
+						// Add small delay between requests to stagger them
+						if (current > 0) {
+							await new Promise((resolve) => setTimeout(resolve, 300));
+						}
+						// Invoke factory
+						const res = await factories[current]();
+						results[current] = res as any;
+					} catch (err) {
+						console.error(`Factory error at index ${current}:`, err);
+						results[current] = null as any;
+					}
+				}
+			}
+
+			// Start workers
+			const workers = [];
+			for (let i = 0; i < Math.min(concurrency, factories.length); i++) {
+				workers.push(worker());
+			}
+
+			await Promise.all(workers);
+			return results;
+		}
+
+		// Run factories with limited concurrency (5) - balanced for Free plan with 20 concurrent threads
+		const comics = await runWithConcurrency(limitedFactories, 5);
 
 		// Filter out null results
-		const validComics = comics.filter((comic) => comic !== null);
+		const validComics = comics.filter((comic) => comic !== null && comic !== undefined);
 
 		console.log(`Successfully processed ${validComics.length} comics`);
 
